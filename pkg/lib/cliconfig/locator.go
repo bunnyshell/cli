@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 )
 
 func FindConfigFile() error {
@@ -49,12 +50,8 @@ func determineConfig() string {
 		return cfgFile
 	}
 
-	home, err := os.UserHomeDir()
+	workspace, err := util.GetWorkspaceDir()
 	cobra.CheckErr(err)
 
-	if home == "/" {
-		return "/bunnyshell/config.yaml"
-	}
-
-	return home + "/.bunnyshell/config.yaml"
+	return workspace + "/config.yaml"
 }
