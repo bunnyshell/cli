@@ -2,13 +2,13 @@ package version
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"bunnyshell.com/cli/pkg/build"
-	"bunnyshell.com/cli/pkg/lib"
 )
 
 var ClientOnly = false
@@ -16,30 +16,25 @@ var ClientOnly = false
 var mainCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Version Information",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		data := map[string]interface{}{}
-
-		data["client"] = map[string]interface{}{
-			"version": build.Version,
+	Run: func(cmd *cobra.Command, args []string) {
+		release := "v" + build.Version
+		if ClientOnly {
+			cmd.Printf("You are using: %s\n", release)
+			return
 		}
 
-		if !ClientOnly {
-			latestRelease, err := getLatestRelease()
-			if err != nil {
-				return err
-			}
-
-			if latestRelease == build.Version {
-				cmd.Println("You are using the latest version: " + latestRelease)
-				return nil
-			}
-
-			data["server"] = map[string]interface{}{
-				"version": latestRelease,
-			}
+		latestRelease, err := getLatestRelease()
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
 
-		return lib.FormatCommandData(cmd, data)
+		if latestRelease == release {
+			cmd.Printf("You are using the latest version: %s\n", latestRelease)
+			return
+		}
+
+		fmt.Printf("your version %s is older than the latest: %s\n", release, latestRelease)
 	},
 }
 
