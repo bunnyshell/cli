@@ -42,7 +42,7 @@ Use "bunnyshell-cli [command] --help" for more information about a command.
 All the releases are found on: https://hub.docker.com/r/bunnyshell/cli
 
 ```sh
-docker run --volume $(pwd):/bunnyshell bunnyshell/cli
+docker run --volume ~/.bunnyshell:/bunnyshell bunnyshell/cli
 ```
 
 ### Download Github Release
