@@ -1,0 +1,92 @@
+project_name: bunnyshell-cli
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X bunnyshell.com/cli/pkg/build.Version={{.Version}} -X bunnyshell.com/cli/pkg/build.Commit={{.Commit}} -X bunnyshell.com/cli/pkg/build.Date={{time "2006-01-02"}}
+    mod_timestamp: '{{ .CommitTimestamp }}'
+
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+
+dockers:
+  - dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+    image_templates:
+      - "bunnyshell/cli:{{ .Tag }}-amd64"
+
+  - dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm64"
+    image_templates:
+      - "bunnyshell/cli:{{ .Tag }}-arm64"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "bunnyshell/cli:{{ .Tag }}"
+    image_templates:
+      - "bunnyshell/cli:{{ .Tag }}-amd64"
+      - "bunnyshell/cli:{{ .Tag }}-arm64"
+  - name_template: "bunnyshell/cli:latest"
+    image_templates:
+      - "bunnyshell/cli:{{ .Tag }}-amd64"
+      - "bunnyshell/cli:{{ .Tag }}-arm64"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+announce:
+  slack:
+    enabled: true
+    blocks:
+      - type: section
+        text:
+          type: mrkdwn
+          text: |
+            A new release was just performed on *CLI*: `{{ .Tag }}`
+
+            Check it out at {{ .ReleaseURL }}

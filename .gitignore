@@ -1,0 +1,8 @@
+# gorelease
+/dist
+
+# go mod vendor
+/vendor
+
+# other
+.DS_Store
