@@ -14,7 +14,8 @@ func init() {
 	var localSyncPath string
 
 	command := &cobra.Command{
-		Use: "start",
+		Use:          "start",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			organizationId := lib.CLIContext.Profile.Context.Organization
 			projectId := lib.CLIContext.Profile.Context.Project

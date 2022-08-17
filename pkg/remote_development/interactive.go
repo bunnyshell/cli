@@ -12,10 +12,11 @@ import (
 )
 
 var (
-	ErrNoEnvironments  = fmt.Errorf("no environments")
-	ErrNoOrganizations = fmt.Errorf("no organizations")
-	ErrNoComponents    = fmt.Errorf("no components")
-	ErrNoProjects      = fmt.Errorf("no projects")
+	ErrNoEnvironments           = fmt.Errorf("no environments available")
+	ErrNoOrganizations          = fmt.Errorf("no organizations available")
+	ErrNoComponents             = fmt.Errorf("no components available")
+	ErrNoComponentsWithSyncPath = fmt.Errorf("no components with remote sync path set")
+	ErrNoProjects               = fmt.Errorf("no projects available")
 )
 
 func (r *RemoteDevelopment) SelectOrganization(defaultOrganizationId string) error {
@@ -31,7 +32,6 @@ func (r *RemoteDevelopment) SelectOrganization(defaultOrganizationId string) err
 	}
 
 	if resp.Embedded == nil {
-		fmt.Fprintln(os.Stderr, "No Organizations")
 		return ErrNoOrganizations
 	}
 
@@ -61,7 +61,6 @@ func (r *RemoteDevelopment) SelectProject(defaultProjectId string) error {
 	}
 
 	if resp.Embedded == nil {
-		fmt.Fprintln(os.Stderr, "No Projects")
 		return ErrNoProjects
 	}
 
@@ -91,7 +90,6 @@ func (r *RemoteDevelopment) SelectEnvironment(defaultEnvironmentId string) error
 	}
 
 	if resp.Embedded == nil {
-		fmt.Fprintln(os.Stderr, "No Environments")
 		return ErrNoEnvironments
 	}
 
@@ -127,12 +125,22 @@ func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 	}
 
 	if resp.Embedded == nil {
-		fmt.Fprintln(os.Stderr, "No Components")
 		return ErrNoComponents
 	}
 
-	items := []string{}
+	components := []bunnysdk.ComponentCollection{}
 	for _, item := range resp.Embedded.GetItem() {
+		if item.GetSyncPath() != "" {
+			components = append(components, item)
+		}
+	}
+
+	if len(components) == 0 {
+		return ErrNoComponentsWithSyncPath
+	}
+
+	items := []string{}
+	for _, item := range components {
 		items = append(items, item.GetName())
 	}
 	index, _, err := util.Choose("Select component", items)
@@ -140,7 +148,7 @@ func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 		return err
 	}
 
-	component := &resp.Embedded.GetItem()[index]
+	component := &components[index]
 	r.WithComponent(component)
 	return nil
 }
