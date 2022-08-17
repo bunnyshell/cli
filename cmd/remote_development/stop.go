@@ -22,15 +22,15 @@ func init() {
 				return err
 			}
 
-			if err := remoteDevelopment.SelectProject(organizationId, projectId); err != nil {
+			if err := remoteDevelopment.SelectProject(projectId); err != nil {
 				return err
 			}
 
-			if err := remoteDevelopment.SelectEnvironment(organizationId, environmentId); err != nil {
+			if err := remoteDevelopment.SelectEnvironment(environmentId); err != nil {
 				return err
 			}
 
-			if err := remoteDevelopment.SelectComponent(environmentId, componentId); err != nil {
+			if err := remoteDevelopment.SelectComponent(componentId); err != nil {
 				return err
 			}
 

@@ -32,7 +32,7 @@ func (r *RemoteDevelopment) EnsureComponentFolder() error {
 		return err
 	}
 
-	r.ComponentFolderPath = filepath.Join(workspace, r.OrganizationId, r.ProjectId, r.EnvironmentId, r.ComponentName)
+	r.ComponentFolderPath = filepath.Join(workspace, r.OrganizationId, r.ProjectId, r.EnvironmentId, r.ComponentId)
 	return os.MkdirAll(r.ComponentFolderPath, 0755)
 }
 

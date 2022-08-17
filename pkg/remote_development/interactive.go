@@ -48,13 +48,13 @@ func (r *RemoteDevelopment) SelectOrganization(defaultOrganizationId string) err
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectProject(organizationId, defaultProjectId string) error {
+func (r *RemoteDevelopment) SelectProject(defaultProjectId string) error {
 	if defaultProjectId != "" {
 		r.ProjectId = defaultProjectId
 		return nil
 	}
 
-	resp, _, err := getProjects(organizationId)
+	resp, _, err := getProjects(r.OrganizationId)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error when calling `ProjectApi.ProjectList`:", err)
 		return err
@@ -78,13 +78,13 @@ func (r *RemoteDevelopment) SelectProject(organizationId, defaultProjectId strin
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectEnvironment(organizationId, defaultEnvironmentId string) error {
+func (r *RemoteDevelopment) SelectEnvironment(defaultEnvironmentId string) error {
 	if defaultEnvironmentId != "" {
 		r.EnvironmentId = defaultEnvironmentId
 		return nil
 	}
 
-	resp, _, err := getEnvironments(organizationId)
+	resp, _, err := getEnvironments(r.OrganizationId)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error when calling `EnvironmentApi.EnvironmentList`:", err)
 		return err
@@ -108,7 +108,7 @@ func (r *RemoteDevelopment) SelectEnvironment(organizationId, defaultEnvironment
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectComponent(environmentId, defaultComponentId string) error {
+func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 	if defaultComponentId != "" {
 		component, _, err := getServiceComponent(defaultComponentId)
 		if err != nil {
@@ -119,7 +119,7 @@ func (r *RemoteDevelopment) SelectComponent(environmentId, defaultComponentId st
 		return nil
 	}
 
-	resp, _, err := getComponents(environmentId)
+	resp, _, err := getComponents(r.EnvironmentId)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error when calling `ComponentApi.ComponentList`:", err)
@@ -244,6 +244,8 @@ func getComponents(environment string) (*bunnysdk.PaginatedComponentCollection, 
 	if environment != "" {
 		request = request.Environment(environment)
 	}
+
+	request = request.OperationStatus("running")
 
 	return request.Execute()
 }
