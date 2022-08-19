@@ -4,6 +4,17 @@ before:
   hooks:
     - go mod tidy
 
+brews:
+  - name: bunnyshell-cli
+    description: "Bunnyshell's command line tool to create and manage on-demand environments."
+    homepage: https://documentation.bunnyshell.com/bunnyshell-cli
+
+    tap:
+      owner: bunnyshellosi
+      name: homebrew-tap
+    folder: Formula
+    install: bin.install "bunnyshell-cli"
+
 builds:
   - env:
       - CGO_ENABLED=0
