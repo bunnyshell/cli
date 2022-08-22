@@ -91,6 +91,8 @@ func (r *RemoteDevelopment) StartLocalSyncthing() error {
 		return err
 	}
 
+	r.SyncthingProcess = syncthingCmd.Process
+
 	go syncthingCmd.Wait()
 	return nil
 }
@@ -139,14 +141,14 @@ func patchSyncthingConfigs(localConfigDir, remoteConfigDir, localSyncFolder, rem
 	folderRemote.MarkerName = "."
 	folderRemote.MaxConflicts = 0
 
-	deviceLocal := &localConfig.Device[0]
-	deviceLocal.Name = "local"
-
-	deviceRemote := &remoteConfig.Device[0]
-	deviceRemote.Name = "remote"
-
 	// sync devices
 	if len(localConfig.Device) < 2 {
+		deviceLocal := &localConfig.Device[0]
+		deviceLocal.Name = "local"
+
+		deviceRemote := &remoteConfig.Device[0]
+		deviceRemote.Name = "remote"
+
 		localConfig.Device = append(localConfig.Device, *deviceRemote)
 		remoteConfig.Device = append(remoteConfig.Device, *deviceLocal)
 		folderLocal.Device = append(folderLocal.Device, folderRemote.Device[0])

@@ -20,6 +20,8 @@ type RemoteDevelopment struct {
 	RemoteSSHForwarder *portforward.PortForwarder
 	SyncthingSSHTunnel *ssh.SSHTunnel
 
+	SyncthingProcess *os.Process
+
 	OrganizationId string
 	ProjectId      string
 	EnvironmentId  string
@@ -131,6 +133,11 @@ func (r *RemoteDevelopment) Close() {
 	// close cli command
 	if r.StopChannel != nil {
 		close(r.StopChannel)
+	}
+
+	// kill syncthing process
+	if r.SyncthingProcess != nil {
+		r.SyncthingProcess.Kill()
 	}
 }
 
