@@ -75,6 +75,15 @@ func AskSecret(question string, validate promptui.ValidateFunc) (string, error) 
 	return s, e
 }
 
+func AskWithDefault(question, defaultInput string) (string, error) {
+	prompt := promptui.Prompt{
+		Label:   question,
+		Default: defaultInput,
+	}
+
+	return prompt.Run()
+}
+
 func Confirm(question string) (bool, error) {
 	prompt := promptui.Prompt{
 		Label:     question,
@@ -97,7 +106,7 @@ func Confirm(question string) (bool, error) {
 }
 
 func Choose(question string, items []string) (int, string, error) {
-	prompt := promptui.SelectWithAdd{
+	prompt := promptui.Select{
 		Label: question,
 		Items: items,
 	}

@@ -13,6 +13,7 @@ import (
 	"bunnyshell.com/cli/cmd/event"
 	"bunnyshell.com/cli/cmd/organization"
 	"bunnyshell.com/cli/cmd/project"
+	"bunnyshell.com/cli/cmd/remote_development"
 	"bunnyshell.com/cli/cmd/version"
 
 	"bunnyshell.com/cli/pkg/lib"
@@ -44,6 +45,7 @@ func init() {
 	rootCmd.AddCommand(component.GetMainCommand())
 	rootCmd.AddCommand(event.GetMainCommand())
 	rootCmd.AddCommand(version.GetMainCommand())
+	rootCmd.AddCommand(remote_development.GetMainCommand())
 
 	lib.CLIContext.SetGlobalFlags(rootCmd)
 }
