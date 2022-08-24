@@ -2,7 +2,7 @@ package syncthing
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -110,7 +110,7 @@ func LoadConfigXml(filePath string) (Configuration, error) {
 	}
 	defer file.Close()
 
-	byteValue, err := ioutil.ReadAll(file)
+	byteValue, err := io.ReadAll(file)
 	if err != nil {
 		return config, err
 	}

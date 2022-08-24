@@ -2,7 +2,6 @@ package ssh
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -78,7 +77,7 @@ func getConfigFile() (*os.File, error) {
 }
 
 func PrivateKeyFile(file string) ssh.AuthMethod {
-	buffer, err := ioutil.ReadFile(file)
+	buffer, err := os.ReadFile(file)
 	if err != nil {
 		return nil
 	}
