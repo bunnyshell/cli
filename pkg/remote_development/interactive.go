@@ -112,6 +112,9 @@ func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 		if err != nil {
 			return err
 		}
+		if component.GetSyncPath() == "" {
+			return fmt.Errorf("component has no syncPath defined")
+		}
 
 		r.WithComponent(component)
 		return nil
