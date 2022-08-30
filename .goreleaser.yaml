@@ -4,6 +4,16 @@ before:
   hooks:
     - go mod tidy
 
+brews:
+  - name: cli
+    description: "Bunnyshell's command line tool to create and manage on-demand environments."
+    homepage: https://documentation.bunnyshell.com
+
+    tap:
+      owner: bunnyshellosi
+      name: homebrew-tap
+    folder: Formula
+
 builds:
   - env:
       - CGO_ENABLED=0
