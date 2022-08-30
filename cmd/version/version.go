@@ -29,12 +29,17 @@ var mainCmd = &cobra.Command{
 			return
 		}
 
+		if strings.Contains(release, "-") {
+			cmd.Printf("You are running a pre-release version %s. Latest is: %s\n", release, latestRelease)
+			return
+		}
+
 		if latestRelease == release {
 			cmd.Printf("You are using the latest version: %s\n", latestRelease)
 			return
 		}
 
-		fmt.Printf("your version %s is older than the latest: %s\n", release, latestRelease)
+		fmt.Printf("Your version %s is older than the latest: %s\n", release, latestRelease)
 	},
 }
 
