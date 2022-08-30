@@ -1,4 +1,4 @@
-project_name: bunnyshell-cli
+project_name: cli
 
 before:
   hooks:
@@ -7,13 +7,12 @@ before:
 brews:
   - name: bunnyshell-cli
     description: "Bunnyshell's command line tool to create and manage on-demand environments."
-    homepage: https://documentation.bunnyshell.com/bunnyshell-cli
+    homepage: https://documentation.bunnyshell.com
 
     tap:
       owner: bunnyshellosi
       name: homebrew-tap
     folder: Formula
-    install: bin.install "bunnyshell-cli"
 
 builds:
   - env:
