@@ -1,11 +1,11 @@
-project_name: cli
+project_name: bunnyshell-cli
 
 before:
   hooks:
     - go mod tidy
 
 brews:
-  - name: bunnyshell-cli
+  - name: cli
     description: "Bunnyshell's command line tool to create and manage on-demand environments."
     homepage: https://documentation.bunnyshell.com
 
