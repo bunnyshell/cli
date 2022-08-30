@@ -83,7 +83,7 @@ func (r *RemoteDevelopment) SelectEnvironment(defaultEnvironmentId string) error
 		return nil
 	}
 
-	resp, _, err := getEnvironments(r.OrganizationId)
+	resp, _, err := getEnvironments(r.ProjectId)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error when calling `EnvironmentApi.EnvironmentList`:", err)
 		return err
@@ -111,6 +111,9 @@ func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 		component, _, err := getServiceComponent(defaultComponentId)
 		if err != nil {
 			return err
+		}
+		if component.GetSyncPath() == "" {
+			return fmt.Errorf("component has no syncPath defined")
 		}
 
 		r.WithComponent(component)
@@ -232,13 +235,13 @@ func getProjects(organization string) (*bunnysdk.PaginatedProjectCollection, *ht
 	return request.Execute()
 }
 
-func getEnvironments(organization string) (*bunnysdk.PaginatedEnvironmentCollection, *http.Response, error) {
+func getEnvironments(projectID string) (*bunnysdk.PaginatedEnvironmentCollection, *http.Response, error) {
 	ctx, cancel := lib.GetContext()
 	defer cancel()
 
 	request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
-	if organization != "" {
-		request = request.Organization(organization)
+	if projectID != "" {
+		request = request.Project(projectID)
 	}
 
 	return request.Execute()

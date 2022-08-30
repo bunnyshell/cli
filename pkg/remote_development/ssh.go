@@ -100,7 +100,7 @@ func (r *RemoteDevelopment) EnsureSSHConfigEntry() error {
 		return err
 	}
 
-	hostname := fmt.Sprintf("%s.bunnyshell", r.ComponentName)
+	hostname := fmt.Sprintf("%s.%s.bunnyshell", r.ComponentName, r.EnvironmentId)
 	bunnyshellSSH.RemoveHost(config, hostname)
 	host, err := newSSHConfigHost(
 		hostname,
@@ -114,7 +114,11 @@ func (r *RemoteDevelopment) EnsureSSHConfigEntry() error {
 
 	config.Hosts = append(config.Hosts, host)
 
-	return bunnyshellSSH.SaveConfig(config)
+	if err := bunnyshellSSH.SaveConfig(config); err != nil {
+		return err
+	}
+
+	return bunnyshellSSH.IncludeBunnyshellConfig()
 }
 
 func newSSHConfigHost(hostname, iface, port, identityFile string) (*ssh_config.Host, error) {
