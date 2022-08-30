@@ -213,7 +213,7 @@ func (k *KubernetesClient) WatchRemoteDevPods(componentName, containerName strin
 	if err != nil {
 		return err
 	}
-	allRunning := true
+	allRunning := len(podList.Items) > 0
 	for _, pod := range podList.Items {
 		if pod.DeletionTimestamp != nil || pod.Status.Phase != coreV1.PodRunning {
 			allRunning = false
