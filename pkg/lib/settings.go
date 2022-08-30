@@ -34,7 +34,7 @@ var CLIContext = CLI{
 	Timeout:      defaultTimeout,
 }
 
-func (c *CLI) Load(config Config) {
+func (c *CLI) Load(config Config) error {
 	if !c.Debug {
 		c.Debug = config.Debug
 	}
@@ -57,9 +57,14 @@ func (c *CLI) Load(config Config) {
 		}
 	}
 
-	profile, ok := config.Profiles[config.DefaultProfile]
+	profileName := c.ProfileName
+	if profileName == "" {
+		profileName = config.DefaultProfile
+	}
+
+	profile, ok := config.Profiles[profileName]
 	if !ok {
-		return
+		return fmt.Errorf("profile %s not found", profileName)
 	}
 
 	if c.Profile.Token == "" {
@@ -88,6 +93,8 @@ func (c *CLI) Load(config Config) {
 	if c.Profile.Context.ServiceComponent == "" {
 		c.Profile.Context.ServiceComponent = profile.Context.ServiceComponent
 	}
+
+	return nil
 }
 
 // otherwise token would still be "required" and error out
@@ -144,5 +151,8 @@ func LoadViperConfigIntoContext() {
 		return
 	}
 
-	CLIContext.Load(*config)
+	err = CLIContext.Load(*config)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "[LoadConfigError]", err)
+	}
 }
