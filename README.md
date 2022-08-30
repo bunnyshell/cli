@@ -30,13 +30,25 @@ Use "bunnyshell-cli [command] --help" for more information about a command.
 ```
 
 - [Installing](#installing)
-  - [Docker Hub](#docker-hub)
+  - [Homebrew](#homebrew)
   - [Downloading a Release from GitHub](#download-github-release)
+  - [Docker Hub](#docker-hub)
 - [Authentication](#authentication)
   - [Profiles](#profiles)
 - [Shell Autocomplete](#shell-autocomplete)
 
 ## Installing
+
+### Homebrew
+```sh
+brew install bunnyshellosi/tap/cli
+```
+
+### Download Github Release
+
+Download the appropriate archive for your architecture on the [releases page](https://github.com/bunnyshellosi/cli/releases)
+
+And make it available in your `$PATH` or move the binary to `/usr/local/bin`
 
 ### Docker Hub
 All the releases are found on: https://hub.docker.com/r/bunnyshell/cli
@@ -45,12 +57,8 @@ All the releases are found on: https://hub.docker.com/r/bunnyshell/cli
 docker run --volume ~/.bunnyshell:/root/.bunnyshell bunnyshell/cli environments list
 ```
 
-### Download Github Release
-
-Download the appropriate archive for your architecture on the [releases page](https://github.com/bunnyshellosi/cli/releases)
-
 ## Authentication
-You will need an access token from https://environments.bunnyshell.com/
+You will need an access token from https://environments.bunnyshell.com/access-token
 
 You can then setup a profile for easy access to your acccount with:
 ```sh
