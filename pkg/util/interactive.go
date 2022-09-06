@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 )
@@ -146,6 +147,29 @@ func ConfigFileValidation(input string) error {
 	}
 
 	return fmt.Errorf("supported extensions: json or yaml")
+}
+
+func All(funcs ...promptui.ValidateFunc) promptui.ValidateFunc {
+	return func(input string) error {
+		for _, callable := range funcs {
+			err := callable(input)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func Lowercase() promptui.ValidateFunc {
+	return func(input string) error {
+		if strings.ToLower(input) != input {
+			return fmt.Errorf("profile names should be lowercase only")
+		}
+
+		return nil
+	}
 }
 
 func RequiredExtension(extensions ...string) promptui.ValidateFunc {
