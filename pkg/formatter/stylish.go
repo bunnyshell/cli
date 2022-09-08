@@ -17,19 +17,19 @@ func stylish(data interface{}) ([]byte, error) {
 	switch t := data.(type) {
 	case *sdk.PaginatedOrganizationCollection:
 		tabulateOrganizationCollection(w, t)
-		tabulatePagination(w, t.GetItemsPerPage(), t.GetTotalItems())
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedProjectCollection:
 		tabulateProjectCollection(w, t)
-		tabulatePagination(w, t.GetItemsPerPage(), t.GetTotalItems())
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedEnvironmentCollection:
 		tabulateEnvironmentCollection(w, t)
-		tabulatePagination(w, t.GetItemsPerPage(), t.GetTotalItems())
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedComponentCollection:
 		tabulateComponentCollection(w, t)
-		tabulatePagination(w, t.GetItemsPerPage(), t.GetTotalItems())
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedEventCollection:
 		tabulateEventCollection(w, t)
-		tabulatePagination(w, t.GetItemsPerPage(), t.GetTotalItems())
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.OrganizationItem:
 		tabulateOrganizationItem(w, t)
 	case *sdk.ProjectItem:
@@ -153,10 +153,11 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "UpdatedAt", item.GetUpdatedAt())
 }
 
-func tabulatePagination(w *tabwriter.Writer, perPage int32, total int32) {
-	if perPage > total {
-		perPage = total
+func tabulatePagination(w *tabwriter.Writer, page int32, perPage int32, total int32) {
+	var pages = total/perPage + 1
+	if page > pages {
+		fmt.Fprint(w, "\nPage does not exist")
+	} else {
+		fmt.Fprintf(w, "\nPage %d/%d with %d results", page, pages, total)
 	}
-
-	fmt.Fprintf(w, "\nShowing %d out of %d", perPage, total)
 }
