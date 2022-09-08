@@ -54,7 +54,7 @@ func stylish(data interface{}) ([]byte, error) {
 func tabulateOrganizationCollection(w *tabwriter.Writer, data *sdk.PaginatedOrganizationCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\n", "OrganizationID", "Name", "Timezone")
 
-	if data.Embedded.Item != nil {
+	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\n", item.GetId(), item.GetName(), item.GetTimezone())
 		}
@@ -73,7 +73,7 @@ func tabulateOrganizationItem(w *tabwriter.Writer, item *sdk.OrganizationItem) {
 func tabulateProjectCollection(w *tabwriter.Writer, data *sdk.PaginatedProjectCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "ProjectID", "OrganizationID", "Name", "Environments")
 
-	if data.Embedded.Item != nil {
+	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetOrganization(), item.GetName(), item.GetTotalEnvironments())
 		}
@@ -90,7 +90,7 @@ func tabulateProjectItem(w *tabwriter.Writer, item *sdk.ProjectItem) {
 func tabulateEnvironmentCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ProjectID", "Name", "Type", "OperationStatus")
 
-	if data.Embedded.Item != nil {
+	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetProject(), item.GetName(), item.GetType(), item.GetOperationStatus())
 		}
@@ -109,7 +109,7 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 func tabulateComponentCollection(w *tabwriter.Writer, data *sdk.PaginatedComponentCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "ComponentID", "EnvironmentID", "Name", "OperationStatus", "ClusterStatus")
 
-	if data.Embedded.Item != nil {
+	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetName(), item.GetOperationStatus(), item.GetClusterStatus())
 		}
@@ -135,7 +135,7 @@ func tabulateComponentItem(w *tabwriter.Writer, item *sdk.ComponentItem) {
 func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
 
-	if data.Embedded.Item != nil {
+	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetType(), item.GetStatus())
 		}
