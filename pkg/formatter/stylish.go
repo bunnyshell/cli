@@ -40,6 +40,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateComponentItem(w, t)
 	case *sdk.EventItem:
 		tabulateEventItem(w, t)
+	case *sdk.ProblemGeneric:
+		tabulateGeneric(w, t)
 	default:
 		fmt.Fprintf(w, "JSON: ")
 		var jsonBytes []byte
@@ -151,6 +153,12 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "Type", item.GetType())
 	fmt.Fprintf(w, "%v\t %v\n", "CreatedAt", item.GetCreatedAt())
 	fmt.Fprintf(w, "%v\t %v\n", "UpdatedAt", item.GetUpdatedAt())
+}
+
+func tabulateGeneric(w *tabwriter.Writer, item *sdk.ProblemGeneric) {
+	fmt.Fprintf(w, "%v\n", "ERROR")
+	fmt.Fprintf(w, "%v\t %v\n", "Title", item.GetTitle())
+	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.GetDetail())
 }
 
 func tabulatePagination(w *tabwriter.Writer, page int32, perPage int32, total int32) {

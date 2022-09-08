@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 
@@ -35,7 +35,7 @@ func FormatRequestResult(cmd *cobra.Command, data interface{}, r *http.Response,
 		switch err := err.(type) {
 		case net.Error:
 			if err.Timeout() {
-				return printTimeout(cmd)
+				return printTimeout(cmd, err)
 			}
 		case *sdk.GenericOpenAPIError:
 			return printOpenAPIError(cmd, err, r)
@@ -55,23 +55,21 @@ func printGenericError(cmd *cobra.Command, err error, r *http.Response) error {
 }
 
 func printOpenAPIError(cmd *cobra.Command, err *sdk.GenericOpenAPIError, r *http.Response) error {
-	result := map[string]interface{}{
-		"status": r.StatusCode,
-		"error":  err.Error(),
+	switch model := err.Model().(type) {
+	case sdk.ProblemGeneric:
+		return FormatCommandData(cmd, &model)
 	}
 
-	var extra map[string]interface{}
-	json.Unmarshal(err.Body(), &extra)
-	if extra["detail"] != nil {
-		result["extra"] = extra["detail"]
-	}
+	data := sdk.NewProblemGeneric()
+	data.SetTitle(fmt.Sprintf("Response status: %d", r.StatusCode))
+	data.SetDetail(err.Error())
 
-	return FormatCommandData(cmd, result)
+	return FormatCommandData(cmd, data)
 }
 
-func printTimeout(cmd *cobra.Command) error {
-	return FormatCommandData(cmd, map[string]interface{}{
-		"status": 0,
-		"error":  "Operation timed out",
-	})
+func printTimeout(cmd *cobra.Command, err error) error {
+	data := sdk.NewProblemGeneric()
+	data.SetTitle("Operation timed out")
+	data.SetDetail(err.Error())
+	return FormatCommandData(cmd, data)
 }
