@@ -65,6 +65,7 @@ func tabulateOrganizationItem(w *tabwriter.Writer, item *sdk.OrganizationItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetId())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Timezone", item.GetTimezone())
+	fmt.Fprintf(w, "%v\t %v\n", "Projects", item.GetTotalProjects())
 	fmt.Fprintf(w, "%v\t %v\n", "Clusters", item.GetAvailableClusters())
 	fmt.Fprintf(w, "%v\t %v\n", "GitIntegrations", item.GetAvailableGitIntegration())
 	fmt.Fprintf(w, "%v\t %v\n", "Registries", item.GetAvailableRegistries())
