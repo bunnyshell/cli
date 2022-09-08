@@ -23,12 +23,16 @@ func init() {
 	var addProfileCommand = &cobra.Command{
 		Use: "add name [token organization project]",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
 			if profileName == "" {
-				var err error
-				profileName, err = util.Ask("Name:", nil)
-				if err != nil {
-					return err
-				}
+				profileName, err = util.Ask("Name:", getProfileNameValidator())
+			} else {
+				err = getProfileNameValidator()(profileName)
+			}
+
+			if err != nil {
+				return err
 			}
 
 			lib.CLIContext.Timeout = 0 * time.Second
@@ -62,7 +66,7 @@ func init() {
 				break
 			}
 
-			err := lib.AddProfile(profile, profileName)
+			err = lib.AddProfile(profile, profileName)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -106,6 +110,13 @@ func init() {
 	addProfileCommand.Flags().StringVar(&profileName, "name", profileName, "Unique name for the new profile")
 
 	mainCmd.AddCommand(addProfileCommand)
+}
+
+func getProfileNameValidator() func(string) error {
+	return util.All(
+		util.Lowercase(),
+		util.AssertMinimumLength(4),
+	)
 }
 
 func ensureToken(profile *lib.Profile) error {
