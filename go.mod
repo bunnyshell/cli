@@ -3,7 +3,7 @@ module bunnyshell.com/cli
 go 1.19
 
 require (
-	bunnyshell.com/sdk v0.2.0
+	bunnyshell.com/sdk v0.4.0
 	github.com/briandowns/spinner v1.19.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.5.0
@@ -53,8 +53,8 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
-	golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7 // indirect
+	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
+	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text v0.3.7 // indirect
