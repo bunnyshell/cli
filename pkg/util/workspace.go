@@ -1,6 +1,9 @@
 package util
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 const BunnyshellWorkspaceDirname = ".bunnyshell"
 
@@ -14,5 +17,5 @@ func GetWorkspaceDir() (string, error) {
 		return "/bunnyshell", nil
 	}
 
-	return home + "/" + BunnyshellWorkspaceDirname, nil
+	return filepath.Join(home, BunnyshellWorkspaceDirname), nil
 }

@@ -173,7 +173,7 @@ func getSyncthingBinPath() (string, error) {
 		return "", err
 	}
 
-	return workspaceDir + "/" + syncthingBinFilename, nil
+	return filepath.Join(workspaceDir, getSyncthingBinFilename()), nil
 }
 
 func ensureSyncthingBin() (string, error) {
@@ -191,7 +191,7 @@ func ensureSyncthingBin() (string, error) {
 	}
 
 	downloadFilename := fmt.Sprintf(syncthingDownloadFilename, getPlatform(), runtime.GOARCH, SyncthingVersion, getExtension())
-	syncthingArchivePath := filepath.Dir(syncthingBinPath) + "/" + downloadFilename
+	syncthingArchivePath := filepath.Join(filepath.Dir(syncthingBinPath), downloadFilename)
 	downloadUrl := fmt.Sprintf(syncthingDownloadUrl, SyncthingVersion, downloadFilename)
 
 	err = downloadSyncthingArchive(downloadUrl, syncthingArchivePath)
