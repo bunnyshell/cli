@@ -173,7 +173,7 @@ func getSyncthingBinPath() (string, error) {
 		return "", err
 	}
 
-	return workspaceDir + "/" + syncthingBinFilename, nil
+	return filepath.Join(workspaceDir, getSyncthingBinFilename()), nil
 }
 
 func ensureSyncthingBin() (string, error) {
@@ -191,7 +191,7 @@ func ensureSyncthingBin() (string, error) {
 	}
 
 	downloadFilename := fmt.Sprintf(syncthingDownloadFilename, getPlatform(), runtime.GOARCH, SyncthingVersion, getExtension())
-	syncthingArchivePath := filepath.Dir(syncthingBinPath) + "/" + downloadFilename
+	syncthingArchivePath := filepath.Join(filepath.Dir(syncthingBinPath), downloadFilename)
 	downloadUrl := fmt.Sprintf(syncthingDownloadUrl, SyncthingVersion, downloadFilename)
 
 	err = downloadSyncthingArchive(downloadUrl, syncthingArchivePath)
@@ -231,6 +231,14 @@ func downloadSyncthingArchive(source, destination string) error {
 	return err
 }
 
+func getSyncthingBinFilename() string {
+	if runtime.GOOS == "windows" {
+		return syncthingBinFilename + ".exe"
+	}
+
+	return syncthingBinFilename
+}
+
 func extractSyncthingBin(source, destination string) error {
 	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		return extractSyncthingBinZip(source, destination)
@@ -247,7 +255,8 @@ func extractSyncthingBinZip(source, destination string) error {
 	defer reader.Close()
 
 	for _, f := range reader.File {
-		if strings.Split(f.Name, "/")[1] == "syncthing" {
+		fileName := strings.Split(f.Name, "/")[1]
+		if fileName == getSyncthingBinFilename() {
 			destinationFile, err := os.OpenFile(destination, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
 				return err

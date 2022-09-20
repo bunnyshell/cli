@@ -55,7 +55,7 @@ func (sshTerminal *SSHTerminal) Start() error {
 		ssh.TTY_OP_OSPEED: 14400,
 	}
 
-	termFd := int(os.Stdin.Fd())
+	termFd := int(os.Stdout.Fd())
 	if !term.IsTerminal(termFd) {
 		return fmt.Errorf("no terminal available")
 	}

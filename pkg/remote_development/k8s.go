@@ -314,6 +314,7 @@ func (k *KubernetesClient) PortForwardRemoteSSH(componentName string) (*portforw
 		k.SSHPortForwardOptions.RemotePort,
 	)}
 
+	// @todo we should catch the errors from the tcp dialer with a logger
 	forwarder, err := portforward.NewOnAddresses(
 		dialer,
 		[]string{k.SSHPortForwardOptions.Interface},
@@ -321,7 +322,7 @@ func (k *KubernetesClient) PortForwardRemoteSSH(componentName string) (*portforw
 		k.SSHPortForwardOptions.StopChannel,
 		k.SSHPortForwardOptions.ReadyChannel,
 		io.Discard,
-		os.Stderr,
+		io.Discard,
 	)
 	if err != nil {
 		return nil, err
