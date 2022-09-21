@@ -1,4 +1,4 @@
-```sh
+```
 Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.
 
 Usage:
