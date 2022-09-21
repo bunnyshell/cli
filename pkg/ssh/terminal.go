@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 
+	"github.com/shiena/ansicolor"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
 )
@@ -45,14 +47,13 @@ func (sshTerminal *SSHTerminal) Start() error {
 		return err
 	}
 
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
-
-	terminalModes := ssh.TerminalModes{
-		ssh.ECHO:          0,
-		ssh.TTY_OP_ISPEED: 14400,
-		ssh.TTY_OP_OSPEED: 14400,
+	if runtime.GOOS == "windows" {
+		session.Stdout = ansicolor.NewAnsiColorWriter(os.Stdout)
+		session.Stderr = ansicolor.NewAnsiColorWriter(os.Stderr)
+	} else {
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
 	}
 
 	termFd := int(os.Stdout.Fd())
@@ -60,17 +61,23 @@ func (sshTerminal *SSHTerminal) Start() error {
 		return fmt.Errorf("no terminal available")
 	}
 
-	oldState, err := term.MakeRaw(termFd)
-	if err != nil {
-		return err
+	if runtime.GOOS != "windows" {
+		oldState, err := term.MakeRaw(termFd)
+		if err != nil {
+			return err
+		}
+		defer term.Restore(termFd, oldState)
 	}
-	defer term.Restore(termFd, oldState)
 
 	w, h, err := term.GetSize(termFd)
 	if err != nil {
 		return err
 	}
 
+	terminalModes := ssh.TerminalModes{
+		ssh.ECHO:  0,
+		ssh.IGNCR: 1,
+	}
 	if err := session.RequestPty("xterm-256color", h, w, terminalModes); err != nil {
 		return err
 	}
