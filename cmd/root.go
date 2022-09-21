@@ -25,6 +25,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:          "bunnyshell-cli",
 	Short:        "Bunnyshell CLI",
+	Long:         "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
 	SilenceUsage: true,
 }
 
