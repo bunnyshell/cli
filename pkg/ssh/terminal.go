@@ -8,7 +8,12 @@ import (
 
 	"github.com/shiena/ansicolor"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 	"golang.org/x/term"
+)
+
+const (
+	SSHAuthSockEnvVar = "SSH_AUTH_SOCK"
 )
 
 type SSHTerminal struct {
@@ -54,6 +59,13 @@ func (sshTerminal *SSHTerminal) Start() error {
 	} else {
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
+	}
+
+	// try forwarding the SSH agent
+	sshAuthSock := os.Getenv(SSHAuthSockEnvVar)
+	if sshAuthSock != "" {
+		agent.ForwardToRemote(serverConn, sshAuthSock)
+		agent.RequestAgentForwarding(session)
 	}
 
 	termFd := int(os.Stdout.Fd())
