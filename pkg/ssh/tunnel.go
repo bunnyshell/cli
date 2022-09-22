@@ -129,6 +129,8 @@ func NewSSHTunnel(serverHost string, serverPort int, auth ssh.AuthMethod, remote
 				return nil
 			},
 		},
+		// @todo replace with a logger, once we have one in cli
+		Log:          nil,
 		Local:        localEndpoint,
 		Server:       server,
 		Remote:       NewEndpoint(remoteHost, remotePort),
