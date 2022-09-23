@@ -2,155 +2,90 @@ package util
 
 import (
 	"fmt"
-	"os"
+	"log"
 	"path/filepath"
 	"strings"
 
-	"github.com/manifoldco/promptui"
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 )
 
-func Ask(question string, validate promptui.ValidateFunc) (string, error) {
-	prompt := promptui.Prompt{
-		Label: question,
-		Templates: &promptui.PromptTemplates{
-			Prompt:  "{{ . }} ",
-			Valid:   "{{ . | green }} ",
-			Invalid: "{{ . | red }} ",
-			Success: "{{ . | bold }} ",
-		},
-		Validate: validate,
+func Ask(question string, validate survey.Validator) (string, error) {
+	answer := ""
+
+	err := survey.AskOne(&survey.Input{
+		Message: question,
+	}, &answer, withValidator(validate))
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
 	}
 
-	s, e := prompt.Run()
-	if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-		os.Exit(0)
-	}
-
-	return s, e
+	return answer, err
 }
 
-func AskDefault(question string, value string, validate promptui.ValidateFunc) string {
-	prompt := promptui.Prompt{
-		Label: question,
-		Templates: &promptui.PromptTemplates{
-			Prompt:  "{{ . }} ",
-			Valid:   "{{ . | green }} ",
-			Invalid: "{{ . | red }} ",
-			Success: "{{ . | bold }} ",
-		},
-		Default:   value,
-		AllowEdit: false,
-		Validate:  validate,
+func AskSecretWithHelp(question string, help string, validate survey.Validator) (string, error) {
+	answer := ""
+
+	err := survey.AskOne(&survey.Password{
+		Message: question,
+		Help:    help,
+	}, &answer, withValidator(validate))
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
 	}
 
-	s, e := prompt.Run()
-	if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-		os.Exit(0)
-	}
-
-	if s == "" {
-		return value
-	}
-
-	return s
+	return answer, err
 }
 
-func AskSecret(question string, validate promptui.ValidateFunc) (string, error) {
-	prompt := promptui.Prompt{
-		Label: question,
-		Templates: &promptui.PromptTemplates{
-			Prompt:  "{{ . }} ",
-			Valid:   "{{ . | green }} ",
-			Invalid: "{{ . | red }} ",
-			Success: "{{ . | bold }} ",
-		},
-		Mask:     '*',
-		Validate: validate,
+func AskPath(question string, value string, validate survey.Validator) (string, error) {
+	answer := ""
+
+	err := survey.AskOne(&survey.Input{
+		Message: question,
+		Default: value,
+		Suggest: suggestPaths,
+	}, &answer, withValidator(validate))
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
 	}
 
-	s, e := prompt.Run()
-	if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-		os.Exit(0)
-	}
-
-	return s, e
-}
-
-func AskWithDefault(question, defaultInput string) (string, error) {
-	prompt := promptui.Prompt{
-		Label:   question,
-		Default: defaultInput,
-	}
-
-	return prompt.Run()
+	return answer, err
 }
 
 func Confirm(question string) (bool, error) {
-	prompt := promptui.Prompt{
-		Label:     question,
-		IsConfirm: true,
+	answer := false
+
+	err := survey.AskOne(&survey.Confirm{
+		Message: question,
+	}, &answer)
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
 	}
 
-	r, e := prompt.Run()
-
-	if e != nil {
-		if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-			os.Exit(0)
-		}
-
-		if e.Error() != "" {
-			return false, e
-		}
-	}
-
-	return r == "y" || r == "Y", nil
+	return answer, err
 }
 
 func Choose(question string, items []string) (int, string, error) {
-	prompt := promptui.Select{
-		Label: question,
-		Items: items,
+	answerIndex := 0
+
+	err := survey.AskOne(&survey.Select{
+		Message: question,
+		Options: items,
+	}, &answerIndex)
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
 	}
 
-	s, r, e := prompt.Run()
-	if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-		os.Exit(0)
-	}
-
-	return s, r, e
+	return answerIndex, items[answerIndex], err
 }
 
-func ChooseOrOther(question string, items []string, other string) (int, string, error) {
-	prompt := promptui.SelectWithAdd{
-		Label:    question,
-		Items:    items,
-		AddLabel: other,
-	}
-
-	i, s, e := prompt.Run()
-	if e == promptui.ErrInterrupt || e == promptui.ErrEOF {
-		os.Exit(0)
-	}
-	return i, s, e
-}
-
-func ConfigFileValidation(input string) error {
-	if input == "" {
-		return nil
-	}
-
-	ext := filepath.Ext(input)
-	// sumimasen
-	switch ext {
-	case ".json", ".yaml":
-		return nil
-	}
-
-	return fmt.Errorf("supported extensions: json or yaml")
-}
-
-func All(funcs ...promptui.ValidateFunc) promptui.ValidateFunc {
-	return func(input string) error {
+func All(funcs ...survey.Validator) survey.Validator {
+	return func(input interface{}) error {
 		for _, callable := range funcs {
 			err := callable(input)
 			if err != nil {
@@ -162,9 +97,9 @@ func All(funcs ...promptui.ValidateFunc) promptui.ValidateFunc {
 	}
 }
 
-func Lowercase() promptui.ValidateFunc {
-	return func(input string) error {
-		if strings.ToLower(input) != input {
+func Lowercase() survey.Validator {
+	return func(input interface{}) error {
+		if strings.ToLower(input.(string)) != input {
 			return fmt.Errorf("profile names should be lowercase only")
 		}
 
@@ -172,41 +107,19 @@ func Lowercase() promptui.ValidateFunc {
 	}
 }
 
-func RequiredExtension(extensions ...string) promptui.ValidateFunc {
-	return func(input string) error {
-		ext := filepath.Ext(input)
-		// sumimasen
-
-		for _, allowed := range extensions {
-			if ext == allowed {
-				return nil
-			}
-		}
-
-		return fmt.Errorf("supported extensions: %v", extensions)
-	}
+func AssertMinimumLength(length int) survey.Validator {
+	return survey.MinLength(length)
 }
 
-func OptionalMinimumLength(length int) promptui.ValidateFunc {
-	return func(input string) error {
-		if input == "" {
-			return nil
-		}
-
-		return minimumLength(input, length)
+func withValidator(validate survey.Validator) survey.AskOpt {
+	if validate == nil {
+		return nil
 	}
+
+	return survey.WithValidator(validate)
 }
 
-func AssertMinimumLength(length int) promptui.ValidateFunc {
-	return func(input string) error {
-		return minimumLength(input, length)
-	}
-}
-
-func minimumLength(input string, length int) error {
-	if len(input) <= length {
-		return fmt.Errorf("input at least %d characters", length)
-	}
-
-	return nil
+func suggestPaths(toComplete string) []string {
+	files, _ := filepath.Glob(toComplete + "*")
+	return files
 }

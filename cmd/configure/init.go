@@ -2,9 +2,11 @@ package configure
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -23,7 +25,11 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			configFile = maybeChangeFile(configFile)
+			configFile, err := util.AskPath("Choose file:", configFile, requiredExtension(".json", ".yaml"))
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
 			if err := os.MkdirAll(filepath.Dir(configFile), os.FileMode(int(0700))); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -64,10 +70,6 @@ func init() {
 	mainCmd.AddCommand(initConfigCommand)
 }
 
-func maybeChangeFile(path string) string {
-	return util.AskDefault("Choose file:", path, util.ConfigFileValidation)
-}
-
 func assertNoFile(path string) error {
 	exists, err := fileExists(path)
 	if err != nil {
@@ -90,4 +92,19 @@ func fileExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func requiredExtension(extensions ...string) survey.Validator {
+	return func(input interface{}) error {
+		ext := filepath.Ext(input.(string))
+		// sumimasen
+
+		for _, allowed := range extensions {
+			if ext == allowed {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("supported extensions: %v", extensions)
+	}
 }

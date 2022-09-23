@@ -112,7 +112,7 @@ func init() {
 	mainCmd.AddCommand(addProfileCommand)
 }
 
-func getProfileNameValidator() func(string) error {
+func getProfileNameValidator() func(interface{}) error {
 	return util.All(
 		util.Lowercase(),
 		util.AssertMinimumLength(4),
@@ -124,7 +124,7 @@ func ensureToken(profile *lib.Profile) error {
 		return nil
 	}
 
-	token, err := util.AskSecret("Token:", validateToken)
+	token, err := util.AskSecretWithHelp("Token:", "Get yours from: https://environments.bunnyshell.com/access-token", validateToken)
 	if err != nil {
 		return err
 	}
@@ -152,8 +152,8 @@ func getOrganizationNames(organizations []sdk.OrganizationCollection) []string {
 	return result
 }
 
-func validateToken(input string) error {
-	chunks := strings.Split(input, ":")
+func validateToken(input interface{}) error {
+	chunks := strings.Split(input.(string), ":")
 	if len(chunks) != 2 {
 		return errors.New("invalid token detected")
 	}
