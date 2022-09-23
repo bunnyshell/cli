@@ -1,6 +1,7 @@
 package remote_development
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -192,13 +193,9 @@ func (r *RemoteDevelopment) SelectLocalSyncFolder(defaultLocalSyncPath string) e
 		return err
 	}
 
-	localSyncPath, err := util.AskWithDefault("Sync folder", cwd)
+	localSyncPath, err := util.AskPath("Sync folder", cwd, isDirectory)
 	if err != nil {
 		return err
-	}
-
-	if localSyncPath == "" {
-		localSyncPath = cwd
 	}
 
 	r.LocalSyncPath = localSyncPath
@@ -259,4 +256,17 @@ func getComponents(environment string) (*bunnysdk.PaginatedComponentCollection, 
 	request = request.OperationStatus("running")
 
 	return request.Execute()
+}
+
+func isDirectory(input interface{}) error {
+	fileInfo, err := os.Stat(input.(string))
+	if err != nil {
+		return err
+	}
+
+	if !fileInfo.IsDir() {
+		return errors.New("path has to be a directory")
+	}
+
+	return nil
 }
