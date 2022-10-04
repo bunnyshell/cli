@@ -38,6 +38,8 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.SetOutput(os.Stdout)
+
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(configure.GetMainCommand())
