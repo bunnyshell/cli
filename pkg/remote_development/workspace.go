@@ -13,27 +13,24 @@ const (
 	KubeConfigFilename = "kube-config.yaml"
 )
 
-func (r *RemoteDevelopment) EnsureEnvironmentKubeConfig() error {
+func (r *RemoteDevelopment) ensureEnvironmentWorkspaceDir() error {
 	workspace, err := util.GetWorkspaceDir()
 	if err != nil {
 		return err
 	}
 
-	kubeConfigPath := filepath.Join(workspace, r.OrganizationId, r.ProjectId, r.EnvironmentId, KubeConfigFilename)
-	downloadEnvironmentKubeConfig(kubeConfigPath, r.EnvironmentId)
-	r.WithKubernetesClient(kubeConfigPath)
-
-	return nil
+	r.WithEnvironmentWorkspaceDir(filepath.Join(workspace, r.environment.GetId()))
+	return os.MkdirAll(r.environmentWorkspaceDir, 0755)
 }
 
-func (r *RemoteDevelopment) EnsureComponentFolder() error {
-	workspace, err := util.GetWorkspaceDir()
-	if err != nil {
+func (r *RemoteDevelopment) ensureEnvironmentKubeConfig() error {
+	kubeConfigPath := filepath.Join(r.environmentWorkspaceDir, KubeConfigFilename)
+	if err := downloadEnvironmentKubeConfig(kubeConfigPath, r.environment.GetId()); err != nil {
 		return err
 	}
+	r.WithKubeConfigPath(kubeConfigPath)
 
-	r.ComponentFolderPath = filepath.Join(workspace, r.OrganizationId, r.ProjectId, r.EnvironmentId, r.ComponentId)
-	return os.MkdirAll(r.ComponentFolderPath, 0755)
+	return nil
 }
 
 func downloadEnvironmentKubeConfig(kubeConfigPath, environmentId string) error {

@@ -1,14 +1,10 @@
 package remote_development
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
-	"os"
 
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
-
 	bunnysdk "bunnyshell.com/sdk"
 )
 
@@ -20,15 +16,9 @@ var (
 	ErrNoProjects               = fmt.Errorf("no projects available")
 )
 
-func (r *RemoteDevelopment) SelectOrganization(defaultOrganizationId string) error {
-	if defaultOrganizationId != "" {
-		r.OrganizationId = defaultOrganizationId
-		return nil
-	}
-
-	resp, _, err := getOrganizations()
+func (r *RemoteDevelopment) SelectOrganization() error {
+	resp, _, err := lib.GetOrganizations()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error when calling `OrganizationApi.OrganizationList`:", err)
 		return err
 	}
 
@@ -45,19 +35,18 @@ func (r *RemoteDevelopment) SelectOrganization(defaultOrganizationId string) err
 		return err
 	}
 
-	r.OrganizationId = resp.Embedded.GetItem()[index].GetId()
+	organizationItem, _, err := lib.GetOrganization(resp.Embedded.GetItem()[index].GetId())
+	if err != nil {
+		return err
+	}
+
+	r.WithOrganization(organizationItem)
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectProject(defaultProjectId string) error {
-	if defaultProjectId != "" {
-		r.ProjectId = defaultProjectId
-		return nil
-	}
-
-	resp, _, err := getProjects(r.OrganizationId)
+func (r *RemoteDevelopment) SelectProject() error {
+	resp, _, err := lib.GetProjects(r.organization.GetId())
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error when calling `ProjectApi.ProjectList`:", err)
 		return err
 	}
 
@@ -74,19 +63,18 @@ func (r *RemoteDevelopment) SelectProject(defaultProjectId string) error {
 		return err
 	}
 
-	r.ProjectId = resp.Embedded.GetItem()[index].GetId()
+	projectItem, _, err := lib.GetProject(resp.Embedded.GetItem()[index].GetId())
+	if err != nil {
+		return err
+	}
+
+	r.WithProject(projectItem)
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectEnvironment(defaultEnvironmentId string) error {
-	if defaultEnvironmentId != "" {
-		r.EnvironmentId = defaultEnvironmentId
-		return nil
-	}
-
-	resp, _, err := getEnvironments(r.ProjectId)
+func (r *RemoteDevelopment) SelectEnvironment() error {
+	resp, _, err := lib.GetEnvironments(r.project.GetId())
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error when calling `EnvironmentApi.EnvironmentList`:", err)
 		return err
 	}
 
@@ -103,28 +91,19 @@ func (r *RemoteDevelopment) SelectEnvironment(defaultEnvironmentId string) error
 		return err
 	}
 
-	r.EnvironmentId = resp.Embedded.GetItem()[index].GetId()
+	environmentItem, _, err := lib.GetEnvironment(resp.Embedded.GetItem()[index].GetId())
+	if err != nil {
+		return err
+	}
+
+	r.WithEnvironment(environmentItem)
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
-	if defaultComponentId != "" {
-		component, _, err := getServiceComponent(defaultComponentId)
-		if err != nil {
-			return err
-		}
-		if component.GetSyncPath() == "" {
-			return fmt.Errorf("component has no syncPath defined")
-		}
-
-		r.WithComponent(component)
-		return nil
-	}
-
-	resp, _, err := getComponents(r.EnvironmentId)
+func (r *RemoteDevelopment) SelectComponent() error {
+	resp, _, err := lib.GetComponents(r.environment.GetId(), "running")
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error when calling `ComponentApi.ComponentList`:", err)
 		return err
 	}
 
@@ -152,121 +131,11 @@ func (r *RemoteDevelopment) SelectComponent(defaultComponentId string) error {
 		return err
 	}
 
-	component := &components[index]
-	r.WithComponent(component)
-	return nil
-}
-
-func (r *RemoteDevelopment) SelectContainer() error {
-	podContainers, err := r.KubernetesClient.GetDeploymentContainers(r.ComponentName)
+	componentItem, _, err := lib.GetComponent(components[index].GetId())
 	if err != nil {
 		return err
 	}
 
-	if len(podContainers) == 1 {
-		r.ContainerName = podContainers[0].Name
-		return nil
-	}
-
-	items := []string{}
-	for _, item := range podContainers {
-		items = append(items, item.Name)
-	}
-
-	index, _, err := util.Choose("Select container", items)
-	if err != nil {
-		return err
-	}
-
-	r.ContainerName = podContainers[index].Name
-	return nil
-}
-
-func (r *RemoteDevelopment) SelectLocalSyncFolder(defaultLocalSyncPath string) error {
-	if defaultLocalSyncPath != "" {
-		r.LocalSyncPath = defaultLocalSyncPath
-		return nil
-	}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	localSyncPath, err := util.AskPath("Sync folder", cwd, isDirectory)
-	if err != nil {
-		return err
-	}
-
-	r.LocalSyncPath = localSyncPath
-	return nil
-}
-
-func getServiceComponent(componentId string) (*bunnysdk.ComponentItem, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().ComponentApi.ComponentView(ctx, componentId)
-
-	return request.Execute()
-}
-
-func getOrganizations() (*bunnysdk.PaginatedOrganizationCollection, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().OrganizationApi.OrganizationList(ctx)
-
-	return request.Execute()
-}
-
-func getProjects(organization string) (*bunnysdk.PaginatedProjectCollection, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().ProjectApi.ProjectList(ctx)
-	if organization != "" {
-		request = request.Organization(organization)
-	}
-
-	return request.Execute()
-}
-
-func getEnvironments(projectID string) (*bunnysdk.PaginatedEnvironmentCollection, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
-	if projectID != "" {
-		request = request.Project(projectID)
-	}
-
-	return request.Execute()
-}
-
-func getComponents(environment string) (*bunnysdk.PaginatedComponentCollection, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().ComponentApi.ComponentList(ctx)
-	if environment != "" {
-		request = request.Environment(environment)
-	}
-
-	request = request.OperationStatus("running")
-
-	return request.Execute()
-}
-
-func isDirectory(input interface{}) error {
-	fileInfo, err := os.Stat(input.(string))
-	if err != nil {
-		return err
-	}
-
-	if !fileInfo.IsDir() {
-		return errors.New("path has to be a directory")
-	}
-
+	r.WithComponent(componentItem)
 	return nil
 }
