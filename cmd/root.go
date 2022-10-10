@@ -14,6 +14,7 @@ import (
 	"bunnyshell.com/cli/cmd/organization"
 	"bunnyshell.com/cli/cmd/project"
 	"bunnyshell.com/cli/cmd/remote_development"
+	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 
 	"bunnyshell.com/cli/pkg/lib"
@@ -42,14 +43,15 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.AddCommand(component.GetMainCommand())
 	rootCmd.AddCommand(configure.GetMainCommand())
+	rootCmd.AddCommand(environment.GetMainCommand())
+	rootCmd.AddCommand(event.GetMainCommand())
 	rootCmd.AddCommand(organization.GetMainCommand())
 	rootCmd.AddCommand(project.GetMainCommand())
-	rootCmd.AddCommand(environment.GetMainCommand())
-	rootCmd.AddCommand(component.GetMainCommand())
-	rootCmd.AddCommand(event.GetMainCommand())
-	rootCmd.AddCommand(version.GetMainCommand())
 	rootCmd.AddCommand(remote_development.GetMainCommand())
+	rootCmd.AddCommand(variable.GetMainCommand())
+	rootCmd.AddCommand(version.GetMainCommand())
 
 	lib.CLIContext.SetGlobalFlags(rootCmd)
 }
