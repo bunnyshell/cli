@@ -8,6 +8,7 @@ import (
 
 func init() {
 	var page int32
+	var name string
 
 	organization := &lib.CLIContext.Profile.Context.Organization
 	environment := &lib.CLIContext.Profile.Context.Environment
@@ -34,12 +35,17 @@ func init() {
 				request = request.Environment(*environment)
 			}
 
+			if name != "" {
+				request = request.Name(name)
+			}
+
 			resp, r, err := request.Execute()
 			return lib.FormatRequestResult(cmd, resp, r, err)
 		},
 	}
 
 	command.Flags().Int32Var(&page, "page", page, "Listing Page")
+	command.Flags().StringVar(name, "name", *name, "Filter by Name")
 	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
 	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
 
