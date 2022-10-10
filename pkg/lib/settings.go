@@ -29,10 +29,7 @@ type CLI struct {
 var defaultFormat = "stylish"
 var defaultTimeout = 30 * time.Second
 
-var CLIContext = CLI{
-	OutputFormat: defaultFormat,
-	Timeout:      defaultTimeout,
-}
+var CLIContext = CLI{}
 
 func (c *CLI) Load(config Config) error {
 	if !c.Debug {
@@ -70,6 +67,14 @@ func (c *CLI) Load(config Config) error {
 	if c.Profile.Token == "" {
 		c.Profile.Token = profile.Token
 		if c.Profile.Token != "" {
+			c.markChangedToken()
+		}
+	}
+
+	if c.Profile.Token == "" {
+		token, ok := os.LookupEnv("BUNNYSHELL_TOKEN")
+		if ok {
+			c.Profile.Token = token
 			c.markChangedToken()
 		}
 	}
@@ -138,7 +143,6 @@ func LoadViperConfigIntoContext() {
 		if CLIContext.Verbosity != 0 {
 			fmt.Fprintln(os.Stderr, "[LoadConfigError]", err)
 		}
-		MakeDefaultContext()
 		return
 	}
 
@@ -147,7 +151,6 @@ func LoadViperConfigIntoContext() {
 		if CLIContext.Verbosity != 0 {
 			fmt.Fprintln(os.Stderr, "[LoadConfigError]", err)
 		}
-		MakeDefaultContext()
 		return
 	}
 
