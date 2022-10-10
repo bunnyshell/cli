@@ -51,6 +51,8 @@ dockers:
       - "--platform=linux/amd64"
     image_templates:
       - "bunnyshell/cli:{{ .Tag }}-amd64"
+    extra_files:
+      - config.sample.yaml
 
   - dockerfile: Dockerfile
     use: buildx
@@ -64,6 +66,8 @@ dockers:
       - "--platform=linux/arm64"
     image_templates:
       - "bunnyshell/cli:{{ .Tag }}-arm64"
+    extra_files:
+      - config.sample.yaml
     goarch: arm64
 
 docker_manifests:

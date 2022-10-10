@@ -65,7 +65,6 @@ func init() {
 
 	command.Flags().BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
 	command.Flags().DurationVar(&idleNotify, "idle-notify", idleNotify, "Network timeout on requests")
-	command.Flags().DurationVar(&idleNotify, "test", idleNotify, "Network timeout on requests")
 
 	mainCmd.AddCommand(command)
 }

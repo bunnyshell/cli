@@ -1,0 +1,6 @@
+defaultprofile: sample
+outputformat: json
+profiles:
+    sample:
+      # @see https://environments.bunnyshell.com/access-token
+      token: ''
