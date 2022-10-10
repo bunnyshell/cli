@@ -45,7 +45,7 @@ func init() {
 	}
 
 	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(name, "name", *name, "Filter by Name")
+	command.Flags().StringVar(&name, "name", name, "Filter by Name")
 	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
 	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
 
