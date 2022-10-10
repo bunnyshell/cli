@@ -30,6 +30,9 @@ func stylish(data interface{}) ([]byte, error) {
 	case *sdk.PaginatedEventCollection:
 		tabulateEventCollection(w, t)
 		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
+	case *sdk.PaginatedEnvironmentVariableCollection:
+		tabulateEnvironmentVariableCollection(w, t)
+		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.OrganizationItem:
 		tabulateOrganizationItem(w, t)
 	case *sdk.ProjectItem:
@@ -40,6 +43,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateComponentItem(w, t)
 	case *sdk.EventItem:
 		tabulateEventItem(w, t)
+	case *sdk.EnvironmentVariableItem:
+		tabulateEnvironmentVariableItem(w, t)
 	case *sdk.ProblemGeneric:
 		tabulateGeneric(w, t)
 	default:
@@ -146,6 +151,16 @@ func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollec
 	}
 }
 
+func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentVariableCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "EnvVarID", "EnvironmentID", "OrganizationID", "Name")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetName())
+		}
+	}
+}
+
 func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "EventID", item.GetId())
 	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
@@ -154,6 +169,14 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "Type", item.GetType())
 	fmt.Fprintf(w, "%v\t %v\n", "CreatedAt", item.GetCreatedAt())
 	fmt.Fprintf(w, "%v\t %v\n", "UpdatedAt", item.GetUpdatedAt())
+}
+
+func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
+	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
+	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
+	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())
+	fmt.Fprintf(w, "%v\t %v\n", "Secret", item.GetSecret())
 }
 
 func tabulateGeneric(w *tabwriter.Writer, item *sdk.ProblemGeneric) {
