@@ -26,6 +26,8 @@ func Formatter(data interface{}, format string) ([]byte, error) {
 		t.Links = nil
 	case *sdk.PaginatedEventCollection:
 		t.Links = nil
+	case *sdk.PaginatedEnvironmentVariableCollection:
+		t.Links = nil
 	}
 
 	switch format {
