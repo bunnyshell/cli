@@ -69,6 +69,10 @@ func init() {
 				}
 			}
 
+			if err := remoteDevelopment.SelectComponentResource(); err != nil {
+				return err
+			}
+
 			return remoteDevelopment.Down()
 		},
 	}

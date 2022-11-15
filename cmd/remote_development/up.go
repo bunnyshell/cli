@@ -9,6 +9,7 @@ import (
 
 func init() {
 	var localSyncPath string
+	var remoteSyncPath string
 
 	command := &cobra.Command{
 		Use: "up",
@@ -22,6 +23,10 @@ func init() {
 
 			if localSyncPath != "" {
 				remoteDevelopment.WithLocalSyncPath(localSyncPath)
+			}
+
+			if remoteSyncPath != "" {
+				remoteDevelopment.WithRemoteSyncPath(remoteSyncPath)
 			}
 
 			// wizard
@@ -76,6 +81,10 @@ func init() {
 				}
 			}
 
+			if err := remoteDevelopment.SelectComponentResource(); err != nil {
+				return err
+			}
+
 			// init
 			if err := remoteDevelopment.Up(); err != nil {
 				return err
@@ -92,6 +101,7 @@ func init() {
 
 	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Service Component")
 	command.Flags().StringVarP(&localSyncPath, "local-sync-path", "l", "", "Local folder path to sync")
+	command.Flags().StringVarP(&remoteSyncPath, "remote-sync-path", "r", "", "Remote folder path to sync")
 
 	mainCmd.AddCommand(command)
 }
