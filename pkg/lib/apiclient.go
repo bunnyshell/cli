@@ -90,3 +90,12 @@ func GetComponent(componentId string) (*bunnysdk.ComponentItem, *http.Response, 
 
 	return request.Execute()
 }
+
+func GetComponentResources(componentId string) ([]bunnysdk.ComponentResourceItem, *http.Response, error) {
+	ctx, cancel := GetContext()
+	defer cancel()
+
+	request := GetAPI().ComponentApi.ComponentResources(ctx, componentId)
+
+	return request.Execute()
+}

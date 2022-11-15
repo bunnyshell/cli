@@ -14,16 +14,18 @@ var (
 type RemoteDevelopment struct {
 	remoteDev *remote.RemoteDevelopment
 
-	organization *bunnysdk.OrganizationItem
-	project      *bunnysdk.ProjectItem
-	environment  *bunnysdk.EnvironmentItem
-	component    *bunnysdk.ComponentItem
+	organization      *bunnysdk.OrganizationItem
+	project           *bunnysdk.ProjectItem
+	environment       *bunnysdk.EnvironmentItem
+	component         *bunnysdk.ComponentItem
+	componentResource *bunnysdk.ComponentResourceItem
 
 	environmentWorkspaceDir string
 
 	kubeConfigPath string
 
-	localSyncPath string
+	localSyncPath  string
+	remoteSyncPath string
 }
 
 func NewRemoteDevelopment() *RemoteDevelopment {
@@ -89,6 +91,11 @@ func (r *RemoteDevelopment) WithComponent(component *bunnysdk.ComponentItem) *Re
 	return r
 }
 
+func (r *RemoteDevelopment) WithComponentResource(component *bunnysdk.ComponentResourceItem) *RemoteDevelopment {
+	r.componentResource = component
+	return r
+}
+
 func (r *RemoteDevelopment) WithEnvironmentWorkspaceDir(environmentWorkspaceDir string) *RemoteDevelopment {
 	r.environmentWorkspaceDir = environmentWorkspaceDir
 	return r
@@ -101,5 +108,10 @@ func (r *RemoteDevelopment) WithKubeConfigPath(kubeConfigPath string) *RemoteDev
 
 func (r *RemoteDevelopment) WithLocalSyncPath(localSyncPath string) *RemoteDevelopment {
 	r.localSyncPath = localSyncPath
+	return r
+}
+
+func (r *RemoteDevelopment) WithRemoteSyncPath(remoteSyncPath string) *RemoteDevelopment {
+	r.remoteSyncPath = remoteSyncPath
 	return r
 }

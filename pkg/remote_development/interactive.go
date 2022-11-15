@@ -12,6 +12,7 @@ var (
 	ErrNoEnvironments           = fmt.Errorf("no environments available")
 	ErrNoOrganizations          = fmt.Errorf("no organizations available")
 	ErrNoComponents             = fmt.Errorf("no components available")
+	ErrNoComponentResourcess    = fmt.Errorf("no component resourcess available")
 	ErrNoComponentsWithSyncPath = fmt.Errorf("no components with remote sync path set")
 	ErrNoProjects               = fmt.Errorf("no projects available")
 )
@@ -137,5 +138,33 @@ func (r *RemoteDevelopment) SelectComponent() error {
 	}
 
 	r.WithComponent(componentItem)
+	return nil
+}
+
+func (r *RemoteDevelopment) SelectComponentResource() error {
+	resources, _, err := lib.GetComponentResources(r.component.GetId())
+	if err != nil {
+		return err
+	}
+
+	if len(resources) == 0 {
+		return ErrNoComponentResourcess
+	}
+
+	if len(resources) == 1 {
+		r.WithComponentResource(&resources[0])
+		return nil
+	}
+
+	items := []string{}
+	for _, item := range resources {
+		items = append(items, item.GetName())
+	}
+	index, _, err := util.Choose("Select resource", items)
+	if err != nil {
+		return err
+	}
+
+	r.WithComponentResource(&resources[index])
 	return nil
 }
