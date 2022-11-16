@@ -10,6 +10,7 @@ import (
 func init() {
 	var localSyncPath string
 	var remoteSyncPath string
+	var resourcePath string
 
 	command := &cobra.Command{
 		Use: "up",
@@ -81,8 +82,12 @@ func init() {
 				}
 			}
 
-			if err := remoteDevelopment.SelectComponentResource(); err != nil {
-				return err
+			if resourcePath != "" {
+				remoteDevelopment.WithResourcePath(resourcePath)
+			} else {
+				if err := remoteDevelopment.SelectComponentResource(); err != nil {
+					return err
+				}
 			}
 
 			// init
@@ -102,6 +107,7 @@ func init() {
 	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Service Component")
 	command.Flags().StringVarP(&localSyncPath, "local-sync-path", "l", "", "Local folder path to sync")
 	command.Flags().StringVarP(&remoteSyncPath, "remote-sync-path", "r", "", "Remote folder path to sync")
+	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 
 	mainCmd.AddCommand(command)
 }

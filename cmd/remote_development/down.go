@@ -8,6 +8,8 @@ import (
 )
 
 func init() {
+	var resourcePath string
+
 	command := &cobra.Command{
 		Use: "down",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -69,8 +71,12 @@ func init() {
 				}
 			}
 
-			if err := remoteDevelopment.SelectComponentResource(); err != nil {
-				return err
+			if resourcePath != "" {
+				remoteDevelopment.WithResourcePath(resourcePath)
+			} else {
+				if err := remoteDevelopment.SelectComponentResource(); err != nil {
+					return err
+				}
 			}
 
 			return remoteDevelopment.Down()
@@ -81,6 +87,7 @@ func init() {
 	command.Flags().StringVar(&lib.CLIContext.Profile.Context.Project, "project", "", "Select Project")
 	command.Flags().StringVar(&lib.CLIContext.Profile.Context.Environment, "environment", "", "Select Environment")
 	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Select Service Component")
+	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 
 	mainCmd.AddCommand(command)
 }

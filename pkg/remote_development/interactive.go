@@ -2,6 +2,7 @@ package remote_development
 
 import (
 	"fmt"
+	"strings"
 
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -9,12 +10,11 @@ import (
 )
 
 var (
-	ErrNoEnvironments           = fmt.Errorf("no environments available")
-	ErrNoOrganizations          = fmt.Errorf("no organizations available")
-	ErrNoComponents             = fmt.Errorf("no components available")
-	ErrNoComponentResourcess    = fmt.Errorf("no component resourcess available")
-	ErrNoComponentsWithSyncPath = fmt.Errorf("no components with remote sync path set")
-	ErrNoProjects               = fmt.Errorf("no projects available")
+	ErrNoEnvironments        = fmt.Errorf("no environments available")
+	ErrNoOrganizations       = fmt.Errorf("no organizations available")
+	ErrNoComponents          = fmt.Errorf("no components available")
+	ErrNoComponentResourcess = fmt.Errorf("no component resourcess available")
+	ErrNoProjects            = fmt.Errorf("no projects available")
 )
 
 func (r *RemoteDevelopment) SelectOrganization() error {
@@ -112,16 +112,7 @@ func (r *RemoteDevelopment) SelectComponent() error {
 		return ErrNoComponents
 	}
 
-	components := []bunnysdk.ComponentCollection{}
-	for _, item := range resp.Embedded.GetItem() {
-		if item.GetSyncPath() != "" {
-			components = append(components, item)
-		}
-	}
-
-	if len(components) == 0 {
-		return ErrNoComponentsWithSyncPath
-	}
+	components := resp.Embedded.GetItem()
 
 	items := []string{}
 	for _, item := range components {
@@ -147,24 +138,37 @@ func (r *RemoteDevelopment) SelectComponentResource() error {
 		return err
 	}
 
-	if len(resources) == 0 {
+	allowedResouceTypesSet := map[string]bool{}
+	for _, v := range allowedResouceTypes {
+		allowedResouceTypesSet[strings.ToLower(string(v))] = true
+	}
+
+	allowedResources := []bunnysdk.ComponentResourceItem{}
+	selectItems := []string{}
+	for _, item := range resources {
+		itemKind := strings.ToLower(item.GetKind())
+		if _, present := allowedResouceTypesSet[itemKind]; !present {
+			continue
+		}
+
+		allowedResources = append(allowedResources, item)
+		selectItems = append(selectItems, fmt.Sprintf("%s / %s / %s", item.GetNamespace(), item.GetKind(), item.GetName()))
+	}
+
+	if len(allowedResources) == 0 {
 		return ErrNoComponentResourcess
 	}
 
-	if len(resources) == 1 {
-		r.WithComponentResource(&resources[0])
+	if len(allowedResources) == 1 {
+		r.WithComponentResource(&allowedResources[0])
 		return nil
 	}
 
-	items := []string{}
-	for _, item := range resources {
-		items = append(items, item.GetName())
-	}
-	index, _, err := util.Choose("Select resource", items)
+	index, _, err := util.Choose("Select resource", selectItems)
 	if err != nil {
 		return err
 	}
 
-	r.WithComponentResource(&resources[index])
+	r.WithComponentResource(&allowedResources[index])
 	return nil
 }

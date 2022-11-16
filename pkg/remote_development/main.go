@@ -26,6 +26,14 @@ func (r *RemoteDevelopment) Up() error {
 		return fmt.Errorf("resource kind \"%s\" is not supported", r.componentResource.GetKind())
 	}
 
+	resource, err := r.remoteDev.GetResource()
+	if err != nil {
+		return err
+	}
+	if r.remoteDev.IsActiveForResource(resource) {
+		return fmt.Errorf("the selected resource is already under remote development")
+	}
+
 	if err := r.remoteDev.SelectContainer(); err != nil {
 		return err
 	}
