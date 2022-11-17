@@ -3,8 +3,8 @@ module bunnyshell.com/cli
 go 1.19
 
 require (
-	bunnyshell.com/dev v0.2.0
-	bunnyshell.com/sdk v0.6.2
+	bunnyshell.com/dev v0.2.1
+	bunnyshell.com/sdk v0.7.0
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/briandowns/spinner v1.19.0
 	github.com/spf13/cobra v1.6.1
@@ -69,6 +69,7 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/oauth2 v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect

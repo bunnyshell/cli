@@ -2,13 +2,25 @@ package remote_development
 
 import (
 	"fmt"
+	"strings"
 
+	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/dev/pkg/remote"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
+// +enum
+type ResourceType string
+
+const (
+	Deployment  ResourceType = "deployment"
+	StatefulSet ResourceType = "statefulset"
+	DaemonSet   ResourceType = "daemonset"
+)
+
 var (
 	ErrNoOrganizationSelected = fmt.Errorf("you need to select an organization first")
+	allowedResouceTypes       = []ResourceType{Deployment, StatefulSet, DaemonSet}
 )
 
 type RemoteDevelopment struct {
@@ -83,10 +95,6 @@ func (r *RemoteDevelopment) WithComponent(component *bunnysdk.ComponentItem) *Re
 		))
 	}
 
-	if component.GetSyncPath() == "" {
-		panic(fmt.Errorf("component has no syncPath defined"))
-	}
-
 	r.component = component
 	return r
 }
@@ -113,5 +121,55 @@ func (r *RemoteDevelopment) WithLocalSyncPath(localSyncPath string) *RemoteDevel
 
 func (r *RemoteDevelopment) WithRemoteSyncPath(remoteSyncPath string) *RemoteDevelopment {
 	r.remoteSyncPath = remoteSyncPath
+	return r
+}
+
+func (r *RemoteDevelopment) WithResourcePath(resourcePath string) *RemoteDevelopment {
+	resourceParts := strings.Split(resourcePath, "/")
+	if len(resourceParts) != 3 {
+		panic(fmt.Errorf(
+			"the provided resource path \"%s\" is invalid",
+			resourcePath,
+		))
+	}
+
+	namespace := resourceParts[0]
+	resourceType := strings.ToLower(resourceParts[1])
+	resourceName := resourceParts[2]
+
+	allowedResouceTypesSet := map[string]bool{}
+	for _, v := range allowedResouceTypes {
+		allowedResouceTypesSet[strings.ToLower(string(v))] = true
+	}
+
+	if _, present := allowedResouceTypesSet[resourceType]; !present {
+		panic(fmt.Errorf(
+			"the provided resource type \"%s\" is not valid for remote development",
+			resourceType,
+		))
+	}
+
+	resources, _, err := lib.GetComponentResources(r.component.GetId())
+	if err != nil {
+		panic(fmt.Errorf(
+			"failed fetching resources for component \"%s\"",
+			r.component.GetId(),
+		))
+	}
+
+	for _, resourceItem := range resources {
+		if resourceItem.GetNamespace() == namespace && strings.ToLower(resourceItem.GetKind()) == resourceType && resourceItem.GetName() == resourceName {
+			r.WithComponentResource(&resourceItem)
+
+			break
+		}
+	}
+	if r.componentResource == nil {
+		panic(fmt.Errorf(
+			"the component does not contain the \"%s\" resource",
+			resourcePath,
+		))
+	}
+
 	return r
 }
