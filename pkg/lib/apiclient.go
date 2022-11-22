@@ -1,7 +1,9 @@
 package lib
 
 import (
+	"io"
 	"net/http"
+	"os"
 
 	bunnysdk "bunnyshell.com/sdk"
 )
@@ -98,4 +100,24 @@ func GetComponentResources(componentId string) ([]bunnysdk.ComponentResourceItem
 	request := GetAPI().ComponentApi.ComponentResources(ctx, componentId)
 
 	return request.Execute()
+}
+
+func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentId string) error {
+	kubeConfigFile, err := os.Create(kubeConfigPath)
+	if err != nil {
+		return err
+	}
+	defer kubeConfigFile.Close()
+
+	ctx, cancel := GetContext()
+	defer cancel()
+
+	request := GetAPI().EnvironmentApi.EnvironmentKubeConfig(ctx, environmentId)
+	_, resp, err := request.Execute()
+	if err != nil && err.Error() != "undefined response type" {
+		return err
+	}
+
+	_, err = io.Copy(kubeConfigFile, resp.Body)
+	return err
 }
