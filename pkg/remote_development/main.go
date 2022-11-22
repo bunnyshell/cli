@@ -26,14 +26,6 @@ func (r *RemoteDevelopment) Up() error {
 		return fmt.Errorf("resource kind \"%s\" is not supported", r.componentResource.GetKind())
 	}
 
-	resource, err := r.remoteDev.GetResource()
-	if err != nil {
-		return err
-	}
-	if r.remoteDev.IsActiveForResource(resource) {
-		return fmt.Errorf("the selected resource is already under remote development")
-	}
-
 	if err := r.remoteDev.SelectContainer(); err != nil {
 		return err
 	}
@@ -47,6 +39,11 @@ func (r *RemoteDevelopment) Up() error {
 	if r.remoteSyncPath != "" {
 		r.remoteDev.WithRemoteSyncPath(r.remoteSyncPath)
 	} else if err := r.remoteDev.SelectRemoteSyncPath(); err != nil {
+		return err
+	}
+
+	err := r.remoteDev.PrepareSSHTunnels(r.portMappings)
+	if err != nil {
 		return err
 	}
 

@@ -38,6 +38,8 @@ type RemoteDevelopment struct {
 
 	localSyncPath  string
 	remoteSyncPath string
+
+	portMappings []string
 }
 
 func NewRemoteDevelopment() *RemoteDevelopment {
@@ -171,5 +173,10 @@ func (r *RemoteDevelopment) WithResourcePath(resourcePath string) *RemoteDevelop
 		))
 	}
 
+	return r
+}
+
+func (r *RemoteDevelopment) WithPortMappings(portMappings []string) *RemoteDevelopment {
+	r.portMappings = portMappings
 	return r
 }
