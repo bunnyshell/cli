@@ -12,6 +12,7 @@ import (
 	"bunnyshell.com/cli/cmd/environment"
 	"bunnyshell.com/cli/cmd/event"
 	"bunnyshell.com/cli/cmd/organization"
+	"bunnyshell.com/cli/cmd/port_forward"
 	"bunnyshell.com/cli/cmd/project"
 	"bunnyshell.com/cli/cmd/remote_development"
 	"bunnyshell.com/cli/cmd/variable"
@@ -48,6 +49,7 @@ func init() {
 	rootCmd.AddCommand(environment.GetMainCommand())
 	rootCmd.AddCommand(event.GetMainCommand())
 	rootCmd.AddCommand(organization.GetMainCommand())
+	rootCmd.AddCommand(port_forward.GetMainCommand())
 	rootCmd.AddCommand(project.GetMainCommand())
 	rootCmd.AddCommand(remote_development.GetMainCommand())
 	rootCmd.AddCommand(variable.GetMainCommand())

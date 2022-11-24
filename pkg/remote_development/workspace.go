@@ -1,7 +1,6 @@
 package remote_development
 
 import (
-	"io"
 	"os"
 	"path/filepath"
 
@@ -19,36 +18,16 @@ func (r *RemoteDevelopment) ensureEnvironmentWorkspaceDir() error {
 		return err
 	}
 
-	r.WithEnvironmentWorkspaceDir(filepath.Join(workspace, r.environment.GetId()))
+	r.WithEnvironmentWorkspaceDir(filepath.Join(workspace, r.environmentResource.Environment.GetId()))
 	return os.MkdirAll(r.environmentWorkspaceDir, 0755)
 }
 
 func (r *RemoteDevelopment) ensureEnvironmentKubeConfig() error {
 	kubeConfigPath := filepath.Join(r.environmentWorkspaceDir, KubeConfigFilename)
-	if err := downloadEnvironmentKubeConfig(kubeConfigPath, r.environment.GetId()); err != nil {
+	if err := lib.DownloadEnvironmentKubeConfig(kubeConfigPath, r.environmentResource.Environment.GetId()); err != nil {
 		return err
 	}
 	r.WithKubeConfigPath(kubeConfigPath)
 
 	return nil
-}
-
-func downloadEnvironmentKubeConfig(kubeConfigPath, environmentId string) error {
-	kubeConfigFile, err := os.Create(kubeConfigPath)
-	if err != nil {
-		return err
-	}
-	defer kubeConfigFile.Close()
-
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().EnvironmentApi.EnvironmentKubeConfig(ctx, environmentId)
-	_, resp, err := request.Execute()
-	if err != nil && err.Error() != "undefined response type" {
-		return err
-	}
-
-	_, err = io.Copy(kubeConfigFile, resp.Body)
-	return err
 }

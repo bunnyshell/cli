@@ -11,19 +11,21 @@ func (r *RemoteDevelopment) Up() error {
 		return err
 	}
 
+	componentResource := r.environmentResource.ComponentResource
+
 	r.remoteDev.
 		WithKubernetesClient(r.kubeConfigPath).
-		WithNamespaceName(r.componentResource.GetNamespace())
+		WithNamespaceName(componentResource.GetNamespace())
 
-	switch r.componentResource.GetKind() {
+	switch componentResource.GetKind() {
 	case "Deployment":
-		r.remoteDev.WithDeploymentName(r.componentResource.GetName())
+		r.remoteDev.WithDeploymentName(componentResource.GetName())
 	case "StatefulSet":
-		r.remoteDev.WithStatefulSetName(r.componentResource.GetName())
+		r.remoteDev.WithStatefulSetName(componentResource.GetName())
 	case "DaemonSet":
-		r.remoteDev.WithDaemonSetName(r.componentResource.GetName())
+		r.remoteDev.WithDaemonSetName(componentResource.GetName())
 	default:
-		return fmt.Errorf("resource kind \"%s\" is not supported", r.componentResource.GetKind())
+		return fmt.Errorf("resource kind \"%s\" is not supported", componentResource.GetKind())
 	}
 
 	if err := r.remoteDev.SelectContainer(); err != nil {
@@ -59,19 +61,21 @@ func (r *RemoteDevelopment) Down() error {
 		return err
 	}
 
+	componentResource := r.environmentResource.ComponentResource
+
 	r.remoteDev.
 		WithKubernetesClient(r.kubeConfigPath).
-		WithNamespaceName(r.componentResource.GetNamespace())
+		WithNamespaceName(componentResource.GetNamespace())
 
-	switch r.componentResource.GetKind() {
+	switch componentResource.GetKind() {
 	case "Deployment":
-		r.remoteDev.WithDeploymentName(r.componentResource.GetName())
+		r.remoteDev.WithDeploymentName(componentResource.GetName())
 	case "StatefulSet":
-		r.remoteDev.WithStatefulSetName(r.componentResource.GetName())
+		r.remoteDev.WithStatefulSetName(componentResource.GetName())
 	case "DaemonSet":
-		r.remoteDev.WithDaemonSetName(r.componentResource.GetName())
+		r.remoteDev.WithDaemonSetName(componentResource.GetName())
 	default:
-		return fmt.Errorf("resource kind \"%s\" is not supported", r.componentResource.GetKind())
+		return fmt.Errorf("resource kind \"%s\" is not supported", componentResource.GetKind())
 	}
 
 	return r.remoteDev.Down()

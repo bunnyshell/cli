@@ -1,4 +1,4 @@
-package remote_development
+package environment
 
 import (
 	"fmt"
@@ -9,15 +9,73 @@ import (
 	bunnysdk "bunnyshell.com/sdk"
 )
 
-var (
-	ErrNoEnvironments        = fmt.Errorf("no environments available")
-	ErrNoOrganizations       = fmt.Errorf("no organizations available")
-	ErrNoComponents          = fmt.Errorf("no components available")
-	ErrNoComponentResourcess = fmt.Errorf("no component resourcess available")
-	ErrNoProjects            = fmt.Errorf("no projects available")
-)
+func NewFromWizard(profileContext *lib.Context, resourcePath string) (*EnvironmentResource, error) {
+	environmentResource := NewEnvironmentResource()
 
-func (r *RemoteDevelopment) SelectOrganization() error {
+	// wizard
+	if profileContext.ServiceComponent != "" {
+		componentItem, _, err := lib.GetComponent(profileContext.ServiceComponent)
+		if err != nil {
+			return nil, err
+		}
+
+		environmentItem, _, err := lib.GetEnvironment(componentItem.GetEnvironment())
+		if err != nil {
+			return nil, err
+		}
+
+		environmentResource.WithEnvironment(environmentItem).WithComponent(componentItem)
+	} else {
+		if profileContext.Organization != "" {
+			organizationItem, _, err := lib.GetOrganization(profileContext.Organization)
+			if err != nil {
+				return nil, err
+			}
+
+			environmentResource.WithOrganization(organizationItem)
+		} else if err := environmentResource.SelectOrganization(); err != nil {
+			return nil, err
+		}
+
+		if profileContext.Project != "" {
+			projectItem, _, err := lib.GetProject(profileContext.Project)
+			if err != nil {
+				return nil, err
+			}
+
+			environmentResource.WithProject(projectItem)
+		} else if err := environmentResource.SelectProject(); err != nil {
+			return nil, err
+		}
+
+		if profileContext.Environment != "" {
+			environmentItem, _, err := lib.GetEnvironment(profileContext.Environment)
+			if err != nil {
+				return nil, err
+			}
+
+			environmentResource.WithEnvironment(environmentItem)
+		} else if err := environmentResource.SelectEnvironment(); err != nil {
+			return nil, err
+		}
+
+		if err := environmentResource.SelectComponent(); err != nil {
+			return nil, err
+		}
+	}
+
+	if resourcePath != "" {
+		environmentResource.WithResourcePath(resourcePath)
+	} else {
+		if err := environmentResource.SelectComponentResource(); err != nil {
+			return nil, err
+		}
+	}
+
+	return environmentResource, nil
+}
+
+func (r *EnvironmentResource) SelectOrganization() error {
 	resp, _, err := lib.GetOrganizations()
 	if err != nil {
 		return err
@@ -45,8 +103,8 @@ func (r *RemoteDevelopment) SelectOrganization() error {
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectProject() error {
-	resp, _, err := lib.GetProjects(r.organization.GetId())
+func (r *EnvironmentResource) SelectProject() error {
+	resp, _, err := lib.GetProjects(r.Organization.GetId())
 	if err != nil {
 		return err
 	}
@@ -73,8 +131,8 @@ func (r *RemoteDevelopment) SelectProject() error {
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectEnvironment() error {
-	resp, _, err := lib.GetEnvironments(r.project.GetId())
+func (r *EnvironmentResource) SelectEnvironment() error {
+	resp, _, err := lib.GetEnvironments(r.Project.GetId())
 	if err != nil {
 		return err
 	}
@@ -101,8 +159,8 @@ func (r *RemoteDevelopment) SelectEnvironment() error {
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectComponent() error {
-	resp, _, err := lib.GetComponents(r.environment.GetId(), "running")
+func (r *EnvironmentResource) SelectComponent() error {
+	resp, _, err := lib.GetComponents(r.Environment.GetId(), "running")
 
 	if err != nil {
 		return err
@@ -132,8 +190,8 @@ func (r *RemoteDevelopment) SelectComponent() error {
 	return nil
 }
 
-func (r *RemoteDevelopment) SelectComponentResource() error {
-	resources, _, err := lib.GetComponentResources(r.component.GetId())
+func (r *EnvironmentResource) SelectComponentResource() error {
+	resources, _, err := lib.GetComponentResources(r.Component.GetId())
 	if err != nil {
 		return err
 	}
