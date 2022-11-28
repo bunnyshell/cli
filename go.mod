@@ -3,7 +3,7 @@ module bunnyshell.com/cli
 go 1.19
 
 require (
-	bunnyshell.com/dev v0.3.2
+	bunnyshell.com/dev v0.3.3
 	bunnyshell.com/sdk v0.7.0
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/briandowns/spinner v1.19.0
