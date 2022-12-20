@@ -29,6 +29,14 @@ var rootCmd = &cobra.Command{
 	Short:        "Bunnyshell CLI",
 	Long:         "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
 	SilenceUsage: true,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if cmd.CalledAs() == "__complete" {
+			return
+		}
+
+		cmd.SetOut(os.Stdout)
+		cmd.SetErr(os.Stdout)
+	},
 }
 
 func Execute() {
@@ -40,8 +48,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.SetOutput(os.Stdout)
-
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(component.GetMainCommand())
