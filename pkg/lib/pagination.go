@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"net/http"
 
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -21,11 +22,31 @@ type ModelWithPagination interface {
 	GetTotalItems() int32
 }
 
-func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error) {
-	if CLIContext.OutputFormat != "stylish" {
-		return -1, nil
-	}
+type CollectionGenerator func(page int32) (ModelWithPagination, *http.Response, error)
 
+func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerator) error {
+	for {
+		model, resp, err := generator(page)
+		if err = FormatRequestResult(cmd, model, resp, err); err != nil {
+			return err
+		}
+
+		if CLIContext.OutputFormat != "stylish" {
+			return nil
+		}
+
+		page, err := ProcessPagination(cmd, model)
+		if err != nil {
+			return err
+		}
+
+		if page == PAGINATION_QUIT {
+			return nil
+		}
+	}
+}
+
+func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error) {
 	page := m.GetPage()
 	pages := 1 + (m.GetTotalItems()-1)/m.GetItemsPerPage()
 
