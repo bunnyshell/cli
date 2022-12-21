@@ -27,22 +27,29 @@ type CollectionGenerator func(page int32) (ModelWithPagination, *http.Response, 
 func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerator) error {
 	for {
 		model, resp, err := generator(page)
-		if err = FormatRequestResult(cmd, model, resp, err); err != nil {
+		if e := FormatRequestResult(cmd, model, resp, err); e != nil {
 			return err
+		}
+
+		// handled in FormatRequestResult
+		if err != nil {
+			return nil
 		}
 
 		if CLIContext.OutputFormat != "stylish" {
 			return nil
 		}
 
-		page, err := ProcessPagination(cmd, model)
+		navPage, err := ProcessPagination(cmd, model)
 		if err != nil {
 			return err
 		}
 
-		if page == PAGINATION_QUIT {
+		if navPage == PAGINATION_QUIT {
 			return nil
 		}
+
+		page = navPage
 	}
 }
 
