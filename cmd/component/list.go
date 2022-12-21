@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/sdk"
 )
 
 func init() {
@@ -47,8 +48,7 @@ func init() {
 				request = request.Project(*project)
 			}
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			return withStylishPagination(cmd, request)
 		},
 	}
 
@@ -60,4 +60,24 @@ func init() {
 	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
 
 	mainCmd.AddCommand(command)
+}
+
+func withStylishPagination(cmd *cobra.Command, request sdk.ApiComponentListRequest) error {
+	for {
+		model, resp, err := request.Execute()
+		if err = lib.FormatRequestResult(cmd, model, resp, err); err != nil {
+			return err
+		}
+
+		page, err := lib.ProcessPagination(cmd, model)
+		if err != nil {
+			return err
+		}
+
+		if page == lib.PAGINATION_QUIT {
+			return nil
+		}
+
+		request = request.Page(page)
+	}
 }

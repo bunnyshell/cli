@@ -1,9 +1,11 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -12,6 +14,20 @@ import (
 
 func Ask(question string, validate survey.Validator) (string, error) {
 	answer := ""
+
+	err := survey.AskOne(&survey.Input{
+		Message: question,
+	}, &answer, withValidator(validate))
+
+	if err == terminal.InterruptErr {
+		log.Fatal("interrupted")
+	}
+
+	return answer, err
+}
+
+func AskInt32(question string, validate survey.Validator) (int32, error) {
+	var answer int32 = 0
 
 	err := survey.AskOne(&survey.Input{
 		Message: question,
@@ -101,6 +117,27 @@ func Lowercase() survey.Validator {
 	return func(input interface{}) error {
 		if strings.ToLower(input.(string)) != input {
 			return fmt.Errorf("profile names should be lowercase only")
+		}
+
+		return nil
+	}
+}
+
+func AssertBetween(min int32, max int32) survey.Validator {
+	return func(input interface{}) error {
+		str, ok := input.(string)
+		if !ok {
+			return errors.New("invalid value")
+		}
+
+		i, err := strconv.ParseInt(str, 10, 32)
+		if err != nil {
+			return errors.New("input must be an integer")
+		}
+
+		val := int32(i)
+		if val < min || val > max {
+			return fmt.Errorf("input must be between %d and %d", min, max)
 		}
 
 		return nil

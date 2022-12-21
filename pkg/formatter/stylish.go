@@ -17,22 +17,16 @@ func stylish(data interface{}) ([]byte, error) {
 	switch t := data.(type) {
 	case *sdk.PaginatedOrganizationCollection:
 		tabulateOrganizationCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedProjectCollection:
 		tabulateProjectCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedEnvironmentCollection:
 		tabulateEnvironmentCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedComponentCollection:
 		tabulateComponentCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedEventCollection:
 		tabulateEventCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.PaginatedEnvironmentVariableCollection:
 		tabulateEnvironmentVariableCollection(w, t)
-		tabulatePagination(w, t.GetPage(), t.GetItemsPerPage(), t.GetTotalItems())
 	case *sdk.OrganizationItem:
 		tabulateOrganizationItem(w, t)
 	case *sdk.ProjectItem:
@@ -183,13 +177,4 @@ func tabulateGeneric(w *tabwriter.Writer, item *sdk.ProblemGeneric) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.GetTitle())
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.GetDetail())
-}
-
-func tabulatePagination(w *tabwriter.Writer, page int32, perPage int32, total int32) {
-	var pages = total/perPage + 1
-	if page > pages {
-		fmt.Fprint(w, "\nPage does not exist")
-	} else {
-		fmt.Fprintf(w, "\nPage %d/%d with %d results", page, pages, total)
-	}
 }
