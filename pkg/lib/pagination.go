@@ -27,7 +27,7 @@ func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error)
 	}
 
 	page := m.GetPage()
-	pages := m.GetTotalItems()/m.GetItemsPerPage() + 1
+	pages := 1 + (m.GetTotalItems()-1)/m.GetItemsPerPage()
 
 	if page > pages {
 		return PAGINATION_QUIT, nil
