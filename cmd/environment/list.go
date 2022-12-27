@@ -1,6 +1,8 @@
 package environment
 
 import (
+	"net/http"
+
 	"github.com/spf13/cobra"
 
 	"bunnyshell.com/cli/pkg/lib"
@@ -17,33 +19,34 @@ func init() {
 	command := &cobra.Command{
 		Use: "list",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
+				ctx, cancel := lib.GetContext()
+				defer cancel()
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
+				request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
 
-			if page != 0 {
-				request = request.Page(page)
-			}
+				if page != 0 {
+					request = request.Page(page)
+				}
 
-			if *organization != "" {
-				request = request.Organization(*organization)
-			}
+				if *organization != "" {
+					request = request.Organization(*organization)
+				}
 
-			if *project != "" {
-				request = request.Project(*project)
-			}
+				if *project != "" {
+					request = request.Project(*project)
+				}
 
-			if type_ != "" {
-				request = request.Type_(type_)
-			}
+				if type_ != "" {
+					request = request.Type_(type_)
+				}
 
-			if operationStatus != "" {
-				request = request.OperationStatus(operationStatus)
-			}
+				if operationStatus != "" {
+					request = request.OperationStatus(operationStatus)
+				}
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+				return request.Execute()
+			})
 		},
 	}
 
