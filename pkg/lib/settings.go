@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const ENV_PREFIX = "bunnyshell"
-
 type CLI struct {
 	Debug        bool
 	NoProgress   bool

@@ -18,6 +18,7 @@ import (
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/lib/cliconfig"
 	"bunnyshell.com/cli/pkg/net"
@@ -26,9 +27,12 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:          "bunnyshell-cli",
-	Short:        "Bunnyshell CLI",
-	Long:         "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
+	Use:     build.Name,
+	Version: build.Version,
+
+	Short: "Bunnyshell CLI",
+	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
+
 	SilenceUsage: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if cmd.CalledAs() == cobra.ShellCompRequestCmd {
@@ -93,7 +97,7 @@ func initConfig() {
 
 	cobra.CheckErr(cliconfig.FindConfigFile())
 
-	viper.SetEnvPrefix(lib.ENV_PREFIX)
+	viper.SetEnvPrefix(build.EnvPrefix)
 	viper.AutomaticEnv()
 
 	if lib.CLIContext.Verbosity != 0 {
