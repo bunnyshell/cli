@@ -19,6 +19,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "show",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resp, r, err := getEvent(eventId)
 			lastEvent = resp

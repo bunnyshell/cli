@@ -18,6 +18,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "up",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			remoteDevelopment := remote_development.NewRemoteDevelopment()
 

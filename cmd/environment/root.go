@@ -5,11 +5,15 @@ import (
 
 	"bunnyshell.com/cli/cmd/environment/action"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 )
 
 var mainCmd = &cobra.Command{
 	Use:   "environments",
 	Short: "Bunnyshell Environments",
+
+	ValidArgsFunction: cobra.NoFileCompletions,
+
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		lib.LoadViperConfigIntoContext()
 	},
@@ -18,9 +22,14 @@ var mainCmd = &cobra.Command{
 func init() {
 	lib.CLIContext.RequireTokenOnCommand(mainCmd)
 
-	for _, command := range action.GetMainCommand().Commands() {
-		mainCmd.AddCommand(command)
-	}
+	util.AddGroupedCommands(
+		mainCmd,
+		cobra.Group{
+			ID:    "actions",
+			Title: "Environment Actions",
+		},
+		action.GetMainCommand().Commands(),
+	)
 }
 
 func GetMainCommand() *cobra.Command {

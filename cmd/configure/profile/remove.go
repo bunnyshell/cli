@@ -11,6 +11,9 @@ func init() {
 
 	removeProfileCommand := &cobra.Command{
 		Use: "remove",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := lib.RemoveProfile(profileName); err != nil {
 				return lib.FormatCommandError(cmd, err)

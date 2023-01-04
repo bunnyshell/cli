@@ -11,6 +11,9 @@ func init() {
 	showConfigCommand := &cobra.Command{
 		Use:   "show",
 		Short: "Show current config",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := viper.ReadInConfig(); err != nil {
 				return lib.FormatCommandError(cmd, err)

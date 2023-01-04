@@ -11,6 +11,9 @@ func init() {
 
 	defaultProfileCommand := &cobra.Command{
 		Use: "default",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := lib.SetDefaultProfile(profileName); err != nil {
 				return lib.FormatCommandError(cmd, err)
