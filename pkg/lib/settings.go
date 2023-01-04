@@ -14,7 +14,6 @@ const ENV_PREFIX = "bunnyshell"
 
 type CLI struct {
 	Debug        bool
-	Feedback     bool
 	NoProgress   bool
 	ProfileName  string
 	Profile      Profile
@@ -124,7 +123,6 @@ func (c *CLI) SetGlobalFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&CLIContext.OutputFormat, "output", "o", CLIContext.OutputFormat, "Output format: stylish | json | yaml")
 	cmd.PersistentFlags().BoolVarP(&CLIContext.Debug, "debug", "d", CLIContext.Debug, "Show network debug")
 	cmd.PersistentFlags().BoolVar(&CLIContext.NoProgress, "no-progress", CLIContext.NoProgress, "Disable progress spinners")
-	cmd.PersistentFlags().BoolVar(&CLIContext.Feedback, "feedback", CLIContext.Feedback, "Add feedback final output")
 	cmd.PersistentFlags().CountVarP(&CLIContext.Verbosity, "verbose", "v", "Number for the log level verbosity")
 
 	cmd.PersistentFlags().DurationVarP(&CLIContext.Timeout, "timeout", "t", CLIContext.Timeout, "Network timeout on requests")
