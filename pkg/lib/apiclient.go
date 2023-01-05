@@ -68,7 +68,11 @@ func GetEnvironment(environmentID string) (*bunnysdk.EnvironmentItem, *http.Resp
 	return request.Execute()
 }
 
-func GetComponents(environment, operationStatus string) (*bunnysdk.PaginatedComponentCollection, *http.Response, error) {
+func GetComponents(environment, operationStatus string) (
+	*bunnysdk.PaginatedComponentCollection,
+	*http.Response,
+	error,
+) {
 	ctx, cancel := GetContext()
 	defer cancel()
 
@@ -84,25 +88,25 @@ func GetComponents(environment, operationStatus string) (*bunnysdk.PaginatedComp
 	return request.Execute()
 }
 
-func GetComponent(componentId string) (*bunnysdk.ComponentItem, *http.Response, error) {
+func GetComponent(componentID string) (*bunnysdk.ComponentItem, *http.Response, error) {
 	ctx, cancel := GetContext()
 	defer cancel()
 
-	request := GetAPI().ComponentApi.ComponentView(ctx, componentId)
+	request := GetAPI().ComponentApi.ComponentView(ctx, componentID)
 
 	return request.Execute()
 }
 
-func GetComponentResources(componentId string) ([]bunnysdk.ComponentResourceItem, *http.Response, error) {
+func GetComponentResources(componentID string) ([]bunnysdk.ComponentResourceItem, *http.Response, error) {
 	ctx, cancel := GetContext()
 	defer cancel()
 
-	request := GetAPI().ComponentApi.ComponentResources(ctx, componentId)
+	request := GetAPI().ComponentApi.ComponentResources(ctx, componentID)
 
 	return request.Execute()
 }
 
-func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentId string) error {
+func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentID string) error {
 	kubeConfigFile, err := os.Create(kubeConfigPath)
 	if err != nil {
 		return err
@@ -112,12 +116,14 @@ func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentId string) error {
 	ctx, cancel := GetContext()
 	defer cancel()
 
-	request := GetAPI().EnvironmentApi.EnvironmentKubeConfig(ctx, environmentId)
+	request := GetAPI().EnvironmentApi.EnvironmentKubeConfig(ctx, environmentID)
+
 	_, resp, err := request.Execute()
 	if err != nil && err.Error() != "undefined response type" {
 		return err
 	}
 
 	_, err = io.Copy(kubeConfigFile, resp.Body)
+
 	return err
 }

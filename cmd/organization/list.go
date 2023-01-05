@@ -13,6 +13,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "list",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
 				ctx, cancel := lib.GetContext()

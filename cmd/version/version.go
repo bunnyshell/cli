@@ -16,6 +16,9 @@ var ClientOnly = false
 var mainCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Version Information",
+
+	ValidArgsFunction: cobra.NoFileCompletions,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		release := "v" + build.Version
 		if ClientOnly {

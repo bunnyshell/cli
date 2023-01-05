@@ -7,7 +7,9 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:   "remote-development",
+	Use:     "remote-development",
+	Aliases: []string{"rdev"},
+
 	Short: "Remote Development",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		lib.LoadViperConfigIntoContext()

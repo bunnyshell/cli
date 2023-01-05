@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 )
@@ -45,7 +46,7 @@ func determineConfig() string {
 		return lib.CLIContext.ConfigFile
 	}
 
-	cfgFile, ok := os.LookupEnv(strings.ToUpper(lib.ENV_PREFIX) + "_CONFIG_FILE")
+	cfgFile, ok := os.LookupEnv(strings.ToUpper(build.EnvPrefix) + "_CONFIG_FILE")
 	if ok {
 		return cfgFile
 	}

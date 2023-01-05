@@ -18,6 +18,9 @@ func init() {
 	initConfigCommand := &cobra.Command{
 		Use:   "init",
 		Short: "Create a configuration file",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configFile := viper.ConfigFileUsed()
 

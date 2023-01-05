@@ -22,6 +22,9 @@ func init() {
 
 	var addProfileCommand = &cobra.Command{
 		Use: "add name [token organization project]",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

@@ -18,6 +18,9 @@ func init() {
 
 	var contextCommand = &cobra.Command{
 		Use: "context",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profile, err := lib.GetProfile(lib.CLIContext.ProfileName)
 			if err != nil {

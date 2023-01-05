@@ -11,6 +11,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "stop",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := lib.GetContext()
 			defer cancel()

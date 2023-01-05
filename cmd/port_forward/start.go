@@ -20,6 +20,9 @@ func init() {
 		Use:     "start mappings...",
 		Short:   "Starts the port forwarding for the given mappings.",
 		Example: "start 8080:80 3306 :9003",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		Args: func(cmd *cobra.Command, portMappings []string) error {
 			if err := cobra.MinimumNArgs(1)(cmd, portMappings); err != nil {
 				return err

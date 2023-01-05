@@ -18,19 +18,24 @@ import (
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/lib/cliconfig"
 	"bunnyshell.com/cli/pkg/net"
+	"bunnyshell.com/cli/pkg/util"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:          "bunnyshell-cli",
-	Short:        "Bunnyshell CLI",
-	Long:         "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
+	Use:     build.Name,
+	Version: build.Version,
+
+	Short: "Bunnyshell CLI",
+	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
+
 	SilenceUsage: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if cmd.CalledAs() == "__complete" {
+		if cmd.CalledAs() == cobra.ShellCompRequestCmd {
 			return
 		}
 
@@ -50,16 +55,37 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.AddCommand(component.GetMainCommand())
-	rootCmd.AddCommand(configure.GetMainCommand())
-	rootCmd.AddCommand(environment.GetMainCommand())
-	rootCmd.AddCommand(event.GetMainCommand())
-	rootCmd.AddCommand(organization.GetMainCommand())
-	rootCmd.AddCommand(port_forward.GetMainCommand())
-	rootCmd.AddCommand(project.GetMainCommand())
-	rootCmd.AddCommand(remote_development.GetMainCommand())
-	rootCmd.AddCommand(variable.GetMainCommand())
-	rootCmd.AddCommand(version.GetMainCommand())
+	util.AddGroupedCommands(
+		rootCmd,
+		cobra.Group{
+			ID:    "resources",
+			Title: "Bunnyshell Resources",
+		},
+		[]*cobra.Command{
+			component.GetMainCommand(),
+			environment.GetMainCommand(),
+			event.GetMainCommand(),
+			organization.GetMainCommand(),
+			port_forward.GetMainCommand(),
+			project.GetMainCommand(),
+			remote_development.GetMainCommand(),
+			variable.GetMainCommand(),
+		},
+	)
+
+	util.AddGroupedCommands(
+		rootCmd,
+		cobra.Group{
+			ID:    "cli",
+			Title: "CLI",
+		},
+		[]*cobra.Command{
+			configure.GetMainCommand(),
+			version.GetMainCommand(),
+		},
+	)
+	rootCmd.SetHelpCommandGroupID("cli")
+	rootCmd.SetCompletionCommandGroupID("cli")
 
 	lib.CLIContext.SetGlobalFlags(rootCmd)
 }
@@ -71,7 +97,7 @@ func initConfig() {
 
 	cobra.CheckErr(cliconfig.FindConfigFile())
 
-	viper.SetEnvPrefix(lib.ENV_PREFIX)
+	viper.SetEnvPrefix(build.EnvPrefix)
 	viper.AutomaticEnv()
 
 	if lib.CLIContext.Verbosity != 0 {

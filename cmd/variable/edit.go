@@ -13,6 +13,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "edit",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var api = lib.GetAPI().EnvironmentVariableApi
 

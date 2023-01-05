@@ -10,6 +10,9 @@ import (
 func init() {
 	showConfigCommand := &cobra.Command{
 		Use: "list",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			config, err := lib.GetConfig()
 			if err != nil {
