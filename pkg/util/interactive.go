@@ -19,7 +19,7 @@ func Ask(question string, validate survey.Validator) (string, error) {
 		Message: question,
 	}, &answer, withValidator(validate))
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -27,13 +27,13 @@ func Ask(question string, validate survey.Validator) (string, error) {
 }
 
 func AskInt32(question string, validate survey.Validator) (int32, error) {
-	var answer int32 = 0
+	var answer int32
 
 	err := survey.AskOne(&survey.Input{
 		Message: question,
 	}, &answer, withValidator(validate))
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -48,7 +48,7 @@ func AskSecretWithHelp(question string, help string, validate survey.Validator) 
 		Help:    help,
 	}, &answer, withValidator(validate))
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -64,7 +64,7 @@ func AskPath(question string, value string, validate survey.Validator) (string, 
 		Suggest: suggestPaths,
 	}, &answer, withValidator(validate))
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -78,7 +78,7 @@ func Confirm(question string) (bool, error) {
 		Message: question,
 	}, &answer)
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -93,7 +93,7 @@ func Choose(question string, items []string) (int, string, error) {
 		Options: items,
 	}, &answerIndex)
 
-	if err == terminal.InterruptErr {
+	if errors.Is(err, terminal.InterruptErr) {
 		log.Fatal("interrupted")
 	}
 
@@ -115,8 +115,13 @@ func All(funcs ...survey.Validator) survey.Validator {
 
 func Lowercase() survey.Validator {
 	return func(input interface{}) error {
-		if strings.ToLower(input.(string)) != input {
-			return fmt.Errorf("profile names should be lowercase only")
+		str, ok := input.(string)
+		if !ok {
+			return ErrInvalidValue
+		}
+
+		if strings.ToLower(str) != input {
+			return fmt.Errorf("%w: must be lowercase", ErrInvalidValue)
 		}
 
 		return nil
@@ -127,17 +132,17 @@ func AssertBetween(min int32, max int32) survey.Validator {
 	return func(input interface{}) error {
 		str, ok := input.(string)
 		if !ok {
-			return errors.New("invalid value")
+			return ErrInvalidValue
 		}
 
 		i, err := strconv.ParseInt(str, 10, 32)
 		if err != nil {
-			return errors.New("input must be an integer")
+			return fmt.Errorf("%w: must be an integer", ErrInvalidValue)
 		}
 
 		val := int32(i)
 		if val < min || val > max {
-			return fmt.Errorf("input must be between %d and %d", min, max)
+			return fmt.Errorf("%w: must be between %d and %d", ErrInvalidValue, min, max)
 		}
 
 		return nil
@@ -158,5 +163,6 @@ func withValidator(validate survey.Validator) survey.AskOpt {
 
 func suggestPaths(toComplete string) []string {
 	files, _ := filepath.Glob(toComplete + "*")
+
 	return files
 }

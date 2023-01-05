@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-const BunnyshellWorkspaceDirname = ".bunnyshell"
+const workspaceDirname = ".bunnyshell"
 
 func GetWorkspaceDir() (string, error) {
 	home, err := os.UserHomeDir()
@@ -17,5 +17,5 @@ func GetWorkspaceDir() (string, error) {
 		return "/bunnyshell", nil
 	}
 
-	return filepath.Join(home, BunnyshellWorkspaceDirname), nil
+	return filepath.Join(home, workspaceDirname), nil
 }
