@@ -9,7 +9,9 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:   "environments",
+	Use:     "environments",
+	Aliases: []string{"env"},
+
 	Short: "Bunnyshell Environments",
 
 	ValidArgsFunction: cobra.NoFileCompletions,

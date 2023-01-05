@@ -7,7 +7,9 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:   "port-forward",
+	Use:     "port-forward",
+	Aliases: []string{"pfwd"},
+
 	Short: "Port Forward",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		lib.LoadViperConfigIntoContext()

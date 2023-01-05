@@ -7,7 +7,9 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:   "projects",
+	Use:     "projects",
+	Aliases: []string{"proj"},
+
 	Short: "Bunnyshell Projects",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		lib.LoadViperConfigIntoContext()
