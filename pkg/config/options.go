@@ -67,9 +67,9 @@ func newConfigFile(settings *Settings) *option.String {
 		cobra.BashCompFilenameExt: {"yaml", "json"},
 	}
 
-	if workspace, err := util.GetWorkspaceDir(); err == nil {
+	if workspace, short, err := util.GetWorkspaceDirAndShort(); err == nil {
 		_ = flag.Value.Set(workspace + "/config.yaml")
-		flag.DefValue = "$HOME/config.yaml"
+		flag.DefValue = short + "/config.yaml"
 	}
 
 	return option
