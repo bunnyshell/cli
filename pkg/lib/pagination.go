@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -9,9 +10,15 @@ import (
 )
 
 const (
-	PAGINATION_QUIT = -1
+	PaginationQuit  = -1
+	PaginationOther = -2
 
-	PAGINATION_OTHER = -2
+	ShowOtherMinPages = 4
+)
+
+var (
+	errHandled = error(nil)
+	errQuit    = errors.New("quit")
 )
 
 type ModelWithPagination interface {
@@ -28,29 +35,40 @@ func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerato
 	for {
 		model, resp, err := generator(page)
 		if e := FormatRequestResult(cmd, model, resp, err); e != nil {
+			return e
+		}
+
+		if err != nil {
+			// handled in FormatRequestResult
+			return errHandled
+		}
+
+		page, err = interactivePagination(cmd, model)
+		if err != nil {
+			if errors.Is(err, errQuit) {
+				return nil
+			}
+
 			return err
 		}
-
-		// handled in FormatRequestResult
-		if err != nil {
-			return nil
-		}
-
-		if CLIContext.OutputFormat != "stylish" {
-			return nil
-		}
-
-		navPage, err := ProcessPagination(cmd, model)
-		if err != nil {
-			return err
-		}
-
-		if navPage == PAGINATION_QUIT {
-			return nil
-		}
-
-		page = navPage
 	}
+}
+
+func interactivePagination(cmd *cobra.Command, model ModelWithPagination) (int32, error) {
+	if CLIContext.OutputFormat != "stylish" {
+		return 0, errQuit
+	}
+
+	navPage, err := ProcessPagination(cmd, model)
+	if err != nil {
+		return 0, err
+	}
+
+	if navPage == PaginationQuit {
+		return 0, errQuit
+	}
+
+	return navPage, nil
 }
 
 func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error) {
@@ -58,25 +76,25 @@ func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error)
 	pages := 1 + (m.GetTotalItems()-1)/m.GetItemsPerPage()
 
 	if page > pages {
-		return PAGINATION_QUIT, nil
+		return PaginationQuit, nil
 	}
 
 	if pages == 1 {
-		return PAGINATION_QUIT, nil
+		return PaginationQuit, nil
 	}
 
 	nav, pageNo := getPaginationOptions(page, pages)
 
 	index, _, err := util.Choose("Navigate to a different page?", nav)
 	if err != nil {
-		return PAGINATION_QUIT, err
+		return PaginationQuit, err
 	}
 
 	target := pageNo[index]
-	if target == PAGINATION_OTHER {
+	if target == PaginationOther {
 		target, err = util.AskInt32("Go to page:", util.AssertBetween(1, pages))
 		if err != nil {
-			return PAGINATION_QUIT, err
+			return PaginationQuit, err
 		}
 	}
 
@@ -86,11 +104,14 @@ func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error)
 func getPaginationOptions(page int32, pages int32) ([]string, []int32) {
 	nav := []string{}
 	pageNo := []int32{}
-	var firstPage int32 = 1
-	var lastPage int32 = pages
+
+	var (
+		firstPage int32 = 1
+		lastPage        = pages
+	)
 
 	if page != firstPage {
-		var prevPage int32 = page - 1
+		prevPage := page - 1
 
 		if prevPage != firstPage {
 			nav = append(nav, fmt.Sprintf("First (%d)", firstPage))
@@ -102,7 +123,7 @@ func getPaginationOptions(page int32, pages int32) ([]string, []int32) {
 	}
 
 	if page != lastPage {
-		var nextPage int32 = page + 1
+		nextPage := page + 1
 
 		nav = append(nav, fmt.Sprintf("Next (%d)", nextPage))
 		pageNo = append(pageNo, nextPage)
@@ -113,13 +134,13 @@ func getPaginationOptions(page int32, pages int32) ([]string, []int32) {
 		}
 	}
 
-	if pages > 4 {
+	if pages > ShowOtherMinPages {
 		nav = append(nav, "Other")
-		pageNo = append(pageNo, PAGINATION_OTHER)
+		pageNo = append(pageNo, PaginationOther)
 	}
 
 	nav = append(nav, "Quit")
-	pageNo = append(pageNo, PAGINATION_QUIT)
+	pageNo = append(pageNo, PaginationQuit)
 
 	return nav, pageNo
 }
