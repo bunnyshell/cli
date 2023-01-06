@@ -18,7 +18,8 @@ func init() {
 	)
 
 	command := &cobra.Command{
-		Use: "list",
+		Use:     "list",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

@@ -11,7 +11,8 @@ func init() {
 	settings := config.GetSettings()
 
 	command := &cobra.Command{
-		Use: "show",
+		Use:     "show",
+		GroupID: mainGroup.ID,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := lib.GetContext()

@@ -9,7 +9,8 @@ var mainCmd = &cobra.Command{
 	Use:     "organizations",
 	Aliases: []string{"org"},
 
-	Short: "Bunnyshell Organizations",
+	Short: "Organizations",
+	Long:  "Bunnyshell Organizations",
 }
 
 func init() {

@@ -12,8 +12,14 @@ func init() {
 		value      string
 	)
 
+	actionGroup := &cobra.Group{
+		ID:    "actions",
+		Title: "Commands for Environment Variable Actions:",
+	}
+
 	command := &cobra.Command{
-		Use: "edit",
+		Use:     "edit",
+		GroupID: actionGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
@@ -44,6 +50,7 @@ func init() {
 	flags.StringVar(&value, valueFlagName, value, "Environment Variable Value")
 	_ = command.MarkFlagRequired(valueFlagName)
 
+	mainCmd.AddGroup(actionGroup)
 	mainCmd.AddCommand(command)
 }
 

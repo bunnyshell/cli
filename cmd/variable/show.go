@@ -9,7 +9,8 @@ func init() {
 	var variableID string
 
 	command := &cobra.Command{
-		Use: "show",
+		Use:     "show",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

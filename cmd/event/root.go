@@ -6,8 +6,10 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:   "events",
-	Short: "Bunnyshell Events",
+	Use: "events",
+
+	Short: "Events",
+	Long:  "Bunnyshell Events",
 }
 
 func init() {

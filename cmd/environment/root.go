@@ -7,11 +7,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var mainGroup = &cobra.Group{
+	ID:    "environments",
+	Title: "Commands for Environment:",
+}
+
 var mainCmd = &cobra.Command{
 	Use:     "environments",
 	Aliases: []string{"env"},
 
-	Short: "Bunnyshell Environments",
+	Short: "Environments",
+	Long:  "Bunnyshell Environments",
 
 	ValidArgsFunction: cobra.NoFileCompletions,
 }
@@ -19,11 +25,13 @@ var mainCmd = &cobra.Command{
 func init() {
 	config.MainManager.CommandWithAPI(mainCmd)
 
+	mainCmd.AddGroup(mainGroup)
+
 	util.AddGroupedCommands(
 		mainCmd,
 		cobra.Group{
 			ID:    "actions",
-			Title: "Environment Actions",
+			Title: "Commands for Environment Actions:",
 		},
 		action.GetMainCommand().Commands(),
 	)

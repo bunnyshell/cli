@@ -11,7 +11,8 @@ var mainCmd = &cobra.Command{
 	Use:     "components",
 	Aliases: []string{"comp"},
 
-	Short: "Bunnyshell Components",
+	Short: "Components",
+	Long:  "Bunnyshell Components",
 }
 
 func init() {
@@ -21,7 +22,7 @@ func init() {
 		mainCmd,
 		cobra.Group{
 			ID:    "actions",
-			Title: "Component Actions",
+			Title: "Commands for Component Actions:",
 		},
 		action.GetMainCommand().Commands(),
 	)

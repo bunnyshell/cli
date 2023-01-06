@@ -9,7 +9,8 @@ var mainCmd = &cobra.Command{
 	Use:     "projects",
 	Aliases: []string{"proj"},
 
-	Short: "Bunnyshell Projects",
+	Short: "Projects",
+	Long:  "Bunnyshell Projects",
 }
 
 func init() {

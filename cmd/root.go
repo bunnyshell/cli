@@ -80,16 +80,14 @@ func init() {
 		rootCmd,
 		cobra.Group{
 			ID:    "resources",
-			Title: "Bunnyshell Resources",
+			Title: "Commands for Bunnyshell Resources:",
 		},
 		[]*cobra.Command{
 			component.GetMainCommand(),
 			environment.GetMainCommand(),
 			event.GetMainCommand(),
 			organization.GetMainCommand(),
-			port_forward.GetMainCommand(),
 			project.GetMainCommand(),
-			remote_development.GetMainCommand(),
 			variable.GetMainCommand(),
 		},
 	)
@@ -97,8 +95,20 @@ func init() {
 	util.AddGroupedCommands(
 		rootCmd,
 		cobra.Group{
+			ID:    "utilities",
+			Title: "Commands for Utilities:",
+		},
+		[]*cobra.Command{
+			remote_development.GetMainCommand(),
+			port_forward.GetMainCommand(),
+		},
+	)
+
+	util.AddGroupedCommands(
+		rootCmd,
+		cobra.Group{
 			ID:    "cli",
-			Title: "CLI",
+			Title: "Commands for CLI:",
 		},
 		[]*cobra.Command{
 			configure.GetMainCommand(),
