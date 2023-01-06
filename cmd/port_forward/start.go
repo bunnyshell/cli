@@ -3,11 +3,10 @@ package port_forward
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/environment"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/port_forward"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -53,7 +52,7 @@ func init() {
 			if podName != "" {
 				portForwardManager.WithPodName(podName)
 			} else {
-				portForwardManager.SelectPod()
+				_ = portForwardManager.SelectPod()
 			}
 
 			err = portForwardManager.Start()
@@ -61,7 +60,7 @@ func init() {
 				return err
 			}
 
-			portForwardManager.Wait()
+			_ = portForwardManager.Wait()
 
 			return nil
 		},

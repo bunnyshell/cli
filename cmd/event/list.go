@@ -3,15 +3,16 @@ package event
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var type_ string
-	var status string
+	var (
+		page      int32
+		eventType string
+		status    string
+	)
 
 	organization := &lib.CLIContext.Profile.Context.Organization
 	environment := &lib.CLIContext.Profile.Context.Environment
@@ -40,8 +41,8 @@ func init() {
 					request = request.Environment(*environment)
 				}
 
-				if type_ != "" {
-					request = request.Type_(type_)
+				if eventType != "" {
+					request = request.Type_(eventType)
 				}
 
 				if status != "" {
@@ -56,7 +57,7 @@ func init() {
 	command.Flags().Int32Var(&page, "page", page, "Listing Page")
 	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
 	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
-	command.Flags().StringVar(&type_, "type", type_, "Filter by Type")
+	command.Flags().StringVar(&eventType, "type", eventType, "Filter by Type")
 	command.Flags().StringVar(&status, "status", status, "Filter by Status")
 
 	mainCmd.AddCommand(command)

@@ -1,9 +1,8 @@
 package remote_development
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 var mainCmd = &cobra.Command{

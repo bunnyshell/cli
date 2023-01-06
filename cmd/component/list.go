@@ -3,15 +3,16 @@ package component
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var clusterStatus string
-	var operationStatus string
+	var (
+		page            int32
+		clusterStatus   string
+		operationStatus string
+	)
 
 	organization := &lib.CLIContext.Profile.Context.Organization
 	environment := &lib.CLIContext.Profile.Context.Environment

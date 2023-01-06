@@ -1,15 +1,13 @@
 package action
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var cloneName string
-
+	cloneName := ""
 	environment := &lib.CLIContext.Profile.Context.Environment
 
 	command := &cobra.Command{
@@ -28,8 +26,9 @@ func init() {
 				*sdk.NewEnvironmentCloneAction(cloneName),
 			)
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			model, resp, err := request.Execute()
+
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 

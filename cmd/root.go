@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
 	"bunnyshell.com/cli/cmd/component"
 	"bunnyshell.com/cli/cmd/configure"
 	"bunnyshell.com/cli/cmd/environment"
@@ -17,15 +14,16 @@ import (
 	"bunnyshell.com/cli/cmd/remote_development"
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
-
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/lib/cliconfig"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/cli/pkg/util"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:     build.Name,
 	Version: build.Version,
@@ -45,9 +43,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	err := rootCmd.Execute()
-
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

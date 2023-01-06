@@ -1,9 +1,8 @@
 package component
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -20,8 +19,9 @@ func init() {
 
 			request := lib.GetAPI().ComponentApi.ComponentView(ctx, *component)
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			model, resp, err := request.Execute()
+
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 

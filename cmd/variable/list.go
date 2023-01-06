@@ -9,8 +9,10 @@ import (
 )
 
 func init() {
-	var page int32
-	var name string
+	var (
+		page int32
+		name string
+	)
 
 	organization := &lib.CLIContext.Profile.Context.Organization
 	environment := &lib.CLIContext.Profile.Context.Environment

@@ -3,15 +3,16 @@ package environment
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var type_ string
-	var operationStatus string
+	var (
+		page            int32
+		environmentType string
+		operationStatus string
+	)
 
 	organization := &lib.CLIContext.Profile.Context.Organization
 	project := &lib.CLIContext.Profile.Context.Project
@@ -40,8 +41,8 @@ func init() {
 					request = request.Project(*project)
 				}
 
-				if type_ != "" {
-					request = request.Type_(type_)
+				if environmentType != "" {
+					request = request.Type_(environmentType)
 				}
 
 				if operationStatus != "" {
@@ -56,7 +57,7 @@ func init() {
 	command.Flags().Int32Var(&page, "page", page, "Listing Page")
 	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
 	command.Flags().StringVar(project, "project", *project, "Filter by Project")
-	command.Flags().StringVar(&type_, "type", type_, "Filter by Type")
+	command.Flags().StringVar(&environmentType, "type", environmentType, "Filter by Type")
 	command.Flags().StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by Operation Status")
 
 	mainCmd.AddCommand(command)

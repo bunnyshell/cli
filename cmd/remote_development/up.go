@@ -1,11 +1,10 @@
 package remote_development
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/environment"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/remote_development"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -44,12 +43,12 @@ func init() {
 			remoteDevelopment.WithEnvironmentResource(environmentResource)
 
 			// init
-			if err := remoteDevelopment.Up(); err != nil {
+			if err = remoteDevelopment.Up(); err != nil {
 				return err
 			}
 
 			// start
-			if err := remoteDevelopment.StartSSHTerminal(); err != nil {
+			if err = remoteDevelopment.StartSSHTerminal(); err != nil {
 				return err
 			}
 
