@@ -1,11 +1,9 @@
 package port_forward
 
 import (
-	"fmt"
+	"os"
 
-	"bunnyshell.com/cli/pkg/environment"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/port_forward"
 	"github.com/spf13/cobra"
 )
 
@@ -22,47 +20,18 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		Args: func(cmd *cobra.Command, portMappings []string) error {
-			if err := cobra.MinimumNArgs(1)(cmd, portMappings); err != nil {
-				return err
+		Run: func(cmd *cobra.Command, portMappings []string) {
+			root := cmd.Root()
+			root.SetArgs(append([]string{
+				"components", "port-forward",
+				"--component", lib.CLIContext.Profile.Context.ServiceComponent,
+				"--resource", resourcePath,
+				"--pod", podName,
+			}, portMappings...))
+
+			if err := root.Execute(); err != nil {
+				os.Exit(1)
 			}
-
-			for _, portMapping := range portMappings {
-				if portMapping == "" || !port_forward.PortMappingExp.MatchString(portMapping) {
-					return fmt.Errorf("invalid port mapping: %s", portMapping)
-				}
-			}
-
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, portMappings []string) error {
-			portForwardManager := port_forward.NewPortForwardManager()
-
-			portForwardManager.WithPortMappings(portMappings)
-
-			environmentResource, err := environment.NewFromWizard(&lib.CLIContext.Profile.Context, resourcePath)
-			if err != nil {
-				return err
-			}
-
-			portForwardManager.
-				WithEnvironmentResource(environmentResource).
-				PrepareKubernetesClient()
-
-			if podName != "" {
-				portForwardManager.WithPodName(podName)
-			} else {
-				_ = portForwardManager.SelectPod()
-			}
-
-			err = portForwardManager.Start()
-			if err != nil {
-				return err
-			}
-
-			_ = portForwardManager.Wait()
-
-			return nil
 		},
 	}
 
