@@ -12,6 +12,9 @@ func init() {
 
 	command := &cobra.Command{
 		Use: "down",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			remoteDevelopment := remoteDevPkg.NewRemoteDevelopment()
 
