@@ -26,3 +26,7 @@ func NewSettings() *Settings {
 		OutputFormat: defaultFormat,
 	}
 }
+
+func (settings *Settings) IsStylish() bool {
+	return settings.OutputFormat == "stylish"
+}

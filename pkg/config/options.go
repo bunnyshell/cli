@@ -11,8 +11,6 @@ import (
 )
 
 type Options struct {
-	settings *Settings
-
 	// other options
 	ConfigFile     *option.String
 	Verbosity      *option.Count

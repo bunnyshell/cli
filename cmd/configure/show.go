@@ -8,7 +8,8 @@ import (
 
 func init() {
 	showConfigCommand := &cobra.Command{
-		Use:   "show",
+		Use: "show",
+
 		Short: "Show current config",
 
 		ValidArgsFunction: cobra.NoFileCompletions,

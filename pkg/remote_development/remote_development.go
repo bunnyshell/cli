@@ -34,30 +34,36 @@ func NewRemoteDevelopment() *RemoteDevelopment {
 
 func (r *RemoteDevelopment) WithEnvironmentResource(environmentResource *environment.EnvironmentResource) *RemoteDevelopment {
 	r.environmentResource = environmentResource
+
 	return r
 }
 
 func (r *RemoteDevelopment) WithEnvironmentWorkspaceDir(environmentWorkspaceDir string) *RemoteDevelopment {
 	r.environmentWorkspaceDir = environmentWorkspaceDir
+
 	return r
 }
 
 func (r *RemoteDevelopment) WithKubeConfigPath(kubeConfigPath string) *RemoteDevelopment {
 	r.kubeConfigPath = kubeConfigPath
+
 	return r
 }
 
 func (r *RemoteDevelopment) WithLocalSyncPath(localSyncPath string) *RemoteDevelopment {
 	r.localSyncPath = localSyncPath
+
 	return r
 }
 
 func (r *RemoteDevelopment) WithRemoteSyncPath(remoteSyncPath string) *RemoteDevelopment {
 	r.remoteSyncPath = remoteSyncPath
+
 	return r
 }
 
 func (r *RemoteDevelopment) WithPortMappings(portMappings []string) *RemoteDevelopment {
 	r.portMappings = portMappings
+
 	return r
 }

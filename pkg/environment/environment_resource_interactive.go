@@ -191,7 +191,6 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 
 func (r *EnvironmentResource) SelectComponent() error {
 	resp, _, err := lib.GetComponents(r.Environment.GetId(), "running")
-
 	if err != nil {
 		return err
 	}

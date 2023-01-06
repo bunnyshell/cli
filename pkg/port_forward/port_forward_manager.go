@@ -54,26 +54,31 @@ func NewPortForwardManager() *PortForwardManager {
 
 func (m *PortForwardManager) WithEnvironmentResource(environmentResource *environment.EnvironmentResource) *PortForwardManager {
 	m.environmentResource = environmentResource
+
 	return m
 }
 
 func (m *PortForwardManager) WithEnvironmentWorkspaceDir(environmentWorkspaceDir string) *PortForwardManager {
 	m.environmentWorkspaceDir = environmentWorkspaceDir
+
 	return m
 }
 
 func (m *PortForwardManager) WithKubeConfigPath(kubeConfigPath string) *PortForwardManager {
 	m.kubeConfigPath = kubeConfigPath
+
 	return m
 }
 
 func (m *PortForwardManager) WithKubernetesClient(kubernetesClient *k8s.KubernetesClient) *PortForwardManager {
 	m.kubernetesClient = kubernetesClient
+
 	return m
 }
 
 func (m *PortForwardManager) WithPod(pod *v1.Pod) *PortForwardManager {
 	m.pod = pod
+
 	return m
 }
 
@@ -95,6 +100,7 @@ func (m *PortForwardManager) WithPortMappings(portMappings []string) *PortForwar
 
 		var localPort int
 		var err error
+
 		if match[1] != "" {
 			localPort, err = strconv.Atoi(match[1])
 			if err != nil {
@@ -131,6 +137,7 @@ func (m *PortForwardManager) ensureEnvironmentWorkspaceDir() error {
 	}
 
 	m.WithEnvironmentWorkspaceDir(filepath.Join(workspace, m.environmentResource.Environment.GetId()))
+
 	return os.MkdirAll(m.environmentWorkspaceDir, 0755)
 }
 
@@ -139,6 +146,7 @@ func (m *PortForwardManager) ensureEnvironmentKubeConfig() error {
 	if err := lib.DownloadEnvironmentKubeConfig(kubeConfigPath, m.environmentResource.Environment.GetId()); err != nil {
 		return err
 	}
+
 	m.WithKubeConfigPath(kubeConfigPath)
 
 	return nil
@@ -159,11 +167,13 @@ func (m *PortForwardManager) SelectPod() error {
 
 	if len(podsList.Items) == 1 {
 		m.WithPod(&podsList.Items[0])
+
 		return nil
 	}
 
-	var podNames []string
+	podNames := []string{}
 	podNamesMap := map[string]*v1.Pod{}
+
 	for _, podItem := range podsList.Items {
 		pod := podItem
 		podNames = append(podNames, pod.Name)
@@ -201,6 +211,7 @@ func (m *PortForwardManager) PrepareKubernetesClient() error {
 
 func (m *PortForwardManager) Start() error {
 	fmt.Printf("Forwarding ports to pod %s/%s...\n\n", m.environmentResource.ComponentResource.GetNamespace(), m.pod.Name)
+
 	for _, portForward := range m.portForwards {
 		forwarder, err := m.kubernetesClient.PortForward(m.pod, portForward, os.Stdout, os.Stderr)
 		if err != nil {
@@ -211,6 +222,7 @@ func (m *PortForwardManager) Start() error {
 		if err != nil {
 			return err
 		}
+
 		if len(forwardedPorts) == 0 {
 			return fmt.Errorf("could not create port forward for local port %d to remote port %d", portForward.LocalPort, portForward.RemotePort)
 		}

@@ -22,6 +22,10 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if errors.Is(config.MainManager.Error, config.ErrConfigLoad) {
+				return config.MainManager.Error
+			}
+
 			configProfile, _ := config.MainManager.GetProfile(settings.Profile.Name)
 			cfgContext := &configProfile.Context
 

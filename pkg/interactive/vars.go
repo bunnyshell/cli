@@ -15,11 +15,3 @@ var (
 func getSettings() *config.Settings {
 	return config.GetSettings()
 }
-
-func IsStylishInteractive() bool {
-	if getSettings().OutputFormat != "stylish" {
-		return false
-	}
-
-	return !getSettings().NonInteractive
-}
