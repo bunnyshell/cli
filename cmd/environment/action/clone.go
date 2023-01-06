@@ -1,14 +1,17 @@
 package action
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	cloneName := ""
-	environment := &lib.CLIContext.Profile.Context.Environment
 
 	command := &cobra.Command{
 		Use: "clone",
@@ -21,7 +24,7 @@ func init() {
 
 			request := lib.GetAPI().EnvironmentApi.EnvironmentClone(
 				ctx,
-				*environment,
+				settings.Profile.Context.Environment,
 			).EnvironmentCloneAction(
 				*sdk.NewEnvironmentCloneAction(cloneName),
 			)
@@ -32,11 +35,15 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(environment, "id", *environment, "Environment Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+	idFlag := options.Environment.GetFlag("id")
 
-	command.Flags().StringVar(&cloneName, "name", cloneName, "Environment Clone Name")
-	command.MarkFlagRequired("name")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
+
+	cloneFlagName := "name"
+	flags.StringVar(&cloneName, cloneFlagName, cloneName, "Environment Clone Name")
+	_ = command.MarkFlagRequired(cloneFlagName)
 
 	mainCmd.AddCommand(command)
 }

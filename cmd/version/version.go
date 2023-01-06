@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"bunnyshell.com/cli/pkg/build"
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
@@ -71,7 +72,7 @@ func getCurrentRelease() string {
 }
 
 func getLatestRelease() (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), lib.CLIContext.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.GetSettings().Timeout)
 	defer cancel()
 
 	// Set up the HTTP request

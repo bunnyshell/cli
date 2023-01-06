@@ -3,13 +3,16 @@ package project
 import (
 	"net/http"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	var page int32
-	organization := &lib.CLIContext.Profile.Context.Organization
 
 	command := &cobra.Command{
 		Use: "list",
@@ -27,8 +30,8 @@ func init() {
 					request = request.Page(page)
 				}
 
-				if *organization != "" {
-					request = request.Organization(*organization)
+				if settings.Profile.Context.Organization != "" {
+					request = request.Organization(settings.Profile.Context.Organization)
 				}
 
 				return request.Execute()
@@ -36,8 +39,11 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(organization, "organization", *organization, "Filter by organization")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
 
 	mainCmd.AddCommand(command)
 }

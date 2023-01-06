@@ -1,12 +1,14 @@
 package organization
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	organization := &lib.CLIContext.Profile.Context.Organization
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
 	command := &cobra.Command{
 		Use: "show",
@@ -17,7 +19,7 @@ func init() {
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := lib.GetAPI().OrganizationApi.OrganizationView(ctx, *organization)
+			request := lib.GetAPI().OrganizationApi.OrganizationView(ctx, settings.Profile.Context.Organization)
 
 			model, resp, err := request.Execute()
 
@@ -25,8 +27,11 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(organization, "id", *organization, "Organization Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlag := options.Organization.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
 
 	mainCmd.AddCommand(command)
 }

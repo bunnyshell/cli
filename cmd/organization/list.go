@@ -31,7 +31,9 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
+	flags := command.Flags()
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
 
 	mainCmd.AddCommand(command)
 }

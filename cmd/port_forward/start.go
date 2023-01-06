@@ -3,11 +3,14 @@ package port_forward
 import (
 	"os"
 
-	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/config"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	var (
 		resourcePath string
 		podName      string
@@ -24,7 +27,7 @@ func init() {
 			root := cmd.Root()
 			root.SetArgs(append([]string{
 				"components", "port-forward",
-				"--component", lib.CLIContext.Profile.Context.ServiceComponent,
+				"--component", settings.Profile.Context.ServiceComponent,
 				"--resource", resourcePath,
 				"--pod", podName,
 			}, portMappings...))
@@ -35,9 +38,12 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Service Component")
-	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
-	command.Flags().StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
+	flags := command.Flags()
+
+	flags.AddFlag(options.ServiceComponent.AddFlag("component", "Service Component"))
+
+	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
+	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
 
 	mainCmd.AddCommand(command)
 }

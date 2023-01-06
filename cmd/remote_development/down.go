@@ -1,13 +1,16 @@
 package remote_development
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
-	"bunnyshell.com/cli/pkg/lib"
 	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	var resourcePath string
 
 	command := &cobra.Command{
@@ -18,7 +21,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			remoteDevelopment := remoteDevPkg.NewRemoteDevelopment()
 
-			environmentResource, err := environment.NewFromWizard(&lib.CLIContext.Profile.Context, resourcePath)
+			environmentResource, err := environment.NewFromWizard(&settings.Profile.Context, resourcePath)
 			if err != nil {
 				return err
 			}
@@ -29,11 +32,14 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.Organization, "organization", "", "Select Organization")
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.Project, "project", "", "Select Project")
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.Environment, "environment", "", "Select Environment")
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Select Service Component")
-	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+	flags.AddFlag(options.Project.GetFlag("project"))
+	flags.AddFlag(options.Environment.GetFlag("environment"))
+	flags.AddFlag(options.ServiceComponent.GetFlag("component"))
+
+	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 
 	mainCmd.AddCommand(command)
 }

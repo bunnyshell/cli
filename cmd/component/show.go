@@ -1,12 +1,14 @@
 package component
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	component := &lib.CLIContext.Profile.Context.ServiceComponent
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
 	command := &cobra.Command{
 		Use: "show",
@@ -17,7 +19,7 @@ func init() {
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := lib.GetAPI().ComponentApi.ComponentView(ctx, *component)
+			request := lib.GetAPI().ComponentApi.ComponentView(ctx, settings.Profile.Context.ServiceComponent)
 
 			model, resp, err := request.Execute()
 
@@ -25,8 +27,11 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(component, "id", *component, "Component Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlag := options.ServiceComponent.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
 
 	mainCmd.AddCommand(command)
 }

@@ -1,33 +1,37 @@
 package profile
 
 import (
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var profileName string
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
-	defaultProfileCommand := &cobra.Command{
+	command := &cobra.Command{
 		Use: "default",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := lib.SetDefaultProfile(profileName); err != nil {
+			if err := config.MainManager.SetDefaultProfile(settings.Profile.Name); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
 				"message": "Profile set as default",
-				"data":    profileName,
+				"data":    settings.Profile.Name,
 			})
 		},
 	}
 
-	defaultProfileCommand.Flags().StringVar(&profileName, "name", profileName, "Default profile for future api calls")
-	defaultProfileCommand.MarkFlagRequired("name")
+	flags := command.Flags()
 
-	mainCmd.AddCommand(defaultProfileCommand)
+	profileNameFlag := options.ProfileName.CloneMainFlag()
+	flags.AddFlag(profileNameFlag)
+	_ = command.MarkFlagRequired(profileNameFlag.Name)
+
+	mainCmd.AddCommand(command)
 }

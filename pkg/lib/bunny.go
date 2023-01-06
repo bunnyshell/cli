@@ -4,37 +4,43 @@ import (
 	"context"
 
 	"bunnyshell.com/cli/pkg/build"
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/sdk"
 )
 
+func GetProfile() config.Profile {
+	return config.GetSettings().Profile
+}
+
 func GetAPI() *sdk.APIClient {
-	return GetApiFromProfile(CLIContext.Profile)
+	return GetAPIFromProfile(GetProfile())
 }
 
 func GetContext() (context.Context, context.CancelFunc) {
-	return GetContextFromProfile(CLIContext.Profile)
+	return GetContextFromProfile(GetProfile())
 }
 
-func GetApiFromProfile(profile Profile) *sdk.APIClient {
+func GetAPIFromProfile(profile config.Profile) *sdk.APIClient {
 	return sdk.NewAPIClient(profileToConfiguration(profile))
 }
 
-func GetContextFromProfile(profile Profile) (context.Context, context.CancelFunc) {
+func GetContextFromProfile(profile config.Profile) (context.Context, context.CancelFunc) {
 	ctx := context.WithValue(context.Background(), sdk.ContextAPIKeys, map[string]sdk.APIKey{
 		"ApiKeyAuth": {
 			Key: profile.Token,
 		},
 	})
 
-	if CLIContext.Timeout == 0 {
+	timeout := config.GetSettings().Timeout
+	if timeout == 0 {
 		return ctx, func() {}
 	}
 
-	return context.WithTimeout(ctx, CLIContext.Timeout)
+	return context.WithTimeout(ctx, timeout)
 }
 
-func profileToConfiguration(profile Profile) *sdk.Configuration {
+func profileToConfiguration(profile config.Profile) *sdk.Configuration {
 	configuration := getDefaultConfiguration()
 
 	if profile.Host != "" {
@@ -48,7 +54,7 @@ func getDefaultConfiguration() *sdk.Configuration {
 	configuration := sdk.NewConfiguration()
 
 	configuration.UserAgent = "BunnyCLI+" + build.Version + "/" + configuration.UserAgent
-	configuration.Debug = CLIContext.Debug
+	configuration.Debug = config.GetSettings().Debug
 	configuration.HTTPClient = net.GetCLIClient()
 
 	return configuration

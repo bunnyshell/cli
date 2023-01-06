@@ -25,8 +25,11 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(&variableID, "id", variableID, "Environment Variable Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlagName := "id"
+	flags.StringVar(&variableID, idFlagName, variableID, "Environment Variable Id")
+	_ = command.MarkFlagRequired(idFlagName)
 
 	mainCmd.AddCommand(command)
 }

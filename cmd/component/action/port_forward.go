@@ -1,15 +1,21 @@
 package action
 
 import (
+	"errors"
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
-	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/port_forward"
 	"github.com/spf13/cobra"
 )
 
+var errInvalidPortMapping = errors.New("invalid port mapping")
+
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	var (
 		resourcePath string
 		podName      string
@@ -31,23 +37,24 @@ func init() {
 
 			for _, portMapping := range portMappings {
 				if portMapping == "" || !port_forward.PortMappingExp.MatchString(portMapping) {
-					return fmt.Errorf("invalid port mapping: %s", portMapping)
+					return fmt.Errorf("%w: %s", errInvalidPortMapping, portMapping)
 				}
 			}
 
 			return nil
 		},
+
 		RunE: func(cmd *cobra.Command, portMappings []string) error {
 			portForwardManager := port_forward.NewPortForwardManager()
 
 			portForwardManager.WithPortMappings(portMappings)
 
-			environmentResource, err := environment.NewFromWizard(&lib.CLIContext.Profile.Context, resourcePath)
+			environmentResource, err := environment.NewFromWizard(&settings.Profile.Context, resourcePath)
 			if err != nil {
 				return err
 			}
 
-			portForwardManager.
+			_ = portForwardManager.
 				WithEnvironmentResource(environmentResource).
 				PrepareKubernetesClient()
 
@@ -68,9 +75,12 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Service Component")
-	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
-	command.Flags().StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
+	flags := command.Flags()
+
+	flags.AddFlag(options.ServiceComponent.AddFlag("component", "Service Component"))
+
+	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
+	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
 
 	mainCmd.AddCommand(command)
 }

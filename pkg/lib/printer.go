@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/formatter"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ func FormatCommandError(cmd *cobra.Command, err error) error {
 }
 
 func FormatCommandData(cmd *cobra.Command, data interface{}) error {
-	result, err := formatter.Formatter(data, CLIContext.OutputFormat)
+	result, err := formatter.Formatter(data, config.GetSettings().OutputFormat)
 	if err != nil {
 		cmd.PrintErrln(err)
 

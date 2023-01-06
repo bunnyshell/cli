@@ -1,19 +1,13 @@
 package configure
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/cmd/configure/profile"
-	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 var mainCmd = &cobra.Command{
 	Use:   "configure",
 	Short: "Configure CLI settings",
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		lib.MakeDefaultContext()
-		return nil
-	},
 }
 
 func init() {

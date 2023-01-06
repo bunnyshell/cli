@@ -67,11 +67,14 @@ func init() {
 		},
 	}
 
-	command.Flags().StringVar(&eventID, "id", eventID, "Event Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
 
-	command.Flags().BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
-	command.Flags().DurationVar(&idleNotify, "idle-notify", idleNotify, "Network timeout on requests")
+	idFlagName := "id"
+	flags.StringVar(&eventID, idFlagName, eventID, "Event Id")
+	_ = command.MarkFlagRequired(idFlagName)
+
+	flags.BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
+	flags.DurationVar(&idleNotify, "idle-notify", idleNotify, "Network timeout on requests")
 
 	mainCmd.AddCommand(command)
 }

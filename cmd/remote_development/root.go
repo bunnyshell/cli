@@ -1,7 +1,7 @@
 package remote_development
 
 import (
-	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -10,13 +10,10 @@ var mainCmd = &cobra.Command{
 	Aliases: []string{"rdev"},
 
 	Short: "Remote Development",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lib.LoadViperConfigIntoContext()
-	},
 }
 
 func init() {
-	lib.CLIContext.RequireTokenOnCommand(mainCmd)
+	config.MainManager.CommandWithAPI(mainCmd)
 }
 
 func GetMainCommand() *cobra.Command {

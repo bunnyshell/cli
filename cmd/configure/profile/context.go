@@ -3,56 +3,56 @@ package profile
 import (
 	"errors"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
-func init() {
-	profileName := &lib.CLIContext.ProfileName
-	var organization string
-	var project string
-	var environment string
-	var serviceComponent string
+var errNoContextChanges = errors.New("no context changes")
 
-	var contextCommand = &cobra.Command{
+func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+	profile := &settings.Profile
+	updateContext := &profile.Context
+
+	command := &cobra.Command{
 		Use: "context",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			profile, err := lib.GetProfile(lib.CLIContext.ProfileName)
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
+			configProfile, _ := config.MainManager.GetProfile(settings.Profile.Name)
+			cfgContext := &configProfile.Context
 
 			var updates []string
-			if organization != "" {
+			if cfgContext.Organization != updateContext.Organization {
 				updates = append(updates, "organization")
-				profile.Context.Organization = organization
+				cfgContext.Organization = updateContext.Organization
 			}
 
-			if project != "" {
+			if cfgContext.Project != updateContext.Project {
 				updates = append(updates, "project")
-				profile.Context.Project = project
+				cfgContext.Project = updateContext.Project
 			}
 
-			if environment != "" {
+			if cfgContext.Environment != updateContext.Environment {
 				updates = append(updates, "environment")
-				profile.Context.Environment = environment
+				cfgContext.Environment = updateContext.Environment
 			}
 
-			if serviceComponent != "" {
+			if cfgContext.ServiceComponent != updateContext.ServiceComponent {
 				updates = append(updates, "service component")
-				profile.Context.ServiceComponent = serviceComponent
+				cfgContext.ServiceComponent = updateContext.ServiceComponent
 			}
 
 			if len(updates) == 0 {
-				return errors.New("no context changes")
+				return errNoContextChanges
 			}
 
-			if err := viper.WriteConfig(); err != nil {
+			config.MainManager.SetProfile(*profile)
+
+			if err := config.MainManager.Save(); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
@@ -63,13 +63,24 @@ func init() {
 		},
 	}
 
-	contextCommand.Flags().StringVar(profileName, "name", *profileName, "Name of the profile")
-	contextCommand.MarkFlagRequired("name")
+	flags := command.Flags()
 
-	contextCommand.Flags().StringVar(&organization, "organization", organization, "Set Organization context for all resources")
-	contextCommand.Flags().StringVar(&project, "project", project, "Set Project context for all resources")
-	contextCommand.Flags().StringVar(&environment, "environment", environment, "Set Organization context for all resources")
-	contextCommand.Flags().StringVar(&serviceComponent, "serviceComponent", serviceComponent, "Set Organization context for all resources")
+	profileNameFlag := options.ProfileName.CloneMainFlag()
+	flags.AddFlag(profileNameFlag)
+	_ = command.MarkFlagRequired(profileNameFlag.Name)
 
-	mainCmd.AddCommand(contextCommand)
+	flags.AddFlag(
+		options.Organization.AddFlag("organization", "Set Organization context for all resources"),
+	)
+	flags.AddFlag(
+		options.Project.AddFlag("project", "Set Project context for all resources"),
+	)
+	flags.AddFlag(
+		options.Environment.AddFlag("environment", "Set Environment context for all resources"),
+	)
+	flags.AddFlag(
+		options.ServiceComponent.AddFlag("serviceComponent", "Set ServiceComponent context for all resources"),
+	)
+
+	mainCmd.AddCommand(command)
 }

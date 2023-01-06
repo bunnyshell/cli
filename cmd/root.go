@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -15,12 +16,10 @@ import (
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 	"bunnyshell.com/cli/pkg/build"
-	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/lib/cliconfig"
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands.
@@ -32,13 +31,37 @@ var rootCmd = &cobra.Command{
 	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
 
 	SilenceUsage: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		manager := config.MainManager
+
 		if cmd.CalledAs() == cobra.ShellCompRequestCmd {
-			return
+			// Autocomplete parses flags differently, kickstart flag parsing
+			_ = cmd.Root().ParseFlags(args)
+			manager.Load()
+
+			return nil
+		}
+
+		manager.Load()
+
+		if errors.Is(manager.Error, config.ErrUnknownProfile) {
+			return manager.Error
+		}
+
+		settings := config.GetSettings()
+
+		if settings.NoProgress {
+			net.DefaultSpinnerTransport.Disabled = true
+		}
+		if settings.Verbosity != 0 {
+			fmt.Fprintf(os.Stdout, "Using config file: %s\n", config.GetSettings().ConfigFile)
 		}
 
 		cmd.SetOut(os.Stdout)
 		cmd.SetErr(os.Stdout)
+
+		return nil
 	},
 }
 
@@ -49,8 +72,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	util.AddGroupedCommands(
 		rootCmd,
 		cobra.Group{
@@ -83,20 +104,6 @@ func init() {
 	rootCmd.SetHelpCommandGroupID("cli")
 	rootCmd.SetCompletionCommandGroupID("cli")
 
-	lib.CLIContext.SetGlobalFlags(rootCmd)
-}
-
-func initConfig() {
-	if lib.CLIContext.NoProgress {
-		net.DefaultSpinnerTransport.Disabled = true
-	}
-
-	cobra.CheckErr(cliconfig.FindConfigFile())
-
-	viper.SetEnvPrefix(build.EnvPrefix)
-	viper.AutomaticEnv()
-
-	if lib.CLIContext.Verbosity != 0 {
-		fmt.Fprintln(os.Stdout, "Using config file:", viper.ConfigFileUsed())
-	}
+	config.MainManager.CommandWithGlobalOptions(rootCmd)
+	util.AllComandsHelpFlag(rootCmd)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +56,7 @@ func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerato
 }
 
 func interactivePagination(cmd *cobra.Command, model ModelWithPagination) (int32, error) {
-	if CLIContext.OutputFormat != "stylish" {
+	if config.GetSettings().OutputFormat != "stylish" {
 		return 0, errQuit
 	}
 

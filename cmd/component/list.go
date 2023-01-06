@@ -3,6 +3,7 @@ package component
 import (
 	"net/http"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
@@ -14,9 +15,8 @@ func init() {
 		operationStatus string
 	)
 
-	organization := &lib.CLIContext.Profile.Context.Organization
-	environment := &lib.CLIContext.Profile.Context.Environment
-	project := &lib.CLIContext.Profile.Context.Project
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
 	command := &cobra.Command{
 		Use: "list",
@@ -42,16 +42,16 @@ func init() {
 					request = request.OperationStatus(operationStatus)
 				}
 
-				if *organization != "" {
-					request = request.Organization(*organization)
+				if settings.Profile.Context.Organization != "" {
+					request = request.Organization(settings.Profile.Context.Organization)
 				}
 
-				if *environment != "" {
-					request = request.Environment(*environment)
+				if settings.Profile.Context.Environment != "" {
+					request = request.Environment(settings.Profile.Context.Environment)
 				}
 
-				if *project != "" {
-					request = request.Project(*project)
+				if settings.Profile.Context.Project != "" {
+					request = request.Project(settings.Profile.Context.Project)
 				}
 
 				return request.Execute()
@@ -59,12 +59,15 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(&clusterStatus, "clusterStatus", clusterStatus, "Filter by ClusterStatus")
-	command.Flags().StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by OperationStatus")
-	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
-	command.Flags().StringVar(project, "project", *project, "Filter by Project")
-	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+	flags.AddFlag(options.Project.GetFlag("project"))
+	flags.AddFlag(options.Environment.GetFlag("environment"))
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
+	flags.StringVar(&clusterStatus, "clusterStatus", clusterStatus, "Filter by ClusterStatus")
+	flags.StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by OperationStatus")
 
 	mainCmd.AddCommand(command)
 }
