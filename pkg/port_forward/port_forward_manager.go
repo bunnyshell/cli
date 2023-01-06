@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"bunnyshell.com/cli/pkg/environment"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/k8s"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -169,7 +170,7 @@ func (m *PortForwardManager) SelectPod() error {
 		podNamesMap[pod.Name] = &pod
 	}
 
-	_, podName, err := util.Choose("Select pod", podNames)
+	_, podName, err := interactive.Choose("Select pod", podNames)
 	if err != nil {
 		return err
 	}

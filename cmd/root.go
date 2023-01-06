@@ -17,6 +17,7 @@ import (
 	"bunnyshell.com/cli/cmd/version"
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -44,6 +45,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		manager.Load()
+
+		// try and ask for flags
+		interactive.AskMissingRequiredFlags(cmd)
 
 		if errors.Is(manager.Error, config.ErrUnknownProfile) {
 			return manager.Error

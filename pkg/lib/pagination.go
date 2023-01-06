@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"bunnyshell.com/cli/pkg/config"
-	"bunnyshell.com/cli/pkg/util"
+	"bunnyshell.com/cli/pkg/interactive"
 	"github.com/spf13/cobra"
 )
 
@@ -60,6 +60,10 @@ func interactivePagination(cmd *cobra.Command, model ModelWithPagination) (int32
 		return 0, errQuit
 	}
 
+	if config.GetSettings().NonInteractive {
+		return 0, errQuit
+	}
+
 	navPage, err := ProcessPagination(cmd, model)
 	if err != nil {
 		return 0, err
@@ -86,14 +90,14 @@ func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error)
 
 	nav, pageNo := getPaginationOptions(page, pages)
 
-	index, _, err := util.Choose("Navigate to a different page?", nav)
+	index, _, err := interactive.Choose("Navigate to a different page?", nav)
 	if err != nil {
 		return PaginationQuit, err
 	}
 
 	target := pageNo[index]
 	if target == PaginationOther {
-		target, err = util.AskInt32("Go to page:", util.AssertBetween(1, pages))
+		target, err = interactive.AskInt32("Go to page:", interactive.AssertBetween(1, pages))
 		if err != nil {
 			return PaginationQuit, err
 		}

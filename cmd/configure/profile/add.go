@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
@@ -50,7 +51,11 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if newProfileName == "" {
-				profileName, err := util.Ask("Name:", getProfileNameValidator())
+				if settings.NonInteractive {
+					return interactive.ErrRequiredValue
+				}
+
+				profileName, err := interactive.Ask("Name:", getProfileNameValidator())
 				if err != nil {
 					return err
 				}
@@ -82,7 +87,7 @@ func init() {
 				}
 
 				if err = setOrganization(&settings.Profile.Context, organizations.Embedded.Item); err != nil {
-					if errors.Is(err, util.ErrInvalidValue) {
+					if errors.Is(err, interactive.ErrNonInteractive) {
 						return nil
 					}
 
@@ -146,7 +151,11 @@ func init() {
 }
 
 func askForDefault(command *cobra.Command) bool {
-	setAsDefault, err := util.Confirm("Set as default profile?")
+	if config.GetSettings().NonInteractive {
+		return false
+	}
+
+	setAsDefault, err := interactive.Confirm("Set as default profile?")
 	if err != nil {
 		command.PrintErr("Could not determine user input", err)
 
@@ -157,9 +166,9 @@ func askForDefault(command *cobra.Command) bool {
 }
 
 func getProfileNameValidator() func(interface{}) error {
-	return util.All(
-		util.Lowercase(),
-		util.AssertMinimumLength(4),
+	return interactive.All(
+		interactive.Lowercase(),
+		interactive.AssertMinimumLength(4),
 	)
 }
 
@@ -174,9 +183,13 @@ func ensureToken(profile *config.Profile) error {
 		return nil
 	}
 
+	if config.GetSettings().NonInteractive {
+		return fmt.Errorf("%w (token)", interactive.ErrRequiredValue)
+	}
+
 	help := "Get yours from: https://environments.bunnyshell.com/access-token"
 
-	token, err := util.AskSecretWithHelp("Token:", help, validateToken)
+	token, err := interactive.AskSecretWithHelp("Token:", help, validateToken)
 	if err != nil {
 		return err
 	}
@@ -194,10 +207,14 @@ func setOrganization(profileContext *config.Context, organizations []sdk.Organiz
 			}
 		}
 
-		return fmt.Errorf("%w: unknown organization (%s)", util.ErrInvalidValue, profileContext.Organization)
+		return fmt.Errorf("%w: unknown organization (%s)", interactive.ErrInvalidValue, profileContext.Organization)
 	}
 
-	index, _, err := util.Choose("Select Organization (empty to skip)", getOrganizationNames(organizations))
+	if config.GetSettings().NonInteractive {
+		return interactive.ErrNonInteractive
+	}
+
+	index, _, err := interactive.Choose("Select Organization (empty to skip)", getOrganizationNames(organizations))
 	profileContext.Organization = *organizations[index].Id
 
 	return err
@@ -216,11 +233,11 @@ func getOrganizationNames(organizations []sdk.OrganizationCollection) []string {
 func validateToken(input interface{}) error {
 	value, ok := input.(string)
 	if !ok {
-		return util.ErrInvalidValue
+		return interactive.ErrInvalidValue
 	}
 
 	if !tokenFormat.Match([]byte(value)) {
-		return fmt.Errorf("%w: token is invalid", util.ErrInvalidValue)
+		return fmt.Errorf("%w: token is invalid", interactive.ErrInvalidValue)
 	}
 
 	return nil

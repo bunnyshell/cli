@@ -6,6 +6,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/port_forward"
 	"github.com/spf13/cobra"
 )
@@ -45,6 +46,10 @@ func init() {
 		},
 
 		RunE: func(cmd *cobra.Command, portMappings []string) error {
+			if podName == "" && config.GetSettings().NonInteractive {
+				return interactive.ErrNonInteractive
+			}
+
 			portForwardManager := port_forward.NewPortForwardManager()
 
 			portForwardManager.WithPortMappings(portMappings)

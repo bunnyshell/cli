@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
@@ -18,6 +18,10 @@ func NewFromWizard(profileContext *config.Context, resourcePath string) (*Enviro
 
 	if resourcePath != "" {
 		return environmentResource.WithResourcePath(resourcePath), nil
+	}
+
+	if config.GetSettings().NonInteractive {
+		return nil, interactive.ErrNonInteractive
 	}
 
 	if err = environmentResource.SelectComponentResource(); err != nil {
@@ -43,6 +47,10 @@ func getEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 		environmentResource := NewEnvironmentResource().WithEnvironment(environmentItem).WithComponent(componentItem)
 
 		return environmentResource, nil
+	}
+
+	if config.GetSettings().NonInteractive {
+		return nil, interactive.ErrNonInteractive
 	}
 
 	return askEnvironmentResource(profileContext)
@@ -106,7 +114,7 @@ func (r *EnvironmentResource) SelectOrganization() error {
 		items = append(items, item.GetName())
 	}
 
-	index, _, err := util.Choose("Select organization", items)
+	index, _, err := interactive.Choose("Select organization", items)
 	if err != nil {
 		return err
 	}
@@ -136,7 +144,7 @@ func (r *EnvironmentResource) SelectProject() error {
 		items = append(items, item.GetName())
 	}
 
-	index, _, err := util.Choose("Select project", items)
+	index, _, err := interactive.Choose("Select project", items)
 	if err != nil {
 		return err
 	}
@@ -166,7 +174,7 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 		items = append(items, item.GetName())
 	}
 
-	index, _, err := util.Choose("Select environment", items)
+	index, _, err := interactive.Choose("Select environment", items)
 	if err != nil {
 		return err
 	}
@@ -199,7 +207,7 @@ func (r *EnvironmentResource) SelectComponent() error {
 		items = append(items, item.GetName())
 	}
 
-	index, _, err := util.Choose("Select component", items)
+	index, _, err := interactive.Choose("Select component", items)
 	if err != nil {
 		return err
 	}
@@ -248,7 +256,7 @@ func (r *EnvironmentResource) SelectComponentResource() error {
 		return nil
 	}
 
-	index, _, err := util.Choose("Select resource", selectItems)
+	index, _, err := interactive.Choose("Select resource", selectItems)
 	if err != nil {
 		return err
 	}

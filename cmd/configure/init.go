@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +41,11 @@ func init() {
 		},
 
 		PostRunE: func(cmd *cobra.Command, args []string) error {
-			ok, err := util.Confirm("Continue with profile creation")
+			if settings.NonInteractive {
+				return nil
+			}
+
+			ok, err := interactive.Confirm("Continue with profile creation")
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -61,14 +65,18 @@ func init() {
 }
 
 func askForConfigFile(settings *config.Settings) (string, error) {
-	return util.AskPath("Choose file:", settings.ConfigFile, requiredExtension(".json", ".yaml"))
+	if settings.NonInteractive {
+		return settings.ConfigFile, nil
+	}
+
+	return interactive.AskPath("Choose file:", settings.ConfigFile, requiredExtension(".json", ".yaml"))
 }
 
 func requiredExtension(extensions ...string) survey.Validator {
 	return func(input interface{}) error {
 		str, ok := input.(string)
 		if !ok {
-			return util.ErrInvalidValue
+			return interactive.ErrInvalidValue
 		}
 
 		ext := filepath.Ext(str)
@@ -78,6 +86,6 @@ func requiredExtension(extensions ...string) survey.Validator {
 			}
 		}
 
-		return fmt.Errorf("%w: extensions must be one of %v", util.ErrInvalidValue, extensions)
+		return fmt.Errorf("%w: extensions must be one of %v", interactive.ErrInvalidValue, extensions)
 	}
 }
