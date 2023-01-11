@@ -6,10 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	persistentPreRun = "persistent_pre_run"
-	trueStr          = "true"
-)
+const persistentPreRun = "persistent_pre_run"
 
 func PersistentPreRunChain(command *cobra.Command, args []string) error {
 	return preRunChain(command.Parent(), command, args)
@@ -31,7 +28,7 @@ func AllComandsHelpFlag(command *cobra.Command) {
 	helpFlagName := "help"
 	if flags.Lookup(helpFlagName) == nil {
 		flags.BoolP(helpFlagName, "h", false, "Help for "+command.Name())
-		_ = flags.SetAnnotation(helpFlagName, cobra.FlagSetByCobraAnnotation, []string{trueStr})
+		_ = flags.SetAnnotation(helpFlagName, cobra.FlagSetByCobraAnnotation, []string{StrTrue})
 	}
 
 	for _, command := range command.Commands() {
@@ -46,14 +43,14 @@ func preRunChain(command *cobra.Command, called *cobra.Command, args []string) e
 
 	if command.Annotations == nil {
 		command.Annotations = map[string]string{
-			persistentPreRun: trueStr,
+			persistentPreRun: StrTrue,
 		}
 	} else {
-		if command.Annotations[persistentPreRun] == trueStr {
+		if command.Annotations[persistentPreRun] == StrTrue {
 			return nil
 		}
 
-		command.Annotations[persistentPreRun] = trueStr
+		command.Annotations[persistentPreRun] = StrTrue
 	}
 
 	if err := preRunChain(command.Parent(), called, args); err != nil {

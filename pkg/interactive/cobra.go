@@ -3,6 +3,7 @@ package interactive
 import (
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -26,7 +27,7 @@ func flagOrInteractive(flag *pflag.Flag) {
 		return
 	}
 
-	if required[0] != "true" {
+	if required[0] != util.StrTrue {
 		return
 	}
 
@@ -42,7 +43,7 @@ func flagOrInteractive(flag *pflag.Flag) {
 		}
 	}
 
-	required[0] = "false"
+	required[0] = util.StrFalse
 }
 
 func setterValidator(flag *pflag.Flag) survey.Validator {
