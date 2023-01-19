@@ -22,7 +22,11 @@ func init() {
 				return config.MainManager.Error
 			}
 
-			if err := config.MainManager.SetDefaultProfile(settings.Profile.Name); err != nil {
+			if err := setDefaultProfile(&settings.Profile); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			if err := config.MainManager.Save(); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
@@ -40,4 +44,8 @@ func init() {
 	_ = command.MarkFlagRequired(profileNameFlag.Name)
 
 	mainCmd.AddCommand(command)
+}
+
+func setDefaultProfile(profile *config.Profile) error {
+	return config.MainManager.SetDefaultProfile(profile.Name)
 }

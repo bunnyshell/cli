@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"regexp"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
-	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +20,8 @@ func init() {
 	settings := config.GetSettings()
 
 	profile := &settings.Profile
-	timeout := settings.Timeout
-	newProfileName := ""
+
+	profileName := ""
 	asDefaultProfile := false
 
 	command := &cobra.Command{
@@ -31,94 +29,53 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := util.PersistentPreRunChain(cmd, args); err != nil {
-				if errors.Is(err, config.ErrUnknownProfile) {
-					return nil
-				}
-			}
-
-			if errors.Is(config.MainManager.Error, config.ErrConfigLoad) {
-				return nil
-			}
-
-			if !config.MainManager.HasProfile(newProfileName) {
-				return nil
-			}
-
-			return config.ErrDuplicateProfile
-		},
+		PersistentPreRunE: util.PersistentPreRunChain,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if newProfileName == "" {
-				if settings.NonInteractive {
-					return interactive.ErrRequiredValue
-				}
+			profile.Name = profileName
 
-				profileName, err := interactive.Ask("Name:", getProfileNameValidator())
-				if err != nil {
-					return err
-				}
-
-				newProfileName = profileName
-			} else {
-				if err := getProfileNameValidator()(newProfileName); err != nil {
-					return err
-				}
+			if err := ensureProfileName(profile); err != nil {
+				return lib.FormatCommandError(cmd, err)
 			}
 
 			settings.Timeout = 0 * time.Second
 
 			for {
 				if err := ensureToken(profile); err != nil {
-					return err
-				}
-
-				organizations, resp, err := getOrganizations(settings.Profile)
-				if err != nil {
-					_ = lib.FormatCommandError(cmd, err)
-					profile.Token = ""
-
-					continue
-				}
-
-				if organizations.Embedded == nil || len(organizations.Embedded.Item) == 0 {
-					return fmt.Errorf("create an organization in: %s", resp.Request.Host)
-				}
-
-				if err = setOrganization(&settings.Profile.Context, organizations.Embedded.Item); err != nil {
-					if errors.Is(err, interactive.ErrNonInteractive) {
-						return nil
+					if errors.Is(err, interactive.ErrInvalidValue) {
+						continue
 					}
 
-					return err
+					return lib.FormatCommandError(cmd, err)
+				}
+
+				if err := checkToken(profile); err != nil {
+					return lib.FormatCommandError(cmd, err)
 				}
 
 				break
 			}
 
-			if err := config.MainManager.AddProfile(settings.Profile); err != nil {
+			if err := askToFillContext(profile); err != nil {
+				if errors.Is(err, interactive.ErrNonInteractive) {
+					return nil
+				}
+
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			settings.Timeout = timeout
-
-			return nil
-		},
-
-		PostRunE: func(cmd *cobra.Command, args []string) error {
-			if settings.Verbosity != 0 {
-				_ = lib.FormatCommandData(cmd, map[string]interface{}{
-					"message": "Saved config file",
-					"data":    settings.ConfigFile,
-				})
+			if err := config.MainManager.AddProfile(*profile); err != nil {
+				return lib.FormatCommandError(cmd, err)
 			}
 
 			if asDefaultProfile || askForDefault(cmd) {
-				root := mainCmd.Root()
-				root.SetArgs([]string{"configure", "profiles", "default", "--name", settings.Profile.Name})
+				if err := setDefaultProfile(profile); err != nil {
+					return lib.FormatCommandData(cmd, err)
+				}
+			}
 
-				return root.Execute()
+			if err := config.MainManager.Save(); err != nil {
+				return lib.FormatCommandData(cmd, err)
 			}
 
 			return nil
@@ -129,9 +86,9 @@ func init() {
 
 	flags := command.Flags()
 
-	newProfileNameFlagName := "name"
-	flags.StringVar(&newProfileName, newProfileNameFlagName, newProfileName, "Unique name for the new profile")
-	_ = command.MarkFlagRequired(newProfileNameFlagName)
+	profileNameFlagName := "name"
+	flags.StringVar(&profileName, profileNameFlagName, profileName, "Unique name for the new profile")
+	_ = command.MarkFlagRequired(profileNameFlagName)
 
 	flags.AddFlag(
 		options.Organization.AddFlag("organization", "Set Organization context for all resources"),
@@ -145,6 +102,7 @@ func init() {
 	flags.AddFlag(
 		options.ServiceComponent.AddFlag("serviceComponent", "Set ServiceComponent context for all resources"),
 	)
+
 	flags.BoolVar(&asDefaultProfile, "default", asDefaultProfile, "Set as default profile")
 
 	mainCmd.AddCommand(command)
@@ -169,7 +127,38 @@ func getProfileNameValidator() func(interface{}) error {
 	return interactive.All(
 		interactive.Lowercase(),
 		interactive.AssertMinimumLength(4),
+		func(input interface{}) error {
+			str, ok := input.(string)
+			if !ok {
+				return interactive.ErrInvalidValue
+			}
+
+			if config.MainManager.HasProfile(str) {
+				return config.ErrDuplicateProfile
+			}
+
+			return nil
+		},
 	)
+}
+
+func ensureProfileName(profile *config.Profile) error {
+	if profile.Name != "" {
+		return getProfileNameValidator()(profile.Name)
+	}
+
+	if config.GetSettings().NonInteractive {
+		return interactive.ErrRequiredValue
+	}
+
+	profileName, err := interactive.Ask("Name:", getProfileNameValidator())
+	if err != nil {
+		return err
+	}
+
+	profile.Name = profileName
+
+	return nil
 }
 
 func ensureToken(profile *config.Profile) error {
@@ -199,35 +188,15 @@ func ensureToken(profile *config.Profile) error {
 	return nil
 }
 
-func setOrganization(profileContext *config.Context, organizations []sdk.OrganizationCollection) error {
-	if profileContext.Organization != "" {
-		for _, organization := range organizations {
-			if organization.Id == &profileContext.Organization {
-				return nil
-			}
-		}
+func checkToken(profile *config.Profile) error {
+	ctx, cancel := lib.GetContextFromProfile(*profile)
+	defer cancel()
 
-		return fmt.Errorf("%w: unknown organization (%s)", interactive.ErrInvalidValue, profileContext.Organization)
-	}
+	request := lib.GetAPIFromProfile(*profile).OrganizationApi.OrganizationList(ctx)
 
-	if config.GetSettings().NonInteractive {
-		return interactive.ErrNonInteractive
-	}
-
-	index, _, err := interactive.Choose("Select Organization (empty to skip)", getOrganizationNames(organizations))
-	profileContext.Organization = *organizations[index].Id
+	_, _, err := request.Execute()
 
 	return err
-}
-
-func getOrganizationNames(organizations []sdk.OrganizationCollection) []string {
-	result := []string{}
-
-	for _, organization := range organizations {
-		result = append(result, *organization.Name)
-	}
-
-	return result
 }
 
 func validateToken(input interface{}) error {
@@ -241,13 +210,4 @@ func validateToken(input interface{}) error {
 	}
 
 	return nil
-}
-
-func getOrganizations(profile config.Profile) (*sdk.PaginatedOrganizationCollection, *http.Response, error) {
-	ctx, cancel := lib.GetContextFromProfile(profile)
-	defer cancel()
-
-	request := lib.GetAPIFromProfile(profile).OrganizationApi.OrganizationList(ctx)
-
-	return request.Execute()
 }

@@ -61,6 +61,16 @@ func Choose(question string, items []string) (int, string, error) {
 	}, &answerIndex, nil)
 }
 
+func ChooseWithSize(size int, question string, items []string) (int, string, error) {
+	var answerIndex int
+
+	return answerIndex, items[answerIndex], askPrompt(&survey.Select{
+		Message:  question,
+		Options:  items,
+		PageSize: size,
+	}, &answerIndex, nil)
+}
+
 func askPrompt(input survey.Prompt, answer any, validate survey.Validator) error {
 	// safeguard: it should really be handled upstream
 	if getSettings().NonInteractive {

@@ -2,19 +2,19 @@ package profile
 
 import (
 	"errors"
+	"fmt"
 
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/wizard"
 	"github.com/spf13/cobra"
 )
-
-var errNoContextChanges = errors.New("no context changes")
 
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 	profile := &settings.Profile
-	updateContext := &profile.Context
 
 	command := &cobra.Command{
 		Use: "context",
@@ -26,32 +26,8 @@ func init() {
 				return config.MainManager.Error
 			}
 
-			configProfile, _ := config.MainManager.GetProfile(settings.Profile.Name)
-			cfgContext := &configProfile.Context
-
-			var updates []string
-			if cfgContext.Organization != updateContext.Organization {
-				updates = append(updates, "organization")
-				cfgContext.Organization = updateContext.Organization
-			}
-
-			if cfgContext.Project != updateContext.Project {
-				updates = append(updates, "project")
-				cfgContext.Project = updateContext.Project
-			}
-
-			if cfgContext.Environment != updateContext.Environment {
-				updates = append(updates, "environment")
-				cfgContext.Environment = updateContext.Environment
-			}
-
-			if cfgContext.ServiceComponent != updateContext.ServiceComponent {
-				updates = append(updates, "service component")
-				cfgContext.ServiceComponent = updateContext.ServiceComponent
-			}
-
-			if len(updates) == 0 {
-				return errNoContextChanges
+			if err := askToFillContext(profile); err != nil {
+				return err
 			}
 
 			config.MainManager.SetProfile(*profile)
@@ -62,7 +38,6 @@ func init() {
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
 				"message": "Updated profile context",
-				"data":    updates,
 			})
 		},
 	}
@@ -73,18 +48,115 @@ func init() {
 	flags.AddFlag(profileNameFlag)
 	_ = command.MarkFlagRequired(profileNameFlag.Name)
 
-	flags.AddFlag(
-		options.Organization.AddFlag("organization", "Set Organization context for all resources"),
-	)
-	flags.AddFlag(
-		options.Project.AddFlag("project", "Set Project context for all resources"),
-	)
-	flags.AddFlag(
-		options.Environment.AddFlag("environment", "Set Environment context for all resources"),
-	)
-	flags.AddFlag(
-		options.ServiceComponent.AddFlag("serviceComponent", "Set ServiceComponent context for all resources"),
-	)
-
 	mainCmd.AddCommand(command)
+}
+
+func askToFillContext(profile *config.Profile) error {
+	var err error
+
+	wiz := wizard.New(profile)
+
+	if err = askOrganization(wiz, profile); err != nil {
+		return err
+	}
+
+	if err = askProject(wiz, profile); err != nil {
+		return err
+	}
+
+	if err = askEnvironment(wiz, profile); err != nil {
+		return err
+	}
+
+	if err = askComponent(wiz, profile); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func askOrganization(wiz *wizard.Wizard, profile *config.Profile) error {
+	return addOrRemove("organization", profile.Context.Organization, func() error {
+		item, err := wiz.SelectOrganization()
+		if err != nil {
+			return err
+		}
+
+		profile.Context.Organization = item.GetId()
+
+		return nil
+	}, func() {
+		profile.Context.Organization = ""
+	})
+}
+
+func askProject(wiz *wizard.Wizard, profile *config.Profile) error {
+	return addOrRemove("project", profile.Context.Project, func() error {
+		item, err := wiz.SelectProject()
+		if err != nil {
+			return err
+		}
+
+		profile.Context.Project = item.GetId()
+
+		return nil
+	}, func() {
+		profile.Context.Project = ""
+	})
+}
+
+func askEnvironment(wiz *wizard.Wizard, profile *config.Profile) error {
+	return addOrRemove("environment", profile.Context.Environment, func() error {
+		item, err := wiz.SelectEnvironment()
+		if err != nil {
+			return err
+		}
+
+		profile.Context.Environment = item.GetId()
+
+		return nil
+	}, func() {
+		profile.Context.Environment = ""
+	})
+}
+
+func askComponent(wiz *wizard.Wizard, profile *config.Profile) error {
+	return addOrRemove("component", profile.Context.ServiceComponent, func() error {
+		item, err := wiz.SelectComponent()
+		if err != nil {
+			return err
+		}
+
+		profile.Context.ServiceComponent = item.GetId()
+
+		return nil
+	}, func() {
+		profile.Context.ServiceComponent = ""
+	})
+}
+
+func addOrRemove(name string, value string, add func() error, remove func()) error {
+	if value != "" {
+		removeContext, err := interactive.Confirm(fmt.Sprintf("Remove context %s (%s) ?", name, value))
+		if err != nil {
+			return err
+		}
+
+		if !removeContext {
+			return nil
+		}
+
+		remove()
+	}
+
+	addContext, err := interactive.Confirm(fmt.Sprintf("Set context %s ?", name))
+	if err != nil {
+		return err
+	}
+
+	if !addContext {
+		return nil
+	}
+
+	return add()
 }

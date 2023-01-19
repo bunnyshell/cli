@@ -38,11 +38,7 @@ func NewManager() *Manager {
 }
 
 func (manager *Manager) SetDefaultProfile(name string) error {
-	if err := manager.config.setDefaultProfile(name); err != nil {
-		return err
-	}
-
-	return manager.save()
+	return manager.config.setDefaultProfile(name)
 }
 
 func (manager *Manager) HasProfile(name string) bool {
@@ -60,19 +56,11 @@ func (manager *Manager) SetProfile(profile Profile) {
 }
 
 func (manager *Manager) AddProfile(profile Profile) error {
-	if err := manager.config.addProfile(profile); err != nil {
-		return err
-	}
-
-	return manager.save()
+	return manager.config.addProfile(profile)
 }
 
 func (manager *Manager) RemoveProfile(name string) error {
-	if err := manager.config.removeProfile(name); err != nil {
-		return err
-	}
-
-	return manager.save()
+	return manager.config.removeProfile(name)
 }
 
 func (manager *Manager) Load() {
