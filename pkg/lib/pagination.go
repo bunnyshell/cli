@@ -56,7 +56,7 @@ func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerato
 }
 
 func interactivePagination(cmd *cobra.Command, model ModelWithPagination) (int32, error) {
-	if config.GetSettings().IsStylish() {
+	if !config.GetSettings().IsStylish() {
 		return 0, errQuit
 	}
 
