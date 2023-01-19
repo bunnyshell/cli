@@ -1,23 +1,20 @@
 package project
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"github.com/spf13/cobra"
-
-	"bunnyshell.com/cli/pkg/lib"
 )
 
 var mainCmd = &cobra.Command{
 	Use:     "projects",
 	Aliases: []string{"proj"},
 
-	Short: "Bunnyshell Projects",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lib.LoadViperConfigIntoContext()
-	},
+	Short: "Projects",
+	Long:  "Bunnyshell Projects",
 }
 
 func init() {
-	lib.CLIContext.RequireTokenOnCommand(mainCmd)
+	config.MainManager.CommandWithAPI(mainCmd)
 }
 
 func GetMainCommand() *cobra.Command {

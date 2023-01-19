@@ -1,61 +1,51 @@
 package configure
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
+	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
+	"bunnyshell.com/cli/pkg/lib"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
 )
 
 func init() {
+	settings := config.GetSettings()
+
 	initConfigCommand := &cobra.Command{
 		Use:   "init",
 		Short: "Create a configuration file",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		Deprecated: "All configure commands will create a config file or overwrite an existing file.",
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			configFile := viper.ConfigFileUsed()
-
-			if err := assertNoFile(configFile); err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			configFile, err := util.AskPath("Choose file:", configFile, requiredExtension(".json", ".yaml"))
+			configFile, err := askForConfigFile(settings)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if err := os.MkdirAll(filepath.Dir(configFile), os.FileMode(int(0700))); err != nil {
+			settings.ConfigFile = configFile
+
+			if err = config.MainManager.SafeSave(); err != nil {
 				return lib.FormatCommandError(cmd, err)
-			}
-
-			viper.SetConfigPermissions(os.FileMode(int(0600)))
-			viper.SetConfigFile(configFile)
-			viper.Set("profiles", []string{})
-
-			if err := viper.WriteConfig(); err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			if lib.CLIContext.Verbosity == 0 {
-				return nil
 			}
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
 				"message": "Config file created",
-				"data":    viper.GetViper().ConfigFileUsed(),
+				"data":    settings.ConfigFile,
 			})
 		},
+
 		PostRunE: func(cmd *cobra.Command, args []string) error {
-			ok, err := util.Confirm("Continue with profile creation")
+			if settings.NonInteractive {
+				return nil
+			}
+
+			ok, err := interactive.Confirm("Continue with profile creation")
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -64,8 +54,9 @@ func init() {
 				return nil
 			}
 
-			root := mainCmd.Root()
+			root := cmd.Root()
 			root.SetArgs([]string{"configure", "profiles", "add"})
+
 			return root.Execute()
 		},
 	}
@@ -73,41 +64,28 @@ func init() {
 	mainCmd.AddCommand(initConfigCommand)
 }
 
-func assertNoFile(path string) error {
-	exists, err := fileExists(path)
-	if err != nil {
-		return err
+func askForConfigFile(settings *config.Settings) (string, error) {
+	if settings.NonInteractive {
+		return settings.ConfigFile, nil
 	}
 
-	if exists {
-		return errors.New("file already exists")
-	}
-
-	return nil
-}
-
-func fileExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
+	return interactive.AskPath("Choose file:", settings.ConfigFile, requiredExtension(".json", ".yaml"))
 }
 
 func requiredExtension(extensions ...string) survey.Validator {
 	return func(input interface{}) error {
-		ext := filepath.Ext(input.(string))
-		// sumimasen
+		str, ok := input.(string)
+		if !ok {
+			return interactive.ErrInvalidValue
+		}
 
+		ext := filepath.Ext(str)
 		for _, allowed := range extensions {
 			if ext == allowed {
 				return nil
 			}
 		}
 
-		return fmt.Errorf("supported extensions: %v", extensions)
+		return fmt.Errorf("%w: extensions must be one of %v", interactive.ErrInvalidValue, extensions)
 	}
 }

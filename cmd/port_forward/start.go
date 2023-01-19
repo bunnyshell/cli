@@ -1,16 +1,16 @@
 package port_forward
 
 import (
-	"fmt"
+	"os"
 
+	"bunnyshell.com/cli/pkg/config"
 	"github.com/spf13/cobra"
-
-	"bunnyshell.com/cli/pkg/environment"
-	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/port_forward"
 )
 
 func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
 	var (
 		resourcePath string
 		podName      string
@@ -23,53 +23,27 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		Args: func(cmd *cobra.Command, portMappings []string) error {
-			if err := cobra.MinimumNArgs(1)(cmd, portMappings); err != nil {
-				return err
+		Run: func(cmd *cobra.Command, portMappings []string) {
+			root := cmd.Root()
+			root.SetArgs(append([]string{
+				"components", "port-forward",
+				"--component", settings.Profile.Context.ServiceComponent,
+				"--resource", resourcePath,
+				"--pod", podName,
+			}, portMappings...))
+
+			if err := root.Execute(); err != nil {
+				os.Exit(1)
 			}
-
-			for _, portMapping := range portMappings {
-				if portMapping == "" || !port_forward.PortMappingExp.MatchString(portMapping) {
-					return fmt.Errorf("invalid port mapping: %s", portMapping)
-				}
-			}
-
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, portMappings []string) error {
-			portForwardManager := port_forward.NewPortForwardManager()
-
-			portForwardManager.WithPortMappings(portMappings)
-
-			environmentResource, err := environment.NewFromWizard(&lib.CLIContext.Profile.Context, resourcePath)
-			if err != nil {
-				return err
-			}
-
-			portForwardManager.
-				WithEnvironmentResource(environmentResource).
-				PrepareKubernetesClient()
-
-			if podName != "" {
-				portForwardManager.WithPodName(podName)
-			} else {
-				portForwardManager.SelectPod()
-			}
-
-			err = portForwardManager.Start()
-			if err != nil {
-				return err
-			}
-
-			portForwardManager.Wait()
-
-			return nil
 		},
 	}
 
-	command.Flags().StringVar(&lib.CLIContext.Profile.Context.ServiceComponent, "component", "", "Service Component")
-	command.Flags().StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
-	command.Flags().StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
+	flags := command.Flags()
+
+	flags.AddFlag(options.ServiceComponent.AddFlag("component", "Service Component"))
+
+	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
+	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
 
 	mainCmd.AddCommand(command)
 }

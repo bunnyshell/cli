@@ -1,34 +1,36 @@
 package variable
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var id string
+	var variableID string
 
 	command := &cobra.Command{
-		Use: "show",
+		Use:     "show",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var api = lib.GetAPI().EnvironmentVariableApi
-
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := api.EnvironmentVariableView(ctx, id)
+			request := lib.GetAPI().EnvironmentVariableApi.EnvironmentVariableView(ctx, variableID)
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			model, resp, err := request.Execute()
+
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 
-	command.Flags().StringVar(&id, "id", id, "Environment Variable Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlagName := "id"
+	flags.StringVar(&variableID, idFlagName, variableID, "Environment Variable Id")
+	_ = command.MarkFlagRequired(idFlagName)
 
 	mainCmd.AddCommand(command)
 }

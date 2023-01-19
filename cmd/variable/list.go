@@ -3,20 +3,23 @@ package variable
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var name string
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
-	organization := &lib.CLIContext.Profile.Context.Organization
-	environment := &lib.CLIContext.Profile.Context.Environment
+	var (
+		page int32
+		name string
+	)
 
 	command := &cobra.Command{
-		Use: "list",
+		Use:     "list",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
@@ -31,12 +34,12 @@ func init() {
 					request = request.Page(page)
 				}
 
-				if *organization != "" {
-					request = request.Organization(*organization)
+				if settings.Profile.Context.Organization != "" {
+					request = request.Organization(settings.Profile.Context.Organization)
 				}
 
-				if *environment != "" {
-					request = request.Environment(*environment)
+				if settings.Profile.Context.Environment != "" {
+					request = request.Environment(settings.Profile.Context.Environment)
 				}
 
 				if name != "" {
@@ -48,10 +51,13 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(&name, "name", name, "Filter by Name")
-	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
-	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+	flags.AddFlag(options.Environment.GetFlag("environment"))
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
+	flags.StringVar(&name, "name", name, "Filter by Name")
 
 	mainCmd.AddCommand(command)
 }

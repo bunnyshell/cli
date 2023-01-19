@@ -1,13 +1,14 @@
 package project
 
 import (
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	project := &lib.CLIContext.Profile.Context.Project
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
 	command := &cobra.Command{
 		Use: "show",
@@ -18,16 +19,19 @@ func init() {
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := lib.GetAPI().ProjectApi.ProjectView(ctx, *project)
+			request := lib.GetAPI().ProjectApi.ProjectView(ctx, settings.Profile.Context.Project)
 
-			resp, r, err := request.Execute()
+			model, resp, err := request.Execute()
 
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 
-	command.Flags().StringVar(project, "id", *project, "Project Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlag := options.Project.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
 
 	mainCmd.AddCommand(command)
 }

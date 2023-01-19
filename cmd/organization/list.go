@@ -3,9 +3,8 @@ package organization
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -32,7 +31,9 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
+	flags := command.Flags()
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
 
 	mainCmd.AddCommand(command)
 }

@@ -53,11 +53,13 @@ func (r *EnvironmentResource) WithComponent(component *bunnysdk.ComponentItem) *
 	}
 
 	r.Component = component
+
 	return r
 }
 
 func (r *EnvironmentResource) WithComponentResource(component *bunnysdk.ComponentResourceItem) *EnvironmentResource {
 	r.ComponentResource = component
+
 	return r
 }
 
@@ -101,6 +103,7 @@ func (r *EnvironmentResource) WithResourcePath(resourcePath string) *Environment
 			break
 		}
 	}
+
 	if r.ComponentResource == nil {
 		panic(fmt.Errorf(
 			"the component does not contain the \"%s\" resource",
@@ -111,33 +114,36 @@ func (r *EnvironmentResource) WithResourcePath(resourcePath string) *Environment
 	return r
 }
 
-func (e *EnvironmentResource) WithOrganization(organization *bunnysdk.OrganizationItem) *EnvironmentResource {
-	e.Organization = organization
-	return e
+func (r *EnvironmentResource) WithOrganization(organization *bunnysdk.OrganizationItem) *EnvironmentResource {
+	r.Organization = organization
+
+	return r
 }
 
-func (e *EnvironmentResource) WithProject(project *bunnysdk.ProjectItem) *EnvironmentResource {
-	if e.Organization != nil && e.Organization.GetId() != project.GetOrganization() {
+func (r *EnvironmentResource) WithProject(project *bunnysdk.ProjectItem) *EnvironmentResource {
+	if r.Organization != nil && r.Organization.GetId() != project.GetOrganization() {
 		panic(fmt.Errorf(
 			"project \"%s\" is not part of organization \"%s\"",
 			project.GetName(),
-			e.Organization.GetName(),
+			r.Organization.GetName(),
 		))
 	}
 
-	e.Project = project
-	return e
+	r.Project = project
+
+	return r
 }
 
-func (e *EnvironmentResource) WithEnvironment(environment *bunnysdk.EnvironmentItem) *EnvironmentResource {
-	if e.Project != nil && e.Project.GetId() != environment.GetProject() {
+func (r *EnvironmentResource) WithEnvironment(environment *bunnysdk.EnvironmentItem) *EnvironmentResource {
+	if r.Project != nil && r.Project.GetId() != environment.GetProject() {
 		panic(fmt.Errorf(
 			"environment \"%s\" is not part of project \"%s\"",
 			environment.GetName(),
-			e.Project.GetName(),
+			r.Project.GetName(),
 		))
 	}
 
-	e.Environment = environment
-	return e
+	r.Environment = environment
+
+	return r
 }

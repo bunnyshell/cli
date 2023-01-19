@@ -3,18 +3,20 @@ package event
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var type_ string
-	var status string
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
-	organization := &lib.CLIContext.Profile.Context.Organization
-	environment := &lib.CLIContext.Profile.Context.Environment
+	var (
+		page      int32
+		eventType string
+		status    string
+	)
 
 	command := &cobra.Command{
 		Use: "list",
@@ -32,16 +34,16 @@ func init() {
 					request = request.Page(page)
 				}
 
-				if *organization != "" {
-					request = request.Organization(*organization)
+				if settings.Profile.Context.Organization != "" {
+					request = request.Organization(settings.Profile.Context.Organization)
 				}
 
-				if *environment != "" {
-					request = request.Environment(*environment)
+				if settings.Profile.Context.Environment != "" {
+					request = request.Environment(settings.Profile.Context.Environment)
 				}
 
-				if type_ != "" {
-					request = request.Type_(type_)
+				if eventType != "" {
+					request = request.Type_(eventType)
 				}
 
 				if status != "" {
@@ -53,11 +55,14 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
-	command.Flags().StringVar(environment, "environment", *environment, "Filter by Environment")
-	command.Flags().StringVar(&type_, "type", type_, "Filter by Type")
-	command.Flags().StringVar(&status, "status", status, "Filter by Status")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+	flags.AddFlag(options.Environment.GetFlag("environment"))
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
+	flags.StringVar(&eventType, "type", eventType, "Filter by Type")
+	flags.StringVar(&status, "status", status, "Filter by Status")
 
 	mainCmd.AddCommand(command)
 }

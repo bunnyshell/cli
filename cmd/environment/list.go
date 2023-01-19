@@ -3,23 +3,29 @@ package environment
 import (
 	"net/http"
 
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
-	var type_ string
-	var operationStatus string
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
-	organization := &lib.CLIContext.Profile.Context.Organization
-	project := &lib.CLIContext.Profile.Context.Project
+	var (
+		page            int32
+		environmentType string
+		operationStatus string
+	)
 
 	command := &cobra.Command{
-		Use: "list",
+		Use:     "list",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
+
+		PersistentPreRunE: util.PersistentPreRunChain,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
@@ -32,16 +38,16 @@ func init() {
 					request = request.Page(page)
 				}
 
-				if *organization != "" {
-					request = request.Organization(*organization)
+				if settings.Profile.Context.Organization != "" {
+					request = request.Organization(settings.Profile.Context.Organization)
 				}
 
-				if *project != "" {
-					request = request.Project(*project)
+				if settings.Profile.Context.Project != "" {
+					request = request.Project(settings.Profile.Context.Project)
 				}
 
-				if type_ != "" {
-					request = request.Type_(type_)
+				if environmentType != "" {
+					request = request.Type_(environmentType)
 				}
 
 				if operationStatus != "" {
@@ -53,11 +59,14 @@ func init() {
 		},
 	}
 
-	command.Flags().Int32Var(&page, "page", page, "Listing Page")
-	command.Flags().StringVar(organization, "organization", *organization, "Filter by Organization")
-	command.Flags().StringVar(project, "project", *project, "Filter by Project")
-	command.Flags().StringVar(&type_, "type", type_, "Filter by Type")
-	command.Flags().StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by Operation Status")
+	flags := command.Flags()
+
+	flags.AddFlag(options.Organization.GetFlag("organization"))
+	flags.AddFlag(options.Project.GetFlag("project"))
+
+	flags.Int32Var(&page, "page", page, "Listing Page")
+	flags.StringVar(&environmentType, "type", environmentType, "Filter by Type")
+	flags.StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by Operation Status")
 
 	mainCmd.AddCommand(command)
 }

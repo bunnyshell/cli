@@ -9,47 +9,51 @@ import (
 )
 
 func stylish(data interface{}) ([]byte, error) {
-	var b bytes.Buffer
-	var err error = nil
+	var (
+		buffer bytes.Buffer
+		err    error
+	)
 
-	w := tabwriter.NewWriter(&b, 1, 1, 1, ' ', tabwriter.Debug)
+	writer := tabwriter.NewWriter(&buffer, 1, 1, 1, ' ', tabwriter.Debug)
 
-	switch t := data.(type) {
+	switch dataType := data.(type) {
 	case *sdk.PaginatedOrganizationCollection:
-		tabulateOrganizationCollection(w, t)
+		tabulateOrganizationCollection(writer, dataType)
 	case *sdk.PaginatedProjectCollection:
-		tabulateProjectCollection(w, t)
+		tabulateProjectCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentCollection:
-		tabulateEnvironmentCollection(w, t)
+		tabulateEnvironmentCollection(writer, dataType)
 	case *sdk.PaginatedComponentCollection:
-		tabulateComponentCollection(w, t)
+		tabulateComponentCollection(writer, dataType)
 	case *sdk.PaginatedEventCollection:
-		tabulateEventCollection(w, t)
+		tabulateEventCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentVariableCollection:
-		tabulateEnvironmentVariableCollection(w, t)
+		tabulateEnvironmentVariableCollection(writer, dataType)
 	case *sdk.OrganizationItem:
-		tabulateOrganizationItem(w, t)
+		tabulateOrganizationItem(writer, dataType)
 	case *sdk.ProjectItem:
-		tabulateProjectItem(w, t)
+		tabulateProjectItem(writer, dataType)
 	case *sdk.EnvironmentItem:
-		tabulateEnvironmentItem(w, t)
+		tabulateEnvironmentItem(writer, dataType)
 	case *sdk.ComponentItem:
-		tabulateComponentItem(w, t)
+		tabulateComponentItem(writer, dataType)
 	case *sdk.EventItem:
-		tabulateEventItem(w, t)
+		tabulateEventItem(writer, dataType)
 	case *sdk.EnvironmentVariableItem:
-		tabulateEnvironmentVariableItem(w, t)
+		tabulateEnvironmentVariableItem(writer, dataType)
 	case *sdk.ProblemGeneric:
-		tabulateGeneric(w, t)
+		tabulateGeneric(writer, dataType)
 	default:
-		fmt.Fprintf(w, "JSON: ")
+		fmt.Fprintf(writer, "JSON: ")
+
 		var jsonBytes []byte
 		jsonBytes, err = JsonFormatter(data)
-		w.Write(jsonBytes)
+		_, _ = writer.Write(jsonBytes)
 	}
 
-	w.Flush()
-	return b.Bytes(), err
+	writer.Flush()
+
+	return buffer.Bytes(), err
 }
 
 func tabulateOrganizationCollection(w *tabwriter.Writer, data *sdk.PaginatedOrganizationCollection) {

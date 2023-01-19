@@ -1,32 +1,27 @@
 package configure
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
-
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
 	showConfigCommand := &cobra.Command{
-		Use:   "show",
+		Use: "show",
+
 		Short: "Show current config",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := viper.ReadInConfig(); err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			config, err := lib.GetConfig()
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
+			if config.MainManager.Error != nil {
+				return lib.FormatCommandError(cmd, config.MainManager.Error)
 			}
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
-				"file": viper.ConfigFileUsed(),
-				"data": config,
+				"file": config.GetSettings().ConfigFile,
+				"data": config.GetConfig(),
 			})
 		},
 	}

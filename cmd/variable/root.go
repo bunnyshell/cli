@@ -1,23 +1,27 @@
 package variable
 
 import (
+	"bunnyshell.com/cli/pkg/config"
 	"github.com/spf13/cobra"
-
-	"bunnyshell.com/cli/pkg/lib"
 )
+
+var mainGroup = cobra.Group{
+	ID:    "variables",
+	Title: "Commands for Environment Variables:",
+}
 
 var mainCmd = &cobra.Command{
 	Use:     "variables",
 	Aliases: []string{"var"},
 
-	Short: "Bunnyshell Environment Variables",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lib.LoadViperConfigIntoContext()
-	},
+	Short: "Environment Variables",
+	Long:  "Bunnyshell Environment Variables",
 }
 
 func init() {
-	lib.CLIContext.RequireTokenOnCommand(mainCmd)
+	config.MainManager.CommandWithAPI(mainCmd)
+
+	mainCmd.AddGroup(&mainGroup)
 }
 
 func GetMainCommand() *cobra.Command {

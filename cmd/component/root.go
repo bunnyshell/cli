@@ -1,23 +1,31 @@
 package component
 
 import (
+	"bunnyshell.com/cli/cmd/component/action"
+	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
-
-	"bunnyshell.com/cli/pkg/lib"
 )
 
 var mainCmd = &cobra.Command{
 	Use:     "components",
 	Aliases: []string{"comp"},
 
-	Short: "Bunnyshell Components",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lib.LoadViperConfigIntoContext()
-	},
+	Short: "Components",
+	Long:  "Bunnyshell Components",
 }
 
 func init() {
-	lib.CLIContext.RequireTokenOnCommand(mainCmd)
+	config.MainManager.CommandWithAPI(mainCmd)
+
+	util.AddGroupedCommands(
+		mainCmd,
+		cobra.Group{
+			ID:    "actions",
+			Title: "Commands for Component Actions:",
+		},
+		action.GetMainCommand().Commands(),
+	)
 }
 
 func GetMainCommand() *cobra.Command {

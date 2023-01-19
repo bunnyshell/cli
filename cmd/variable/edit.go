@@ -1,42 +1,62 @@
 package variable
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var id string
-	var value string
+	var (
+		variableID string
+		value      string
+	)
+
+	actionGroup := &cobra.Group{
+		ID:    "actions",
+		Title: "Commands for Environment Variable Actions:",
+	}
 
 	command := &cobra.Command{
-		Use: "edit",
+		Use:     "edit",
+		GroupID: actionGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var api = lib.GetAPI().EnvironmentVariableApi
-
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			edit := *sdk.NewEnvironmentVariableEdit()
-			edit.SetValue(value)
+			request := lib.GetAPI().EnvironmentVariableApi.EnvironmentVariableEdit(
+				ctx,
+				variableID,
+			).EnvironmentVariableEdit(
+				*toVariableEdit(value),
+			)
 
-			request := api.EnvironmentVariableEdit(ctx, id).EnvironmentVariableEdit(edit)
+			model, resp, err := request.Execute()
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 
-	command.Flags().StringVar(&id, "id", id, "Environment Variable Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
 
-	command.Flags().StringVar(&value, "value", value, "Environment Variable Value")
-	command.MarkFlagRequired("value")
+	idFlagName := "id"
+	flags.StringVar(&variableID, idFlagName, variableID, "Environment Variable Id")
+	_ = command.MarkFlagRequired(idFlagName)
 
+	valueFlagName := "value"
+	flags.StringVar(&value, valueFlagName, value, "Environment Variable Value")
+	_ = command.MarkFlagRequired(valueFlagName)
+
+	mainCmd.AddGroup(actionGroup)
 	mainCmd.AddCommand(command)
+}
+
+func toVariableEdit(value string) *sdk.EnvironmentVariableEdit {
+	edit := sdk.NewEnvironmentVariableEdit()
+	edit.SetValue(value)
+
+	return edit
 }

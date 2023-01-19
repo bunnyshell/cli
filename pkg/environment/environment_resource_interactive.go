@@ -4,14 +4,34 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
-func NewFromWizard(profileContext *lib.Context, resourcePath string) (*EnvironmentResource, error) {
-	environmentResource := NewEnvironmentResource()
+func NewFromWizard(profileContext *config.Context, resourcePath string) (*EnvironmentResource, error) {
+	environmentResource, err := getEnvironmentResource(profileContext)
+	if err != nil {
+		return nil, err
+	}
 
+	if resourcePath != "" {
+		return environmentResource.WithResourcePath(resourcePath), nil
+	}
+
+	if config.GetSettings().NonInteractive {
+		return nil, interactive.ErrNonInteractive
+	}
+
+	if err = environmentResource.SelectComponentResource(); err != nil {
+		return nil, err
+	}
+
+	return environmentResource, nil
+}
+
+func getEnvironmentResource(profileContext *config.Context) (*EnvironmentResource, error) {
 	// wizard
 	if profileContext.ServiceComponent != "" {
 		componentItem, _, err := lib.GetComponent(profileContext.ServiceComponent)
@@ -24,52 +44,56 @@ func NewFromWizard(profileContext *lib.Context, resourcePath string) (*Environme
 			return nil, err
 		}
 
-		environmentResource.WithEnvironment(environmentItem).WithComponent(componentItem)
-	} else {
-		if profileContext.Organization != "" {
-			organizationItem, _, err := lib.GetOrganization(profileContext.Organization)
-			if err != nil {
-				return nil, err
-			}
+		environmentResource := NewEnvironmentResource().WithEnvironment(environmentItem).WithComponent(componentItem)
 
-			environmentResource.WithOrganization(organizationItem)
-		} else if err := environmentResource.SelectOrganization(); err != nil {
-			return nil, err
-		}
-
-		if profileContext.Project != "" {
-			projectItem, _, err := lib.GetProject(profileContext.Project)
-			if err != nil {
-				return nil, err
-			}
-
-			environmentResource.WithProject(projectItem)
-		} else if err := environmentResource.SelectProject(); err != nil {
-			return nil, err
-		}
-
-		if profileContext.Environment != "" {
-			environmentItem, _, err := lib.GetEnvironment(profileContext.Environment)
-			if err != nil {
-				return nil, err
-			}
-
-			environmentResource.WithEnvironment(environmentItem)
-		} else if err := environmentResource.SelectEnvironment(); err != nil {
-			return nil, err
-		}
-
-		if err := environmentResource.SelectComponent(); err != nil {
-			return nil, err
-		}
+		return environmentResource, nil
 	}
 
-	if resourcePath != "" {
-		environmentResource.WithResourcePath(resourcePath)
-	} else {
-		if err := environmentResource.SelectComponentResource(); err != nil {
+	if config.GetSettings().NonInteractive {
+		return nil, interactive.ErrNonInteractive
+	}
+
+	return askEnvironmentResource(profileContext)
+}
+
+func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResource, error) {
+	environmentResource := NewEnvironmentResource()
+
+	if profileContext.Organization != "" {
+		organizationItem, _, err := lib.GetOrganization(profileContext.Organization)
+		if err != nil {
 			return nil, err
 		}
+
+		environmentResource.WithOrganization(organizationItem)
+	} else if err := environmentResource.SelectOrganization(); err != nil {
+		return nil, err
+	}
+
+	if profileContext.Project != "" {
+		projectItem, _, err := lib.GetProject(profileContext.Project)
+		if err != nil {
+			return nil, err
+		}
+
+		environmentResource.WithProject(projectItem)
+	} else if err := environmentResource.SelectProject(); err != nil {
+		return nil, err
+	}
+
+	if profileContext.Environment != "" {
+		environmentItem, _, err := lib.GetEnvironment(profileContext.Environment)
+		if err != nil {
+			return nil, err
+		}
+
+		environmentResource.WithEnvironment(environmentItem)
+	} else if err := environmentResource.SelectEnvironment(); err != nil {
+		return nil, err
+	}
+
+	if err := environmentResource.SelectComponent(); err != nil {
+		return nil, err
 	}
 
 	return environmentResource, nil
@@ -89,7 +113,8 @@ func (r *EnvironmentResource) SelectOrganization() error {
 	for _, item := range resp.Embedded.GetItem() {
 		items = append(items, item.GetName())
 	}
-	index, _, err := util.Choose("Select organization", items)
+
+	index, _, err := interactive.Choose("Select organization", items)
 	if err != nil {
 		return err
 	}
@@ -100,6 +125,7 @@ func (r *EnvironmentResource) SelectOrganization() error {
 	}
 
 	r.WithOrganization(organizationItem)
+
 	return nil
 }
 
@@ -117,7 +143,8 @@ func (r *EnvironmentResource) SelectProject() error {
 	for _, item := range resp.Embedded.GetItem() {
 		items = append(items, item.GetName())
 	}
-	index, _, err := util.Choose("Select project", items)
+
+	index, _, err := interactive.Choose("Select project", items)
 	if err != nil {
 		return err
 	}
@@ -128,6 +155,7 @@ func (r *EnvironmentResource) SelectProject() error {
 	}
 
 	r.WithProject(projectItem)
+
 	return nil
 }
 
@@ -145,7 +173,8 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 	for _, item := range resp.Embedded.GetItem() {
 		items = append(items, item.GetName())
 	}
-	index, _, err := util.Choose("Select environment", items)
+
+	index, _, err := interactive.Choose("Select environment", items)
 	if err != nil {
 		return err
 	}
@@ -156,12 +185,12 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 	}
 
 	r.WithEnvironment(environmentItem)
+
 	return nil
 }
 
 func (r *EnvironmentResource) SelectComponent() error {
 	resp, _, err := lib.GetComponents(r.Environment.GetId(), "running")
-
 	if err != nil {
 		return err
 	}
@@ -176,7 +205,8 @@ func (r *EnvironmentResource) SelectComponent() error {
 	for _, item := range components {
 		items = append(items, item.GetName())
 	}
-	index, _, err := util.Choose("Select component", items)
+
+	index, _, err := interactive.Choose("Select component", items)
 	if err != nil {
 		return err
 	}
@@ -187,6 +217,7 @@ func (r *EnvironmentResource) SelectComponent() error {
 	}
 
 	r.WithComponent(componentItem)
+
 	return nil
 }
 
@@ -203,6 +234,7 @@ func (r *EnvironmentResource) SelectComponentResource() error {
 
 	allowedResources := []bunnysdk.ComponentResourceItem{}
 	selectItems := []string{}
+
 	for _, item := range resources {
 		itemKind := strings.ToLower(item.GetKind())
 		if _, present := allowedResouceTypesSet[itemKind]; !present {
@@ -219,14 +251,16 @@ func (r *EnvironmentResource) SelectComponentResource() error {
 
 	if len(allowedResources) == 1 {
 		r.WithComponentResource(&allowedResources[0])
+
 		return nil
 	}
 
-	index, _, err := util.Choose("Select resource", selectItems)
+	index, _, err := interactive.Choose("Select resource", selectItems)
 	if err != nil {
 		return err
 	}
 
 	r.WithComponentResource(&allowedResources[index])
+
 	return nil
 }

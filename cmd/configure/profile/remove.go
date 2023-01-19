@@ -1,33 +1,51 @@
 package profile
 
 import (
-	"github.com/spf13/cobra"
+	"errors"
 
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	var profileName string
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
-	removeProfileCommand := &cobra.Command{
+	command := &cobra.Command{
 		Use: "remove",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := lib.RemoveProfile(profileName); err != nil {
+			if errors.Is(config.MainManager.Error, config.ErrConfigLoad) {
+				return config.MainManager.Error
+			}
+
+			if err := removeProfile(&settings.Profile); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			if err := config.MainManager.Save(); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
 				"message": "Profile removed",
-				"data":    profileName,
+				"data":    settings.Profile.Name,
 			})
 		},
 	}
 
-	removeProfileCommand.Flags().StringVar(&profileName, "name", profileName, "Profile name to remove")
-	removeProfileCommand.MarkFlagRequired("name")
+	flags := command.Flags()
 
-	mainCmd.AddCommand(removeProfileCommand)
+	profileNameFlag := options.ProfileName.CloneMainFlag()
+	flags.AddFlag(profileNameFlag)
+	_ = command.MarkFlagRequired(profileNameFlag.Name)
+
+	mainCmd.AddCommand(command)
+}
+
+func removeProfile(profile *config.Profile) error {
+	return config.MainManager.RemoveProfile(profile.Name)
 }

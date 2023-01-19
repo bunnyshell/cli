@@ -1,34 +1,37 @@
 package environment
 
 import (
-	"github.com/spf13/cobra"
-
 	"bunnyshell.com/cli/cmd/environment/action"
-	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/util"
+	"github.com/spf13/cobra"
 )
+
+var mainGroup = &cobra.Group{
+	ID:    "environments",
+	Title: "Commands for Environment:",
+}
 
 var mainCmd = &cobra.Command{
 	Use:     "environments",
 	Aliases: []string{"env"},
 
-	Short: "Bunnyshell Environments",
+	Short: "Environments",
+	Long:  "Bunnyshell Environments",
 
 	ValidArgsFunction: cobra.NoFileCompletions,
-
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lib.LoadViperConfigIntoContext()
-	},
 }
 
 func init() {
-	lib.CLIContext.RequireTokenOnCommand(mainCmd)
+	config.MainManager.CommandWithAPI(mainCmd)
+
+	mainCmd.AddGroup(mainGroup)
 
 	util.AddGroupedCommands(
 		mainCmd,
 		cobra.Group{
 			ID:    "actions",
-			Title: "Environment Actions",
+			Title: "Commands for Environment Actions:",
 		},
 		action.GetMainCommand().Commands(),
 	)

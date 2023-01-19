@@ -1,11 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"bunnyshell.com/cli/cmd/component"
 	"bunnyshell.com/cli/cmd/configure"
@@ -17,15 +15,15 @@ import (
 	"bunnyshell.com/cli/cmd/remote_development"
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
-
 	"bunnyshell.com/cli/pkg/build"
-	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/lib/cliconfig"
+	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/cli/pkg/util"
+	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:     build.Name,
 	Version: build.Version,
@@ -34,41 +32,62 @@ var rootCmd = &cobra.Command{
 	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
 
 	SilenceUsage: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		manager := config.MainManager
+
 		if cmd.CalledAs() == cobra.ShellCompRequestCmd {
-			return
+			// Autocomplete parses flags differently, kickstart flag parsing
+			_ = cmd.Root().ParseFlags(args)
+			manager.Load()
+
+			return nil
+		}
+
+		manager.Load()
+
+		// try and ask for flags
+		interactive.AskMissingRequiredFlags(cmd)
+
+		if errors.Is(manager.Error, config.ErrUnknownProfile) {
+			return manager.Error
+		}
+
+		settings := config.GetSettings()
+
+		if settings.NoProgress {
+			net.DefaultSpinnerTransport.Disabled = true
+		}
+		if settings.Verbosity != 0 {
+			fmt.Fprintf(os.Stdout, "Using config file: %s\n", config.GetSettings().ConfigFile)
 		}
 
 		cmd.SetOut(os.Stdout)
 		cmd.SetErr(os.Stdout)
+
+		return nil
 	},
 }
 
 func Execute() {
-	err := rootCmd.Execute()
-
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	util.AddGroupedCommands(
 		rootCmd,
 		cobra.Group{
 			ID:    "resources",
-			Title: "Bunnyshell Resources",
+			Title: "Commands for Bunnyshell Resources:",
 		},
 		[]*cobra.Command{
 			component.GetMainCommand(),
 			environment.GetMainCommand(),
 			event.GetMainCommand(),
 			organization.GetMainCommand(),
-			port_forward.GetMainCommand(),
 			project.GetMainCommand(),
-			remote_development.GetMainCommand(),
 			variable.GetMainCommand(),
 		},
 	)
@@ -76,8 +95,20 @@ func init() {
 	util.AddGroupedCommands(
 		rootCmd,
 		cobra.Group{
+			ID:    "utilities",
+			Title: "Commands for Utilities:",
+		},
+		[]*cobra.Command{
+			remote_development.GetMainCommand(),
+			port_forward.GetMainCommand(),
+		},
+	)
+
+	util.AddGroupedCommands(
+		rootCmd,
+		cobra.Group{
 			ID:    "cli",
-			Title: "CLI",
+			Title: "Commands for CLI:",
 		},
 		[]*cobra.Command{
 			configure.GetMainCommand(),
@@ -87,20 +118,6 @@ func init() {
 	rootCmd.SetHelpCommandGroupID("cli")
 	rootCmd.SetCompletionCommandGroupID("cli")
 
-	lib.CLIContext.SetGlobalFlags(rootCmd)
-}
-
-func initConfig() {
-	if lib.CLIContext.NoProgress {
-		net.DefaultSpinnerTransport.Disabled = true
-	}
-
-	cobra.CheckErr(cliconfig.FindConfigFile())
-
-	viper.SetEnvPrefix(build.EnvPrefix)
-	viper.AutomaticEnv()
-
-	if lib.CLIContext.Verbosity != 0 {
-		fmt.Fprintln(os.Stdout, "Using config file:", viper.ConfigFileUsed())
-	}
+	config.MainManager.CommandWithGlobalOptions(rootCmd)
+	util.AllComandsHelpFlag(rootCmd)
 }

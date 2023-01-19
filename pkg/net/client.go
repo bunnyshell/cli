@@ -2,7 +2,6 @@ package net
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/briandowns/spinner"
 )
@@ -18,11 +17,13 @@ var DefaultSpinnerTransport = SpinnerTransport{
 	Proxied:  http.DefaultTransport,
 }
 
-func (st SpinnerTransport) RoundTrip(req *http.Request) (res *http.Response, e error) {
+func (st SpinnerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !st.Disabled {
 		spinner := makeSpinner()
 		spinner.Suffix = " Fetching API data..."
+
 		spinner.Start()
+
 		defer spinner.Stop()
 	}
 
@@ -36,5 +37,5 @@ func GetCLIClient() *http.Client {
 }
 
 func makeSpinner() *spinner.Spinner {
-	return spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	return spinner.New(spinner.CharSets[9], defaultDuration)
 }

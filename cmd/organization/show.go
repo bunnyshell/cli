@@ -1,13 +1,14 @@
 package organization
 
 import (
-	"github.com/spf13/cobra"
-
+	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	organization := &lib.CLIContext.Profile.Context.Organization
+	options := config.GetOptions()
+	settings := config.GetSettings()
 
 	command := &cobra.Command{
 		Use: "show",
@@ -18,15 +19,19 @@ func init() {
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := lib.GetAPI().OrganizationApi.OrganizationView(ctx, *organization)
+			request := lib.GetAPI().OrganizationApi.OrganizationView(ctx, settings.Profile.Context.Organization)
 
-			resp, r, err := request.Execute()
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			model, resp, err := request.Execute()
+
+			return lib.FormatRequestResult(cmd, model, resp, err)
 		},
 	}
 
-	command.Flags().StringVar(organization, "id", *organization, "Organization Id")
-	command.MarkFlagRequired("id")
+	flags := command.Flags()
+
+	idFlag := options.Organization.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
 
 	mainCmd.AddCommand(command)
 }
