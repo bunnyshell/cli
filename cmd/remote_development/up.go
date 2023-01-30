@@ -3,19 +3,52 @@ package remote_development
 import (
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
-	"bunnyshell.com/cli/pkg/remote_development"
+	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
+	remoteDevMutagenConfig "bunnyshell.com/dev/pkg/mutagen/config"
 	"github.com/spf13/cobra"
+	"github.com/thediveo/enumflag/v2"
 )
+
+type SyncMode enumflag.Flag
+
+const (
+	None SyncMode = iota
+	TwoWaySafe
+	TwoWayResolved
+	OneWaySafe
+	OneWayReplica
+)
+
+var SyncModeToMutagenMode = map[SyncMode]remoteDevMutagenConfig.Mode{
+	None:           remoteDevMutagenConfig.None,
+	TwoWaySafe:     remoteDevMutagenConfig.TwoWaySafe,
+	TwoWayResolved: remoteDevMutagenConfig.TwoWayResolved,
+	OneWaySafe:     remoteDevMutagenConfig.OneWaySafe,
+	OneWayReplica:  remoteDevMutagenConfig.OneWayReplica,
+}
+
+var SyncModeIds = map[SyncMode][]string{
+	None:           {string(remoteDevMutagenConfig.None)},
+	TwoWaySafe:     {string(remoteDevMutagenConfig.TwoWaySafe)},
+	TwoWayResolved: {string(remoteDevMutagenConfig.TwoWayResolved)},
+	OneWaySafe:     {string(remoteDevMutagenConfig.OneWaySafe)},
+	OneWayReplica:  {string(remoteDevMutagenConfig.OneWayReplica)},
+}
 
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
 	var (
+		syncMode       SyncMode = TwoWayResolved
 		localSyncPath  string
 		remoteSyncPath string
 		resourcePath   string
-		portMappings   []string
+
+		portMappings []string
+
+		waitTimeout int64
+		noTTY       bool
 	)
 
 	command := &cobra.Command{
@@ -24,7 +57,7 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			remoteDevelopment := remote_development.NewRemoteDevelopment()
+			remoteDevelopment := remoteDevPkg.NewRemoteDevelopment()
 
 			if localSyncPath != "" {
 				remoteDevelopment.WithLocalSyncPath(localSyncPath)
@@ -43,7 +76,10 @@ func init() {
 				return err
 			}
 
-			remoteDevelopment.WithEnvironmentResource(environmentResource)
+			remoteDevelopment.
+				WithEnvironmentResource(environmentResource).
+				WithWaitTimeout(waitTimeout).
+				WithSyncMode(SyncModeToMutagenMode[syncMode])
 
 			// init
 			if err = remoteDevelopment.Up(); err != nil {
@@ -51,8 +87,10 @@ func init() {
 			}
 
 			// start
-			if err = remoteDevelopment.StartSSHTerminal(); err != nil {
-				return err
+			if !noTTY {
+				if err = remoteDevelopment.StartSSHTerminal(); err != nil {
+					return err
+				}
 			}
 
 			return remoteDevelopment.Wait()
@@ -75,6 +113,14 @@ func init() {
 		"f",
 		portMappings,
 		"Port forward: '8080>3000'\nReverse port forward: '9003<9003'\nComma separated: '8080>3000,9003<9003'",
+	)
+
+	flags.BoolVar(&noTTY, "no-tty", false, "Start remote development with no SSH terminal")
+	flags.Int64VarP(&waitTimeout, "wait-timeout", "w", 120, "Time to wait for the pod to be ready")
+	command.Flags().Var(
+		enumflag.New(&syncMode, "sync-mode", SyncModeIds, enumflag.EnumCaseSensitive),
+		"sync-mode",
+		"Mutagen sync mode.\nAvailable sync modes: none, two-way-safe, two-way-resolved, one-way-safe, one-way-replica.\n\"none\" sync mode disables mutagen.",
 	)
 
 	mainCmd.AddCommand(command)
