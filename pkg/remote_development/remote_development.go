@@ -5,6 +5,8 @@ import (
 
 	"bunnyshell.com/cli/pkg/environment"
 	"bunnyshell.com/dev/pkg/remote"
+
+	remoteDevMutagenConfig "bunnyshell.com/dev/pkg/mutagen/config"
 )
 
 var (
@@ -19,10 +21,13 @@ type RemoteDevelopment struct {
 
 	kubeConfigPath string
 
+	syncMode       remoteDevMutagenConfig.Mode
 	localSyncPath  string
 	remoteSyncPath string
 
 	portMappings []string
+
+	waitTimeout int64
 }
 
 func NewRemoteDevelopment() *RemoteDevelopment {
@@ -64,6 +69,18 @@ func (r *RemoteDevelopment) WithRemoteSyncPath(remoteSyncPath string) *RemoteDev
 
 func (r *RemoteDevelopment) WithPortMappings(portMappings []string) *RemoteDevelopment {
 	r.portMappings = portMappings
+
+	return r
+}
+
+func (r *RemoteDevelopment) WithWaitTimeout(waitTimeout int64) *RemoteDevelopment {
+	r.waitTimeout = waitTimeout
+
+	return r
+}
+
+func (r *RemoteDevelopment) WithSyncMode(syncMode remoteDevMutagenConfig.Mode) *RemoteDevelopment {
+	r.syncMode = syncMode
 
 	return r
 }

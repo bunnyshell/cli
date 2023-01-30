@@ -15,7 +15,9 @@ func (r *RemoteDevelopment) Up() error {
 
 	r.remoteDev.
 		WithKubernetesClient(r.kubeConfigPath).
-		WithNamespaceName(componentResource.GetNamespace())
+		WithNamespaceName(componentResource.GetNamespace()).
+		WithWaitTimeout(r.waitTimeout).
+		WithSyncMode(r.syncMode)
 
 	switch componentResource.GetKind() {
 	case "Deployment":
