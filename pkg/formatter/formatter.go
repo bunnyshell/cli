@@ -3,10 +3,13 @@ package formatter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"bunnyshell.com/sdk"
 	"gopkg.in/yaml.v3"
 )
+
+var errUnknownFormat = errors.New("unknown format")
 
 func Formatter(data interface{}, format string) ([]byte, error) {
 	if format == "stylish" {
@@ -32,18 +35,18 @@ func Formatter(data interface{}, format string) ([]byte, error) {
 
 	switch format {
 	case "json":
-		return JsonFormatter(data)
+		return JSONFormatter(data)
 	case "yaml", "yml":
-		return YamlFormatter(data)
+		return YAMLFormatter(data)
 	}
 
-	return nil, errors.New("Unknown format: " + format)
+	return nil, fmt.Errorf("%w: %s", errUnknownFormat, format)
 }
 
-func JsonFormatter(data interface{}) ([]byte, error) {
+func JSONFormatter(data interface{}) ([]byte, error) {
 	return json.MarshalIndent(data, "", "  ")
 }
 
-func YamlFormatter(data interface{}) ([]byte, error) {
+func YAMLFormatter(data interface{}) ([]byte, error) {
 	return yaml.Marshal(data)
 }

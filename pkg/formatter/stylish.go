@@ -47,7 +47,7 @@ func stylish(data interface{}) ([]byte, error) {
 		fmt.Fprintf(writer, "JSON: ")
 
 		var jsonBytes []byte
-		jsonBytes, err = JsonFormatter(data)
+		jsonBytes, err = JSONFormatter(data)
 		_, _ = writer.Write(jsonBytes)
 	}
 
@@ -139,22 +139,22 @@ func tabulateComponentItem(w *tabwriter.Writer, item *sdk.ComponentItem) {
 	}
 }
 
-func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
-	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
-
-	if data.Embedded != nil {
-		for _, item := range data.Embedded.Item {
-			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetType(), item.GetStatus())
-		}
-	}
-}
-
 func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentVariableCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "EnvVarID", "EnvironmentID", "OrganizationID", "Name")
 
 	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetName())
+		}
+	}
+}
+
+func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetType(), item.GetStatus())
 		}
 	}
 }
