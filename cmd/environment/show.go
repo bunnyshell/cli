@@ -1,6 +1,7 @@
 package environment
 
 import (
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -15,14 +16,14 @@ func init() {
 		GroupID: mainGroup.ID,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			itemOptions := environment.NewItemOptions(settings.Profile.Context.Environment)
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentView(ctx, settings.Profile.Context.Environment)
+			model, err := environment.Get(itemOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
-
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return lib.FormatCommandData(cmd, model)
 		},
 	}
 

@@ -3,6 +3,7 @@ package wizard
 import (
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/sdk"
 )
 
@@ -47,24 +48,11 @@ func (w *Wizard) selectEnvironment(page int32) (*sdk.EnvironmentCollection, erro
 }
 
 func (w *Wizard) getEnvironments(page int32) (*sdk.PaginatedEnvironmentCollection, error) {
-	ctx, cancel := w.getContext()
-	defer cancel()
+	listOptions := environment.NewListOptions()
+	listOptions.Page = page
+	listOptions.Organization = w.profile.Context.Organization
+	listOptions.Project = w.profile.Context.Project
+	listOptions.Profile = w.profile
 
-	request := w.client.EnvironmentApi.EnvironmentList(ctx)
-
-	if page > 1 {
-		request = request.Page(page)
-	}
-
-	if w.profile.Context.Organization != "" {
-		request = request.Organization(w.profile.Context.Organization)
-	}
-
-	if w.profile.Context.Project != "" {
-		request = request.Project(w.profile.Context.Project)
-	}
-
-	paginated, _, err := request.Execute()
-
-	return paginated, err
+	return environment.List(listOptions)
 }

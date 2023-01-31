@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
@@ -40,7 +41,9 @@ func getEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 			return nil, err
 		}
 
-		environmentItem, _, err := lib.GetEnvironment(componentItem.GetEnvironment())
+		itemOptions := environment.NewItemOptions(componentItem.GetEnvironment())
+
+		environmentItem, err := environment.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +88,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	}
 
 	if profileContext.Environment != "" {
-		environmentItem, _, err := lib.GetEnvironment(profileContext.Environment)
+		itemOptions := environment.NewItemOptions(profileContext.Environment)
+
+		environmentItem, err := environment.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +170,10 @@ func (r *EnvironmentResource) SelectProject() error {
 }
 
 func (r *EnvironmentResource) SelectEnvironment() error {
-	resp, _, err := lib.GetEnvironments(r.Project.GetId())
+	listOptions := environment.NewListOptions()
+	listOptions.Project = r.Project.GetId()
+
+	resp, err := environment.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -184,7 +192,9 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 		return err
 	}
 
-	environmentItem, _, err := lib.GetEnvironment(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := environment.NewItemOptions(resp.Embedded.GetItem()[index].GetId())
+
+	environmentItem, err := environment.Get(itemOptions)
 	if err != nil {
 		return err
 	}

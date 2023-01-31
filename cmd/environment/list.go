@@ -1,8 +1,7 @@
 package environment
 
 import (
-	"net/http"
-
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -13,11 +12,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	var (
-		page            int32
-		environmentType string
-		operationStatus string
-	)
+	listOptions := environment.NewListOptions()
 
 	command := &cobra.Command{
 		Use:     "list",
@@ -28,33 +23,13 @@ func init() {
 		PersistentPreRunE: util.PersistentPreRunChain,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
-				ctx, cancel := lib.GetContext()
-				defer cancel()
+			listOptions.Organization = settings.Profile.Context.Organization
+			listOptions.Project = settings.Profile.Context.Project
 
-				request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
+			return lib.ShowCollectionNoResponse(cmd, listOptions.Page, func(page int32) (lib.ModelWithPagination, error) {
+				listOptions.Page = page
 
-				if page != 0 {
-					request = request.Page(page)
-				}
-
-				if settings.Profile.Context.Organization != "" {
-					request = request.Organization(settings.Profile.Context.Organization)
-				}
-
-				if settings.Profile.Context.Project != "" {
-					request = request.Project(settings.Profile.Context.Project)
-				}
-
-				if environmentType != "" {
-					request = request.Type_(environmentType)
-				}
-
-				if operationStatus != "" {
-					request = request.OperationStatus(operationStatus)
-				}
-
-				return request.Execute()
+				return environment.List(listOptions)
 			})
 		},
 	}
@@ -64,9 +39,13 @@ func init() {
 	flags.AddFlag(options.Organization.GetFlag("organization"))
 	flags.AddFlag(options.Project.GetFlag("project"))
 
-	flags.Int32Var(&page, "page", page, "Listing Page")
-	flags.StringVar(&environmentType, "type", environmentType, "Filter by Type")
-	flags.StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by Operation Status")
+	flags.StringVar(&listOptions.KubernetesIntegration, "k8s-cluster", listOptions.KubernetesIntegration, "Filter by K8s Cluster")
+
+	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
+
+	flags.StringVar(&listOptions.Type, "type", listOptions.Type, "Filter by Type")
+	flags.StringVar(&listOptions.ClusterStatus, "clusterStatus", listOptions.ClusterStatus, "Filter by Cluster Status")
+	flags.StringVar(&listOptions.OperationStatus, "operationStatus", listOptions.OperationStatus, "Filter by Operation Status")
 
 	mainCmd.AddCommand(command)
 }

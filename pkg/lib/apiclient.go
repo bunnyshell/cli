@@ -29,27 +29,6 @@ func GetProject(projectID string) (*bunnysdk.ProjectItem, *http.Response, error)
 	return request.Execute()
 }
 
-func GetEnvironments(projectID string) (*bunnysdk.PaginatedEnvironmentCollection, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().EnvironmentApi.EnvironmentList(ctx)
-	if projectID != "" {
-		request = request.Project(projectID)
-	}
-
-	return request.Execute()
-}
-
-func GetEnvironment(environmentID string) (*bunnysdk.EnvironmentItem, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().EnvironmentApi.EnvironmentView(ctx, environmentID)
-
-	return request.Execute()
-}
-
 func GetComponents(environment, operationStatus string) (
 	*bunnysdk.PaginatedComponentCollection,
 	*http.Response,
