@@ -32,6 +32,11 @@ type ModelWithPagination interface {
 
 type CollectionGenerator func(page int32) (ModelWithPagination, *http.Response, error)
 
+type CollectionNoResponseGenerator func(page int32) (ModelWithPagination, error)
+
+/**
+ * @deprecated Use ShowCollectionNoResponse.
+ */
 func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerator) error {
 	for {
 		model, resp, err := generator(page)
@@ -42,6 +47,28 @@ func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerato
 		if err != nil {
 			// handled in FormatRequestResult
 			return errHandled
+		}
+
+		page, err = interactivePagination(cmd, model)
+		if err != nil {
+			if errors.Is(err, errQuit) {
+				return nil
+			}
+
+			return err
+		}
+	}
+}
+
+func ShowCollectionNoResponse(cmd *cobra.Command, page int32, generator CollectionNoResponseGenerator) error {
+	for {
+		model, err := generator(page)
+		if err != nil {
+			return err
+		}
+
+		if err = FormatCommandData(cmd, model); err != nil {
+			return err
 		}
 
 		page, err = interactivePagination(cmd, model)

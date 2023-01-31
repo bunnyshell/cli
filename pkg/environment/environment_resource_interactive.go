@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
@@ -60,7 +61,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	environmentResource := NewEnvironmentResource()
 
 	if profileContext.Organization != "" {
-		organizationItem, _, err := lib.GetOrganization(profileContext.Organization)
+		itemOptions := organization.NewItemOptions(profileContext.Organization)
+
+		organizationItem, err := organization.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -100,17 +103,17 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 }
 
 func (r *EnvironmentResource) SelectOrganization() error {
-	resp, _, err := lib.GetOrganizations()
+	model, err := organization.List(nil)
 	if err != nil {
 		return err
 	}
 
-	if resp.Embedded == nil {
+	if model.Embedded == nil {
 		return ErrNoOrganizations
 	}
 
 	items := []string{}
-	for _, item := range resp.Embedded.GetItem() {
+	for _, item := range model.Embedded.GetItem() {
 		items = append(items, item.GetName())
 	}
 
@@ -119,7 +122,9 @@ func (r *EnvironmentResource) SelectOrganization() error {
 		return err
 	}
 
-	organizationItem, _, err := lib.GetOrganization(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := organization.NewItemOptions(model.Embedded.GetItem()[index].GetId())
+
+	organizationItem, err := organization.Get(itemOptions)
 	if err != nil {
 		return err
 	}

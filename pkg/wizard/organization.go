@@ -3,6 +3,7 @@ package wizard
 import (
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/sdk"
 )
 
@@ -47,16 +48,9 @@ func (w *Wizard) selectOrganization(page int32) (*sdk.OrganizationCollection, er
 }
 
 func (w *Wizard) getOrganizations(page int32) (*sdk.PaginatedOrganizationCollection, error) {
-	ctx, cancel := w.getContext()
-	defer cancel()
+	listOptions := organization.NewListOptions()
+	listOptions.Page = page
+	listOptions.Profile = w.profile
 
-	request := w.client.OrganizationApi.OrganizationList(ctx)
-
-	if page > 1 {
-		request = request.Page(page)
-	}
-
-	paginated, _, err := request.Execute()
-
-	return paginated, err
+	return organization.List(listOptions)
 }

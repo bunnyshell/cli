@@ -1,14 +1,13 @@
 package organization
 
 import (
-	"net/http"
-
+	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var page int32
+	listOptions := organization.NewListOptions()
 
 	command := &cobra.Command{
 		Use: "list",
@@ -16,24 +15,17 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
-				ctx, cancel := lib.GetContext()
-				defer cancel()
+			return lib.ShowCollectionNoResponse(cmd, listOptions.Page, func(page int32) (lib.ModelWithPagination, error) {
+				listOptions.Page = page
 
-				request := lib.GetAPI().OrganizationApi.OrganizationList(ctx)
-
-				if page != 0 {
-					request = request.Page(page)
-				}
-
-				return request.Execute()
+				return organization.List(listOptions)
 			})
 		},
 	}
 
 	flags := command.Flags()
 
-	flags.Int32Var(&page, "page", page, "Listing Page")
+	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
 
 	mainCmd.AddCommand(command)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"text/tabwriter"
 
+	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/sdk"
 )
 
@@ -43,6 +44,10 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEnvironmentVariableItem(writer, dataType)
 	case *sdk.ProblemGeneric:
 		tabulateGeneric(writer, dataType)
+	case *api.Error:
+		tabulateAPIError(writer, dataType)
+	case api.Error:
+		tabulateAPIError(writer, &dataType)
 	default:
 		fmt.Fprintf(writer, "JSON: ")
 
@@ -181,4 +186,10 @@ func tabulateGeneric(w *tabwriter.Writer, item *sdk.ProblemGeneric) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.GetTitle())
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.GetDetail())
+}
+
+func tabulateAPIError(w *tabwriter.Writer, item *api.Error) {
+	fmt.Fprintf(w, "%v\n", "ERROR")
+	fmt.Fprintf(w, "%v\t %v\n", "Title", item.Title)
+	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.Detail)
 }

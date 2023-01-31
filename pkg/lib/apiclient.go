@@ -8,24 +8,6 @@ import (
 	bunnysdk "bunnyshell.com/sdk"
 )
 
-func GetOrganizations() (*bunnysdk.PaginatedOrganizationCollection, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().OrganizationApi.OrganizationList(ctx)
-
-	return request.Execute()
-}
-
-func GetOrganization(organizationID string) (*bunnysdk.OrganizationItem, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().OrganizationApi.OrganizationView(ctx, organizationID)
-
-	return request.Execute()
-}
-
 func GetProjects(organization string) (*bunnysdk.PaginatedProjectCollection, *http.Response, error) {
 	ctx, cancel := GetContext()
 	defer cancel()

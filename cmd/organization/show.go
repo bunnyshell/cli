@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -10,20 +11,22 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	itemOptions := organization.NewItemOptions("")
+
 	command := &cobra.Command{
 		Use: "show",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			itemOptions.ID = settings.Profile.Context.Organization
 
-			request := lib.GetAPI().OrganizationApi.OrganizationView(ctx, settings.Profile.Context.Organization)
+			model, err := organization.Get(itemOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
-
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return lib.FormatCommandData(cmd, model)
 		},
 	}
 
