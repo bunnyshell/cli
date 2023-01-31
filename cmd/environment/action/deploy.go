@@ -1,8 +1,12 @@
 package action
 
 import (
+	"fmt"
+
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/progress"
 	"github.com/spf13/cobra"
 )
 
@@ -10,20 +14,40 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	monitor := false
+
 	command := &cobra.Command{
 		Use: "deploy",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if !monitor {
+				return nil
+			}
+
+			if settings.IsStylish() {
+				return nil
+			}
+
+			return fmt.Errorf("%w when following deployments", lib.ErrNotStylish)
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			model, err := environment.Deploy(settings.Profile.Context.Environment)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentDeploy(ctx, settings.Profile.Context.Environment)
+			_ = lib.FormatCommandData(cmd, model)
 
-			model, resp, err := request.Execute()
+			if monitor {
+				if err = progress.Event(model.GetId(), nil); err != nil {
+					return lib.FormatCommandError(cmd, err)
+				}
+			}
 
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return nil
 		},
 	}
 
@@ -32,6 +56,8 @@ func init() {
 	idFlag := options.Environment.GetFlag("id")
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
+
+	flags.BoolVar(&monitor, "monitor", monitor, "Monitor deployment pipeline until finish. This will become the default for stylish.")
 
 	mainCmd.AddCommand(command)
 }

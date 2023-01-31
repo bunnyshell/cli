@@ -19,8 +19,7 @@ var DefaultSpinnerTransport = SpinnerTransport{
 
 func (st SpinnerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !st.Disabled {
-		spinner := makeSpinner()
-		spinner.Suffix = " Fetching API data..."
+		spinner := MakeSpinner()
 
 		spinner.Start()
 
@@ -36,6 +35,18 @@ func GetCLIClient() *http.Client {
 	}
 }
 
-func makeSpinner() *spinner.Spinner {
-	return spinner.New(spinner.CharSets[9], defaultDuration)
+func PauseSpinner() func() {
+	prev := DefaultSpinnerTransport.Disabled
+	DefaultSpinnerTransport.Disabled = true
+
+	return func() {
+		DefaultSpinnerTransport.Disabled = prev
+	}
+}
+
+func MakeSpinner() *spinner.Spinner {
+	s := spinner.New(spinner.CharSets[9], defaultDuration)
+	s.Suffix = " Fetching API data..."
+
+	return s
 }
