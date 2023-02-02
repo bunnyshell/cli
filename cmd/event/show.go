@@ -1,9 +1,9 @@
 package event
 
 import (
-	"net/http"
 	"time"
 
+	"bunnyshell.com/cli/pkg/api/event"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
@@ -12,12 +12,13 @@ import (
 func init() {
 	var (
 		monitor   bool
-		eventID   string
 		lastEvent *sdk.EventItem
 	)
 
 	idleNotify := 10 * time.Second
 	errWait := idleNotify / 2
+
+	itemOptions := event.NewItemOptions("")
 
 	command := &cobra.Command{
 		Use: "show",
@@ -25,10 +26,14 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			resp, r, err := getEvent(eventID)
-			lastEvent = resp
+			model, err := event.Get(itemOptions)
+			if err != nil {
+				return err
+			}
 
-			return lib.FormatRequestResult(cmd, resp, r, err)
+			lastEvent = model
+
+			return lib.FormatCommandData(cmd, model)
 		},
 
 		PostRun: func(cmd *cobra.Command, args []string) {
@@ -39,7 +44,8 @@ func init() {
 			idleThreshold := time.Now().Add(idleNotify)
 			for {
 				now := time.Now()
-				resp, _, err := getEvent(eventID)
+
+				model, err := event.Get(itemOptions)
 				if err != nil {
 					if now.After(idleThreshold) {
 						_ = lib.FormatCommandError(cmd, err)
@@ -52,16 +58,16 @@ func init() {
 					continue
 				}
 
-				if lastEvent.GetUpdatedAt().Equal(resp.GetUpdatedAt()) {
+				if lastEvent.GetUpdatedAt().Equal(model.GetUpdatedAt()) {
 					continue
 				}
 
-				if isFinalStatus(resp) {
+				if isFinalStatus(model) {
 					return
 				}
 
-				lastEvent = resp
-				_ = lib.FormatCommandData(cmd, resp)
+				lastEvent = model
+				_ = lib.FormatCommandData(cmd, model)
 				idleThreshold = now.Add(idleNotify)
 			}
 		},
@@ -70,7 +76,7 @@ func init() {
 	flags := command.Flags()
 
 	idFlagName := "id"
-	flags.StringVar(&eventID, idFlagName, eventID, "Event Id")
+	flags.StringVar(&itemOptions.ID, idFlagName, itemOptions.ID, "Event Id")
 	_ = command.MarkFlagRequired(idFlagName)
 
 	flags.BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
@@ -81,13 +87,4 @@ func init() {
 
 func isFinalStatus(e *sdk.EventItem) bool {
 	return e.GetStatus() == "success" || e.GetStatus() == "error"
-}
-
-func getEvent(eventID string) (*sdk.EventItem, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
-
-	request := lib.GetAPI().EventApi.EventView(ctx, eventID)
-
-	return request.Execute()
 }
