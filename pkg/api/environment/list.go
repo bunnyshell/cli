@@ -7,12 +7,11 @@ import (
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
+	"github.com/spf13/pflag"
 )
 
 type ListOptions struct {
-	common.Options
-
-	Page int32
+	common.ListOptions
 
 	Organization          string
 	Project               string
@@ -25,8 +24,17 @@ type ListOptions struct {
 
 func NewListOptions() *ListOptions {
 	return &ListOptions{
-		Page: 1,
+		ListOptions: *common.NewListOptions(),
 	}
+}
+
+func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	flags.StringVar(&lo.Type, "type", lo.Type, "Filter by Type")
+	flags.StringVar(&lo.ClusterStatus, "clusterStatus", lo.ClusterStatus, "Filter by Cluster Status")
+	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
+	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8s Cluster")
+
+	lo.ListOptions.UpdateFlagSet(flags)
 }
 
 func List(options *ListOptions) (*sdk.PaginatedEnvironmentCollection, error) {

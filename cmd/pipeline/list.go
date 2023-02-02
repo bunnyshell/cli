@@ -35,8 +35,7 @@ func init() {
 	flags.AddFlag(options.Organization.GetFlag("organization"))
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 
-	flags.StringVar(&listOptions.Event, "event", listOptions.Event, "Filter by event")
-	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

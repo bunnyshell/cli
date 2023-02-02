@@ -36,10 +36,7 @@ func init() {
 	flags.AddFlag(options.Organization.GetFlag("organization"))
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 
-	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
-
-	flags.StringVar(&listOptions.CloudProvider, "cloudProvider", listOptions.CloudProvider, "Filter by Cloud Provider")
-	flags.StringVar(&listOptions.Status, "stauts", listOptions.Status, "Filter by Cloud Status")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

@@ -39,13 +39,7 @@ func init() {
 	flags.AddFlag(options.Organization.GetFlag("organization"))
 	flags.AddFlag(options.Project.GetFlag("project"))
 
-	flags.StringVar(&listOptions.KubernetesIntegration, "k8s-cluster", listOptions.KubernetesIntegration, "Filter by K8s Cluster")
-
-	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
-
-	flags.StringVar(&listOptions.Type, "type", listOptions.Type, "Filter by Type")
-	flags.StringVar(&listOptions.ClusterStatus, "clusterStatus", listOptions.ClusterStatus, "Filter by Cluster Status")
-	flags.StringVar(&listOptions.OperationStatus, "operationStatus", listOptions.OperationStatus, "Filter by Operation Status")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

@@ -7,22 +7,30 @@ import (
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
+	"github.com/spf13/pflag"
 )
 
 type ListOptions struct {
-	common.Options
-
-	Page int32
+	common.ListOptions
 
 	Organization string
 	Environment  string
 	Event        string
+
+	Status string
 }
 
 func NewListOptions() *ListOptions {
 	return &ListOptions{
-		Page: 1,
+		ListOptions: *common.NewListOptions(),
 	}
+}
+
+func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	flags.StringVar(&lo.Event, "event", lo.Event, "Filter by Event")
+	flags.StringVar(&lo.Status, "status", lo.Status, "Filter by Status")
+
+	lo.ListOptions.UpdateFlagSet(flags)
 }
 
 func List(options *ListOptions) (*sdk.PaginatedPipelineCollection, error) {
@@ -64,6 +72,10 @@ func applyOptions(request sdk.ApiPipelineListRequest, options *ListOptions) sdk.
 
 	if options.Organization != "" {
 		request = request.Organization(options.Organization)
+	}
+
+	if options.Status != "" {
+		request = request.Status(options.Status)
 	}
 
 	return request

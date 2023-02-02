@@ -25,7 +25,7 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.Int32Var(&listOptions.Page, "page", listOptions.Page, "Listing Page")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

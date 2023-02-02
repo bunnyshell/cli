@@ -10,14 +10,12 @@ import (
 )
 
 type ListOptions struct {
-	common.Options
-
-	Page int32
+	common.ListOptions
 }
 
 func NewListOptions() *ListOptions {
 	return &ListOptions{
-		Page: 1,
+		ListOptions: *common.NewListOptions(),
 	}
 }
 
