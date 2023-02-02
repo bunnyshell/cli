@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/api/component"
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/api/project"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
-	"bunnyshell.com/cli/pkg/lib"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
@@ -37,14 +37,12 @@ func NewFromWizard(profileContext *config.Context, resourcePath string) (*Enviro
 func getEnvironmentResource(profileContext *config.Context) (*EnvironmentResource, error) {
 	// wizard
 	if profileContext.ServiceComponent != "" {
-		componentItem, _, err := lib.GetComponent(profileContext.ServiceComponent)
+		componentItem, err := component.Get(component.NewItemOptions(profileContext.ServiceComponent))
 		if err != nil {
 			return nil, err
 		}
 
-		itemOptions := environment.NewItemOptions(componentItem.GetEnvironment())
-
-		environmentItem, err := environment.Get(itemOptions)
+		environmentItem, err := environment.Get(environment.NewItemOptions(componentItem.GetEnvironment()))
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +211,11 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 }
 
 func (r *EnvironmentResource) SelectComponent() error {
-	resp, _, err := lib.GetComponents(r.Environment.GetId(), "running")
+	listOptions := component.NewListOptions()
+	listOptions.Environment = r.Environment.GetId()
+	listOptions.OperationStatus = "running"
+
+	resp, err := component.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -234,7 +236,9 @@ func (r *EnvironmentResource) SelectComponent() error {
 		return err
 	}
 
-	componentItem, _, err := lib.GetComponent(components[index].GetId())
+	itemOptions := component.NewItemOptions(components[index].GetId())
+
+	componentItem, err := component.Get(itemOptions)
 	if err != nil {
 		return err
 	}
@@ -245,7 +249,7 @@ func (r *EnvironmentResource) SelectComponent() error {
 }
 
 func (r *EnvironmentResource) SelectComponentResource() error {
-	resources, _, err := lib.GetComponentResources(r.Component.GetId())
+	resources, err := component.Resources(component.NewResourceOptions(r.Component.GetId()))
 	if err != nil {
 		return err
 	}

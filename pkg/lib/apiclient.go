@@ -2,49 +2,8 @@ package lib
 
 import (
 	"io"
-	"net/http"
 	"os"
-
-	bunnysdk "bunnyshell.com/sdk"
 )
-
-func GetComponents(environment, operationStatus string) (
-	*bunnysdk.PaginatedComponentCollection,
-	*http.Response,
-	error,
-) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().ComponentApi.ComponentList(ctx)
-	if environment != "" {
-		request = request.Environment(environment)
-	}
-
-	if operationStatus != "" {
-		request = request.OperationStatus(operationStatus)
-	}
-
-	return request.Execute()
-}
-
-func GetComponent(componentID string) (*bunnysdk.ComponentItem, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().ComponentApi.ComponentView(ctx, componentID)
-
-	return request.Execute()
-}
-
-func GetComponentResources(componentID string) ([]bunnysdk.ComponentResourceItem, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().ComponentApi.ComponentResources(ctx, componentID)
-
-	return request.Execute()
-}
 
 func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentID string) error {
 	kubeConfigFile, err := os.Create(kubeConfigPath)

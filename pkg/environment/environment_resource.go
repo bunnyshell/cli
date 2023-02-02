@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/api/component"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
@@ -88,7 +88,7 @@ func (r *EnvironmentResource) WithResourcePath(resourcePath string) *Environment
 		))
 	}
 
-	resources, _, err := lib.GetComponentResources(r.Component.GetId())
+	resources, err := component.Resources(component.NewResourceOptions(r.Component.GetId()))
 	if err != nil {
 		panic(fmt.Errorf(
 			"failed fetching resources for component \"%s\"",
