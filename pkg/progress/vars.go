@@ -6,8 +6,13 @@ import (
 	"github.com/fatih/color"
 )
 
-type UpdateStatus int
-type InProgress bool
+type (
+	UpdateStatus int
+
+	PipelineStatus int
+
+	InProgress bool
+)
 
 const (
 	Failed UpdateStatus = iota
@@ -17,14 +22,20 @@ const (
 )
 
 const (
-	defaultUpdate = 100 * time.Millisecond
-
-	prefix = "»"
+	StatusWorking PipelineStatus = iota
+	StatusFinished
+	StatusFailed
+	StatusUnknown
 )
 
-var (
-	prefixWait = color.New(color.FgCyan).Sprintf(prefix)
-	prefixDone = color.New(color.FgGreen).Sprintf(prefix)
-	prefixErr  = color.New(color.FgRed).Sprintf(prefix)
-	prefixUnk  = color.New(color.FgYellow).Sprintf(prefix)
+const (
+	defaultSpinnerUpdate = 150 * time.Millisecond
+	defaultProgressSet   = 69 // ∙∙●
 )
+
+var statusMap = map[PipelineStatus]string{
+	StatusWorking:  color.New(color.FgCyan).Sprintf("»"),
+	StatusFinished: color.New(color.FgGreen).Sprintf("✔"),
+	StatusFailed:   color.New(color.FgRed).Sprintf("✘"),
+	StatusUnknown:  color.New(color.FgYellow).Sprintf("?"),
+}

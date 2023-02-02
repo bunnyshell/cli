@@ -24,15 +24,15 @@ type Options struct {
 
 func NewOptions() *Options {
 	return &Options{
-		Interval: defaultUpdate,
+		Interval: defaultSpinnerUpdate,
 	}
 }
 
 func NewPipeline(options Options) *Progress {
-	spinner := newSpinner()
+	spinner := spinner.New(spinner.CharSets[defaultProgressSet], defaultSpinnerUpdate)
 	spinner.Prefix = fmt.Sprintf(
 		"%s Fetching pipeline status... ",
-		prefixWait,
+		statusMap[StatusWorking],
 	)
 
 	return &Progress{
@@ -116,11 +116,9 @@ func (p *Progress) finishStage(stage sdk.StageItem) {
 
 	p.stages[stage.GetId()] = true
 
-	prefix := p.getPrefix(stage)
-
 	p.spinner.FinalMSG = fmt.Sprintf(
 		"%s %s finished %d jobs in %s\n",
-		prefix,
+		statusMap[p.getStatus(stage)],
 		stage.GetName(),
 		stage.GetJobsCount(),
 		time.Duration(stage.GetDuration())*time.Second,
@@ -134,24 +132,22 @@ func (p *Progress) finishStage(stage sdk.StageItem) {
 func (p *Progress) syncStage(stage sdk.StageItem) {
 	p.spinner.Prefix = fmt.Sprintf(
 		"%s %s... %d/%d jobs completed ",
-		p.getPrefix(stage),
+		statusMap[p.getStatus(stage)],
 		stage.GetName(),
 		stage.GetCompletedJobsCount(),
 		stage.GetJobsCount(),
 	)
 }
 
-func (p *Progress) getPrefix(stage sdk.StageItem) string {
+func (p *Progress) getStatus(stage sdk.StageItem) PipelineStatus {
 	switch stage.GetStatus() {
 	case "success":
-		return prefixDone
-	case "in_progress":
-		return prefixWait
-	case "pending":
-		return prefixWait
+		return StatusFinished
+	case "in_progress", "pending":
+		return StatusWorking
 	case "failed":
-		return prefixErr
+		return StatusFailed
 	}
 
-	return prefixUnk
+	return StatusUnknown
 }

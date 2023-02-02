@@ -45,7 +45,7 @@ func PauseSpinner() func() {
 }
 
 func MakeSpinner() *spinner.Spinner {
-	s := spinner.New(spinner.CharSets[9], defaultDuration)
+	s := spinner.New(spinner.CharSets[defaultSpinner], defaultDuration)
 	s.Suffix = " Fetching API data..."
 
 	return s
