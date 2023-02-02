@@ -23,9 +23,7 @@ func init() {
 			listOptions.Project = settings.Profile.Context.Project
 			listOptions.Environment = settings.Profile.Context.Environment
 
-			return lib.ShowCollectionNoResponse(cmd, listOptions.Page, func(page int32) (lib.ModelWithPagination, error) {
-				listOptions.Page = page
-
+			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
 				return component.List(listOptions)
 			})
 		},

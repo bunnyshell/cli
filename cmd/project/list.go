@@ -21,9 +21,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			listOptions.Organization = settings.Profile.Context.Organization
 
-			return lib.ShowCollectionNoResponse(cmd, listOptions.Page, func(page int32) (lib.ModelWithPagination, error) {
-				listOptions.Page = page
-
+			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
 				return project.List(listOptions)
 			})
 		},

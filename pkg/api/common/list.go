@@ -19,3 +19,7 @@ func NewListOptions() *ListOptions {
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.Int32Var(&lo.Page, "page", lo.Page, "Listing Page")
 }
+
+func (lo *ListOptions) SetPage(page int32) {
+	lo.Page = page
+}

@@ -22,9 +22,7 @@ func init() {
 			listOptions.Organization = settings.Profile.Context.Organization
 			listOptions.Environment = settings.Profile.Context.Environment
 
-			return lib.ShowCollectionNoResponse(cmd, listOptions.Page, func(page int32) (lib.ModelWithPagination, error) {
-				listOptions.Page = page
-
+			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
 				return event.List(listOptions)
 			})
 		},

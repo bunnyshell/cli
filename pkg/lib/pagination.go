@@ -3,7 +3,6 @@ package lib
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
@@ -30,39 +29,17 @@ type ModelWithPagination interface {
 	GetTotalItems() int32
 }
 
-type CollectionGenerator func(page int32) (ModelWithPagination, *http.Response, error)
-
-type CollectionNoResponseGenerator func(page int32) (ModelWithPagination, error)
-
-/**
- * @deprecated Use ShowCollectionNoResponse.
- */
-func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerator) error {
-	for {
-		model, resp, err := generator(page)
-		if e := FormatRequestResult(cmd, model, resp, err); e != nil {
-			return e
-		}
-
-		if err != nil {
-			// handled in FormatRequestResult
-			return errHandled
-		}
-
-		page, err = interactivePagination(cmd, model)
-		if err != nil {
-			if errors.Is(err, errQuit) {
-				return nil
-			}
-
-			return err
-		}
-	}
+type Options interface {
+	SetPage(int32)
 }
 
-func ShowCollectionNoResponse(cmd *cobra.Command, page int32, generator CollectionNoResponseGenerator) error {
+type CollectionGenerator func() (ModelWithPagination, error)
+
+func ShowCollection(cmd *cobra.Command, options Options, generator CollectionGenerator) error {
+	var page int32
+
 	for {
-		model, err := generator(page)
+		model, err := generator()
 		if err != nil {
 			return err
 		}
@@ -79,6 +56,8 @@ func ShowCollectionNoResponse(cmd *cobra.Command, page int32, generator Collecti
 
 			return err
 		}
+
+		options.SetPage(page)
 	}
 }
 
