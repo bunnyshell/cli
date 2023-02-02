@@ -16,10 +16,7 @@ const (
 	ShowOtherMinPages = 4
 )
 
-var (
-	errHandled = error(nil)
-	errQuit    = errors.New("quit")
-)
+var errQuit = errors.New("quit")
 
 type ModelWithPagination interface {
 	GetPage() int32
