@@ -9,18 +9,18 @@ import (
 	"bunnyshell.com/sdk"
 )
 
-type DeployOptions struct {
+type DeleteOptions struct {
 	common.ActionOptions
 }
 
-func NewDeployOptions(id string) *DeployOptions {
-	return &DeployOptions{
+func NewDeleteOptions(id string) *DeleteOptions {
+	return &DeleteOptions{
 		ActionOptions: *common.NewActionOptions(id),
 	}
 }
 
-func Deploy(options *DeployOptions) (*sdk.EventItem, error) {
-	model, resp, err := DeployRaw(options)
+func Delete(options *DeleteOptions) (*sdk.EventItem, error) {
+	model, resp, err := DeleteRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
 	}
@@ -28,11 +28,11 @@ func Deploy(options *DeployOptions) (*sdk.EventItem, error) {
 	return model, err
 }
 
-func DeployRaw(options *DeployOptions) (*sdk.EventItem, *http.Response, error) {
+func DeleteRaw(options *DeleteOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContext()
 	defer cancel()
 
-	request := lib.GetAPI().EnvironmentApi.EnvironmentDeploy(ctx, options.ID)
+	request := lib.GetAPI().EnvironmentApi.EnvironmentDelete(ctx, options.ID)
 
 	return request.Execute()
 }

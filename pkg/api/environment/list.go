@@ -67,7 +67,7 @@ func applyOptions(request sdk.ApiEnvironmentListRequest, options *ListOptions) s
 	}
 
 	if options.KubernetesIntegration != "" {
-		request = request.ClusterStatus(options.KubernetesIntegration)
+		request = request.KubernetesIntegration(options.KubernetesIntegration)
 	}
 
 	if options.ClusterStatus != "" {
@@ -79,7 +79,7 @@ func applyOptions(request sdk.ApiEnvironmentListRequest, options *ListOptions) s
 	}
 
 	if options.Type != "" {
-		request = request.OperationStatus(options.Type)
+		request = request.Type_(options.Type)
 	}
 
 	return request

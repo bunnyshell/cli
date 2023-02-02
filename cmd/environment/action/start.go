@@ -1,6 +1,7 @@
 package action
 
 import (
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -10,20 +11,30 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	startOptions := environment.NewStartOptions("")
+
 	command := &cobra.Command{
 		Use: "start",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return validateActionOptions(&startOptions.ActionOptions)
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			startOptions.ID = settings.Profile.Context.Environment
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentStart(ctx, settings.Profile.Context.Environment)
+			event, err := environment.Start(startOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
+			if startOptions.WithPipeline {
+				return processEventPipeline(cmd, event, "start")
+			}
 
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return lib.FormatCommandData(cmd, event)
 		},
 	}
 
@@ -32,6 +43,8 @@ func init() {
 	idFlag := options.Environment.GetFlag("id")
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
+
+	startOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

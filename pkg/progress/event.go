@@ -1,8 +1,6 @@
 package progress
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"bunnyshell.com/cli/pkg/api/pipeline"
@@ -10,42 +8,17 @@ import (
 	"bunnyshell.com/sdk"
 )
 
-var errUnknownEventType = errors.New("unhandleable event type")
-
-func PipelineFromEvent(event sdk.EventItem, options *Options) error {
-	if event.GetType() == "env_deplooy" {
-		return Event(event.GetId(), options)
-	}
-
-	return fmt.Errorf("%w: %s", errUnknownEventType, event.GetType())
-}
-
-func Event(eventID string, options *Options) error {
-	if options == nil {
-		options = NewOptions()
-	}
-
+func EventToPipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem, error) {
 	resume := net.PauseSpinner()
 	defer resume()
 
-	item, err := eventToPipline(eventID, options)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Deploy Pipeline: %s\n", item.GetId())
-
-	return progress(*options, generatorFromID(item.GetId()))
-}
-
-func eventToPipline(eventID string, options *Options) (*sdk.PipelineItem, error) {
 	spinner := net.MakeSpinner()
 
 	spinner.Start()
 	defer spinner.Stop()
 
 	listOptions := pipeline.NewListOptions()
-	listOptions.Event = eventID
+	listOptions.Event = event.GetId()
 
 	for {
 		collection, err := pipeline.List(listOptions)
@@ -53,7 +26,7 @@ func eventToPipline(eventID string, options *Options) (*sdk.PipelineItem, error)
 			return nil, err
 		}
 
-		if collection.Embedded == nil {
+		if !collection.HasEmbedded() {
 			time.Sleep(options.Interval)
 
 			continue
