@@ -3,6 +3,7 @@ package wizard
 import (
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/api/project"
 	"bunnyshell.com/sdk"
 )
 
@@ -47,20 +48,11 @@ func (w *Wizard) selectProject(page int32) (*sdk.ProjectCollection, error) {
 }
 
 func (w *Wizard) getProjects(page int32) (*sdk.PaginatedProjectCollection, error) {
-	ctx, cancel := w.getContext()
-	defer cancel()
+	listOptions := project.NewListOptions()
+	listOptions.Page = page
+	listOptions.Profile = w.profile
 
-	request := w.client.ProjectApi.ProjectList(ctx)
+	listOptions.Organization = w.profile.Context.Organization
 
-	if page > 1 {
-		request = request.Page(page)
-	}
-
-	if w.profile.Context.Organization != "" {
-		request = request.Organization(w.profile.Context.Organization)
-	}
-
-	paginated, _, err := request.Execute()
-
-	return paginated, err
+	return project.List(listOptions)
 }

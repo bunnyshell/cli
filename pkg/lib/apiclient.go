@@ -8,27 +8,6 @@ import (
 	bunnysdk "bunnyshell.com/sdk"
 )
 
-func GetProjects(organization string) (*bunnysdk.PaginatedProjectCollection, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().ProjectApi.ProjectList(ctx)
-	if organization != "" {
-		request = request.Organization(organization)
-	}
-
-	return request.Execute()
-}
-
-func GetProject(projectID string) (*bunnysdk.ProjectItem, *http.Response, error) {
-	ctx, cancel := GetContext()
-	defer cancel()
-
-	request := GetAPI().ProjectApi.ProjectView(ctx, projectID)
-
-	return request.Execute()
-}
-
 func GetComponents(environment, operationStatus string) (
 	*bunnysdk.PaginatedComponentCollection,
 	*http.Response,

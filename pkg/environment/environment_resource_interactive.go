@@ -6,6 +6,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/api/organization"
+	"bunnyshell.com/cli/pkg/api/project"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
@@ -77,7 +78,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	}
 
 	if profileContext.Project != "" {
-		projectItem, _, err := lib.GetProject(profileContext.Project)
+		itemOptions := project.NewItemOptions(profileContext.Project)
+
+		projectItem, err := project.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +143,10 @@ func (r *EnvironmentResource) SelectOrganization() error {
 }
 
 func (r *EnvironmentResource) SelectProject() error {
-	resp, _, err := lib.GetProjects(r.Organization.GetId())
+	listOptions := project.NewListOptions()
+	listOptions.Organization = r.Organization.GetId()
+
+	resp, err := project.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -159,7 +165,9 @@ func (r *EnvironmentResource) SelectProject() error {
 		return err
 	}
 
-	projectItem, _, err := lib.GetProject(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := project.NewItemOptions(resp.Embedded.GetItem()[index].GetId())
+
+	projectItem, err := project.Get(itemOptions)
 	if err != nil {
 		return err
 	}
