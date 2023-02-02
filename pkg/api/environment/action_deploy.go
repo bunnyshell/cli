@@ -29,10 +29,12 @@ func Deploy(options *DeployOptions) (*sdk.EventItem, error) {
 }
 
 func DeployRaw(options *DeployOptions) (*sdk.EventItem, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
+	profile := options.GetProfile()
+
+	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPI().EnvironmentApi.EnvironmentDeploy(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentDeploy(ctx, options.ID)
 
 	return request.Execute()
 }
