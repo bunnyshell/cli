@@ -117,7 +117,8 @@ func init() {
 
 	flags.BoolVar(&noTTY, "no-tty", false, "Start remote development with no SSH terminal")
 	flags.Int64VarP(&waitTimeout, "wait-timeout", "w", 120, "Time to wait for the pod to be ready")
-	command.Flags().Var(
+
+	flags.Var(
 		enumflag.New(&syncMode, "sync-mode", SyncModeIds, enumflag.EnumCaseSensitive),
 		"sync-mode",
 		"Mutagen sync mode.\nAvailable sync modes: none, two-way-safe, two-way-resolved, one-way-safe, one-way-replica.\n\"none\" sync mode disables mutagen.",

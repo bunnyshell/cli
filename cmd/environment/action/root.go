@@ -26,7 +26,7 @@ func validateActionOptions(actionOptions *common.ActionOptions) error {
 		return nil
 	}
 
-	return fmt.Errorf("%w when following deployments", lib.ErrNotStylish)
+	return fmt.Errorf("%w when following pipelines", lib.ErrNotStylish)
 }
 
 func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string) error {
@@ -45,7 +45,7 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 	}
 
 	cmd.Printf(
-		"Event %s generated %s pipeline %s\n",
+		"EventID %s generated %s pipeline %s\n",
 		pipeline.GetEvent(),
 		action,
 		pipeline.GetId(),

@@ -109,7 +109,7 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 }
 
 func (r *EnvironmentResource) SelectOrganization() error {
-	model, err := organization.List(nil)
+	model, err := organization.List(organization.NewListOptions())
 	if err != nil {
 		return err
 	}

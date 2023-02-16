@@ -37,7 +37,7 @@ func Aggregate(options *AggregateOptions) ([]sdk.ComponentGitCollection, error) 
 
 		result = append(result, getPaginatedGitComponents(model)...)
 
-		if hasNextPage(model) {
+		if !hasNextPage(model) {
 			return result, nil
 		}
 

@@ -10,6 +10,7 @@ var mainCmd = &cobra.Command{
 	Aliases: []string{"pfwd"},
 
 	Short: "Port Forward",
+	Long:  "Kubernetes Pod Port Forward",
 }
 
 func init() {

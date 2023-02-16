@@ -6,8 +6,11 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:               "profiles",
-	Short:             "Manage profiles",
+	Use: "profiles",
+
+	Short: "Manage profiles",
+	Long:  "Manage CLI Configuration profiles",
+
 	PersistentPreRunE: util.PersistentPreRunChain,
 }
 

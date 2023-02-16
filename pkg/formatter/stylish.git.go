@@ -33,7 +33,7 @@ func tabulateComponentGitItem(writer *tabwriter.Writer, item *sdk.ComponentGitIt
 	fmt.Fprintf(writer, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
 	fmt.Fprintf(writer, "%v\t %v\n", "ComponentID", item.GetId())
 	fmt.Fprintf(writer, "%v\t %v\n", "Name", item.GetName())
-	fmt.Fprintf(writer, "%v\t %v\n", "Repository", item.GetName())
+	fmt.Fprintf(writer, "%v\t %v\n", "Repository", item.GetRepository())
 	fmt.Fprintf(writer, "%v\t %v\n", "Branch", item.GetRefName())
 	fmt.Fprintf(writer, "%v\t %v\n", "Sha", item.GetRefSha())
 	fmt.Fprintf(writer, "%v\t %v\n", "DeployedSha", item.GetDeployedSha())

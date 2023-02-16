@@ -18,8 +18,10 @@ var errNotRedirect = errors.New("must be a redirect")
 var ClientOnly = false
 
 var mainCmd = &cobra.Command{
-	Use:   "version",
+	Use: "version",
+
 	Short: "Version Information",
+	Long:  "Bunnyshell CLI Version Information",
 
 	ValidArgsFunction: cobra.NoFileCompletions,
 

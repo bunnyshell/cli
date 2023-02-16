@@ -9,6 +9,7 @@ var mainCmd = &cobra.Command{
 	Use: "git",
 
 	Short: "Git Operations",
+	Long:  "Bunnyshell Git Operations",
 }
 
 func init() {

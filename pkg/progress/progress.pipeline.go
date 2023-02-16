@@ -50,10 +50,6 @@ func (p *Progress) Update(pipelineSync PipelineSyncer) error {
 			return err
 		}
 
-		if pipeline == nil {
-			return nil
-		}
-
 		if !p.UpdatePipeline(pipeline) {
 			return nil
 		}

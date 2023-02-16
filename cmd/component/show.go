@@ -14,7 +14,8 @@ func init() {
 	itemOptions := component.NewItemOptions("")
 
 	command := &cobra.Command{
-		Use: "show",
+		Use:     "show",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

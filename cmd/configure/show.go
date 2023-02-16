@@ -11,6 +11,7 @@ func init() {
 		Use: "show",
 
 		Short: "Show current config",
+		Long:  "Show currently used CLI config",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
