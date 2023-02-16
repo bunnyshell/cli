@@ -30,11 +30,17 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if deleteOptions.WithPipeline {
-				return processEventPipeline(cmd, event, "delete")
+			if !deleteOptions.WithPipeline {
+				return lib.FormatCommandData(cmd, event)
 			}
 
-			return lib.FormatCommandData(cmd, event)
+			if err = processEventPipeline(cmd, event, "delete"); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			cmd.Printf("\nEnvironment %s successfully deleted\n", deleteOptions.ID)
+
+			return nil
 		},
 	}
 

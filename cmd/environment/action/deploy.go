@@ -30,11 +30,17 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if deployOptions.WithPipeline {
-				return processEventPipeline(cmd, event, "deploy")
+			if !deployOptions.WithPipeline {
+				return lib.FormatCommandData(cmd, event)
 			}
 
-			return lib.FormatCommandData(cmd, event)
+			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
+
+			return showEnvironmentEndpoints(cmd, deployOptions.ID)
 		},
 	}
 

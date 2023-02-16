@@ -30,11 +30,17 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if startOptions.WithPipeline {
-				return processEventPipeline(cmd, event, "start")
+			if !startOptions.WithPipeline {
+				return lib.FormatCommandData(cmd, event)
 			}
 
-			return lib.FormatCommandData(cmd, event)
+			if err = processEventPipeline(cmd, event, "start"); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			cmd.Printf("\nEnvironment %s successfully started\n", startOptions.ID)
+
+			return showEnvironmentEndpoints(cmd, startOptions.ID)
 		},
 	}
 

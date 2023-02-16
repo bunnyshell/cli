@@ -30,11 +30,17 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if stopOptions.WithPipeline {
-				return processEventPipeline(cmd, event, "stop")
+			if !stopOptions.WithPipeline {
+				return lib.FormatCommandData(cmd, event)
 			}
 
-			return lib.FormatCommandData(cmd, event)
+			if err = processEventPipeline(cmd, event, "stop"); err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			cmd.Printf("\nEnvironment %s successfully stopped\n", stopOptions.ID)
+
+			return nil
 		},
 	}
 

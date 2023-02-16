@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"bunnyshell.com/cli/pkg/api/common"
+	"bunnyshell.com/cli/pkg/api/component/endpoint"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/progress"
@@ -56,4 +57,16 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 	}
 
 	return nil
+}
+
+func showEnvironmentEndpoints(cmd *cobra.Command, environment string) error {
+	options := endpoint.NewAggregateOptions()
+	options.Environment = environment
+
+	components, err := endpoint.Aggregate(options)
+	if err != nil {
+		return err
+	}
+
+	return lib.FormatCommandData(cmd, components)
 }
