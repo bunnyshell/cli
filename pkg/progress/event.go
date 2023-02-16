@@ -17,6 +17,15 @@ func EventToPipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem,
 	spinner.Start()
 	defer spinner.Stop()
 
+	event, err := handleWorkflow(event, options, spinner)
+	if err != nil {
+		return nil, err
+	}
+
+	return handlePipeline(event, options)
+}
+
+func handlePipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem, error) {
 	listOptions := pipeline.NewListOptions()
 	listOptions.Event = event.GetId()
 
