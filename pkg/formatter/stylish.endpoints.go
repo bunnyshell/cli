@@ -19,8 +19,6 @@ func tabulateAggregateEndpoint(writer *tabwriter.Writer, components []sdk.Compon
 			fmt.Fprintln(writer)
 		}
 
-		fmt.Fprintf(writer, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
-		fmt.Fprintf(writer, "%v\t %v\n", "ComponentID", item.GetId())
 		fmt.Fprintf(writer, "%v\t %v\n", "Name", item.GetName())
 
 		for index, endpoint := range item.GetEndpoints() {
