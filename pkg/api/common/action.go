@@ -7,17 +7,17 @@ import (
 type ActionOptions struct {
 	ItemOptions
 
-	WithPipeline bool
+	WithoutPipeline bool
 }
 
 func NewActionOptions(id string) *ActionOptions {
 	return &ActionOptions{
 		ItemOptions: *NewItemOptions(id),
 
-		WithPipeline: true,
+		WithoutPipeline: false,
 	}
 }
 
 func (ao *ActionOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	flags.BoolVar(&ao.WithPipeline, "no-wait", ao.WithPipeline, "Do not wait for pipeline until finish")
+	flags.BoolVar(&ao.WithoutPipeline, "no-wait", ao.WithoutPipeline, "Do not wait for pipeline until finish")
 }

@@ -19,7 +19,7 @@ func GetMainCommand() *cobra.Command {
 }
 
 func validateActionOptions(actionOptions *common.ActionOptions) error {
-	if !actionOptions.WithPipeline {
+	if !actionOptions.WithoutPipeline {
 		return nil
 	}
 

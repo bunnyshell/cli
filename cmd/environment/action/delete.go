@@ -30,7 +30,7 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if !deleteOptions.WithPipeline {
+			if deleteOptions.WithoutPipeline {
 				return lib.FormatCommandData(cmd, event)
 			}
 
