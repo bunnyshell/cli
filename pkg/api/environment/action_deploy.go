@@ -25,7 +25,7 @@ func Deploy(options *DeployOptions) (*sdk.EventItem, error) {
 		return nil, api.ParseError(resp, err)
 	}
 
-	return model, err
+	return model, nil
 }
 
 func DeployRaw(options *DeployOptions) (*sdk.EventItem, *http.Response, error) {

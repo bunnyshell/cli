@@ -1,9 +1,9 @@
 package action
 
 import (
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +11,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	cloneName := ""
+	cloneOptions := environment.NewCloneOptions("")
 
 	command := &cobra.Command{
 		Use: "clone",
@@ -19,19 +19,16 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			cloneOptions.ID = settings.Profile.Context.Environment
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentClone(
-				ctx,
-				settings.Profile.Context.Environment,
-			).EnvironmentCloneAction(
-				*sdk.NewEnvironmentCloneAction(cloneName),
-			)
+			model, err := environment.Clone(cloneOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
+			cmd.Printf("\nEnvironment %s successfully cloned:\n\n", cloneOptions.ID)
 
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return lib.FormatCommandData(cmd, model)
 		},
 	}
 
@@ -41,9 +38,9 @@ func init() {
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
 
-	cloneFlagName := "name"
-	flags.StringVar(&cloneName, cloneFlagName, cloneName, "Environment Clone Name")
-	_ = command.MarkFlagRequired(cloneFlagName)
+	cloneOptions.UpdateFlagSet(flags)
+
+	_ = command.MarkFlagRequired("name")
 
 	mainCmd.AddCommand(command)
 }

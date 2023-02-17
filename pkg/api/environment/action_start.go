@@ -25,7 +25,7 @@ func Start(options *StartOptions) (*sdk.EventItem, error) {
 		return nil, api.ParseError(resp, err)
 	}
 
-	return model, err
+	return model, nil
 }
 
 func StartRaw(options *StartOptions) (*sdk.EventItem, *http.Response, error) {

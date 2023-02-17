@@ -25,7 +25,7 @@ func Stop(options *StopOptions) (*sdk.EventItem, error) {
 		return nil, api.ParseError(resp, err)
 	}
 
-	return model, err
+	return model, nil
 }
 
 func StopRaw(options *StopOptions) (*sdk.EventItem, *http.Response, error) {

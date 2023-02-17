@@ -25,7 +25,7 @@ func Delete(options *DeleteOptions) (*sdk.EventItem, error) {
 		return nil, api.ParseError(resp, err)
 	}
 
-	return model, err
+	return model, nil
 }
 
 func DeleteRaw(options *DeleteOptions) (*sdk.EventItem, *http.Response, error) {
