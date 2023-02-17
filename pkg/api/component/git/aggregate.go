@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/pflag"
 )
@@ -28,6 +29,14 @@ func (ao *AggregateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 func Aggregate(options *AggregateOptions) ([]sdk.ComponentGitCollection, error) {
 	result := []sdk.ComponentGitCollection{}
+
+	resume := net.PauseSpinner()
+	defer resume()
+
+	spinner := net.MakeSpinner()
+
+	spinner.Start()
+	defer spinner.Stop()
 
 	for {
 		model, err := List(&options.ListOptions)
