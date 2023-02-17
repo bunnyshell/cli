@@ -32,7 +32,7 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 }
 
 func (lo *ListOptions) updateSelfFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&lo.Name, "component", lo.Name, "Filter by Component Name")
+	flags.StringVar(&lo.Name, "component-name", lo.Name, "Filter by Component Name")
 }
 
 func List(options *ListOptions) (*sdk.PaginatedComponentGitCollection, error) {
