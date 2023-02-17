@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"errors"
 	"time"
 
 	"github.com/fatih/color"
@@ -10,8 +11,6 @@ type (
 	UpdateStatus int
 
 	PipelineStatus int
-
-	InProgress bool
 )
 
 const (
@@ -22,10 +21,17 @@ const (
 )
 
 const (
-	StatusWorking PipelineStatus = iota
-	StatusFinished
-	StatusFailed
-	StatusUnknown
+	PipelineWorking PipelineStatus = iota
+	PipelineFinished
+	PipelineFailed
+	PipelineUnknownState
+)
+
+const (
+	StatusSuccess    = "success"
+	StatusFailed     = "failed"
+	StatusInProgress = "in_progress"
+	StatusPending    = "pending"
 )
 
 const (
@@ -34,8 +40,10 @@ const (
 )
 
 var statusMap = map[PipelineStatus]string{
-	StatusWorking:  color.New(color.FgCyan).Sprintf("»"),
-	StatusFinished: color.New(color.FgGreen).Sprintf("✔"),
-	StatusFailed:   color.New(color.FgRed).Sprintf("✘"),
-	StatusUnknown:  color.New(color.FgYellow).Sprintf("?"),
+	PipelineWorking:      color.New(color.FgCyan).Sprintf("»"),
+	PipelineFinished:     color.New(color.FgGreen).Sprintf("✔"),
+	PipelineFailed:       color.New(color.FgRed).Sprintf("✘"),
+	PipelineUnknownState: color.New(color.FgYellow).Sprintf("?"),
 }
+
+var ErrPipeline = errors.New("pipeline has encountered an error")

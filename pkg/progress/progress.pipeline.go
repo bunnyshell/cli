@@ -32,7 +32,7 @@ func NewPipeline(options Options) *Progress {
 	spinner := spinner.New(spinner.CharSets[defaultProgressSet], defaultSpinnerUpdate)
 	spinner.Prefix = fmt.Sprintf(
 		"%s Fetching pipeline status... ",
-		statusMap[StatusWorking],
+		statusMap[PipelineWorking],
 	)
 
 	return &Progress{
@@ -50,7 +50,12 @@ func (p *Progress) Update(pipelineSync PipelineSyncer) error {
 			return err
 		}
 
-		if !p.UpdatePipeline(pipeline) {
+		waiting, err := p.UpdatePipeline(pipeline)
+		if err != nil {
+			return err
+		}
+
+		if !waiting {
 			return nil
 		}
 
@@ -58,9 +63,9 @@ func (p *Progress) Update(pipelineSync PipelineSyncer) error {
 	}
 }
 
-func (p *Progress) UpdatePipeline(pipeline *sdk.PipelineItem) InProgress {
+func (p *Progress) UpdatePipeline(pipeline *sdk.PipelineItem) (bool, error) {
 	if pipeline == nil {
-		return false
+		return false, nil
 	}
 
 	p.spinner.Prefix = "Processing Pipeline "
@@ -70,13 +75,22 @@ func (p *Progress) UpdatePipeline(pipeline *sdk.PipelineItem) InProgress {
 		case Success:
 			continue
 		case Failed:
-			return false
+			return false, ErrPipeline
 		case Synced:
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	switch pipeline.GetStatus() {
+	case StatusInProgress, StatusPending:
+		return true, nil
+	case StatusSuccess:
+		return false, nil
+	case StatusFailed:
+		return false, ErrPipeline
+	default:
+		return false, fmt.Errorf("%w: unknown status %s", ErrPipeline, pipeline.GetStatus())
+	}
 }
 
 func (p *Progress) Start() {
@@ -88,13 +102,13 @@ func (p *Progress) Stop() {
 }
 
 func (p *Progress) setStage(stage sdk.StageItem) UpdateStatus {
-	if stage.GetStatus() == "failed" {
+	if stage.GetStatus() == StatusFailed {
 		p.finishStage(stage)
 
 		return Failed
 	}
 
-	if stage.GetStatus() == "success" {
+	if stage.GetStatus() == StatusSuccess {
 		p.finishStage(stage)
 
 		return Success
@@ -114,7 +128,7 @@ func (p *Progress) finishStage(stage sdk.StageItem) {
 
 	p.spinner.FinalMSG = fmt.Sprintf(
 		"%s %s finished %d jobs in %s\n",
-		statusMap[p.getStatus(stage)],
+		statusMap[p.getState(stage)],
 		stage.GetName(),
 		stage.GetJobsCount(),
 		time.Duration(stage.GetDuration())*time.Second,
@@ -128,22 +142,22 @@ func (p *Progress) finishStage(stage sdk.StageItem) {
 func (p *Progress) syncStage(stage sdk.StageItem) {
 	p.spinner.Prefix = fmt.Sprintf(
 		"%s %s... %d/%d jobs completed ",
-		statusMap[p.getStatus(stage)],
+		statusMap[p.getState(stage)],
 		stage.GetName(),
 		stage.GetCompletedJobsCount(),
 		stage.GetJobsCount(),
 	)
 }
 
-func (p *Progress) getStatus(stage sdk.StageItem) PipelineStatus {
+func (p *Progress) getState(stage sdk.StageItem) PipelineStatus {
 	switch stage.GetStatus() {
-	case "success":
-		return StatusFinished
-	case "in_progress", "pending":
-		return StatusWorking
-	case "failed":
-		return StatusFailed
+	case StatusSuccess:
+		return PipelineFinished
+	case StatusInProgress, StatusPending:
+		return PipelineWorking
+	case StatusFailed:
+		return PipelineFailed
 	}
 
-	return StatusUnknown
+	return PipelineUnknownState
 }
