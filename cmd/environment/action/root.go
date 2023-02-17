@@ -42,7 +42,7 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 
 	pipeline, err := progress.EventToPipeline(event, progressOptions)
 	if err != nil {
-		return lib.FormatCommandError(cmd, err)
+		return err
 	}
 
 	cmd.Printf(
@@ -53,7 +53,7 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 	)
 
 	if err = progress.Pipeline(pipeline.GetId(), nil); err != nil {
-		return lib.FormatCommandError(cmd, err)
+		return err
 	}
 
 	return nil

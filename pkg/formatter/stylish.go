@@ -63,9 +63,7 @@ func stylish(data interface{}) ([]byte, error) {
 	case api.Error:
 		tabulateAPIError(writer, &dataType)
 	case error:
-		err = writeJSON(writer, map[string]interface{}{
-			"error": dataType.Error(),
-		})
+		tabulateError(writer, dataType)
 	default:
 		err = writeJSON(writer, data)
 	}
@@ -206,6 +204,10 @@ func tabulateAPIError(w *tabwriter.Writer, item *api.Error) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.Title)
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.Detail)
+}
+
+func tabulateError(w *tabwriter.Writer, err error) {
+	fmt.Fprintf(w, "\n%v\t %v\n", "ERROR", err.Error())
 }
 
 func writeJSON(writer *tabwriter.Writer, data any) error {

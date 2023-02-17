@@ -35,7 +35,9 @@ func init() {
 			}
 
 			if err = processEventPipeline(cmd, event, "stop"); err != nil {
-				return lib.FormatCommandError(cmd, err)
+				cmd.Printf("\nEnvironment %s stopping failed\n", stopOptions.ID)
+
+				return err
 			}
 
 			cmd.Printf("\nEnvironment %s successfully stopped\n", stopOptions.ID)

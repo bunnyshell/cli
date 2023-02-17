@@ -35,7 +35,9 @@ func init() {
 			}
 
 			if err = processEventPipeline(cmd, event, "start"); err != nil {
-				return lib.FormatCommandError(cmd, err)
+				cmd.Printf("\nEnvironment %s starting failed\n", startOptions.ID)
+
+				return err
 			}
 
 			cmd.Printf("\nEnvironment %s successfully started\n", startOptions.ID)

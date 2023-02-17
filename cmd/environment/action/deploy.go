@@ -35,7 +35,9 @@ func init() {
 			}
 
 			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-				return lib.FormatCommandError(cmd, err)
+				cmd.Printf("\nEnvironment %s deployment failed\n", deployOptions.ID)
+
+				return err
 			}
 
 			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
