@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -11,12 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func FormatCommandError(cmd *cobra.Command, err error) error {
-	_ = FormatCommandData(cmd, map[string]interface{}{
-		"error": err.Error(),
-	})
+var errGeneric = errors.New("oops! Something went wrong")
 
-	return err
+func FormatCommandError(cmd *cobra.Command, err error) error {
+	_ = FormatCommandData(cmd, err)
+
+	return errGeneric
 }
 
 func FormatCommandData(cmd *cobra.Command, data interface{}) error {
