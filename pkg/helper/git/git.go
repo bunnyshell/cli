@@ -14,10 +14,10 @@ import (
 var prepareTemplate = fmt.Sprintf(`In order to clone repositories, run the following:
 {{ range $repo := .PrepareManager.Repositories }}
     {{ if $.Options.DiscardHistory -}}
-        git clone
-            --separate-git-dir=$(mktemp -u)
-            --depth 1
-            {{ $repo }} {{ $.PrepareManager.GetDir $repo }}
+        git clone \
+            --separate-git-dir=$(mktemp -u) \
+            --depth 1 \
+            {{ $repo }} {{ $.PrepareManager.GetDir $repo }} \
         && rm -f {{ $.PrepareManager.GetDir $repo }}/.git
     {{- else -}}
 		git clone {{ $repo }} {{ $.PrepareManager.GetDir $repo }}

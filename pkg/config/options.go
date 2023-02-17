@@ -179,7 +179,7 @@ func newProject(settings *Settings) *option.String {
 func newEnvironment(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Context.Environment)
 
-	option.AddFlag("environment", "Filter by Enironment")
+	option.AddFlag("environment", "Filter by Environment")
 	option.AddFlag("id", "Environment ID")
 
 	return option
