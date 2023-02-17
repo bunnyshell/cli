@@ -5,18 +5,15 @@ import (
 
 	"bunnyshell.com/cli/pkg/api/event"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var (
-		monitor   bool
-		lastEvent *sdk.EventItem
-	)
+	var monitor bool
 
 	idleNotify := 10 * time.Second
-	errWait := idleNotify / 2
 
 	itemOptions := event.NewItemOptions("")
 
@@ -31,45 +28,23 @@ func init() {
 				return err
 			}
 
-			lastEvent = model
+			_ = lib.FormatCommandData(cmd, model)
 
-			return lib.FormatCommandData(cmd, model)
-		},
-
-		PostRun: func(cmd *cobra.Command, args []string) {
-			if !monitor || isFinalStatus(lastEvent) {
-				return
+			if !monitor || isFinalStatus(model) {
+				return nil
 			}
 
-			idleThreshold := time.Now().Add(idleNotify)
-			for {
-				now := time.Now()
+			resume := net.PauseSpinner()
+			defer resume()
 
-				model, err := event.Get(itemOptions)
-				if err != nil {
-					if now.After(idleThreshold) {
-						_ = lib.FormatCommandError(cmd, err)
-						time.Sleep(errWait)
-						idleThreshold = now.Add(idleNotify)
-					} else {
-						time.Sleep(errWait)
-					}
+			spinner := net.MakeSpinner()
 
-					continue
-				}
+			spinner.Start()
+			defer spinner.Stop()
 
-				if lastEvent.GetUpdatedAt().Equal(model.GetUpdatedAt()) {
-					continue
-				}
+			monitorEvent(cmd, model, idleNotify)
 
-				if isFinalStatus(model) {
-					return
-				}
-
-				lastEvent = model
-				_ = lib.FormatCommandData(cmd, model)
-				idleThreshold = now.Add(idleNotify)
-			}
+			return nil
 		},
 	}
 
@@ -86,5 +61,49 @@ func init() {
 }
 
 func isFinalStatus(e *sdk.EventItem) bool {
-	return e.GetStatus() == "success" || e.GetStatus() == "error"
+	switch e.GetStatus() {
+	case "success", "error", "delegated":
+		return true
+	default:
+		return false
+	}
+}
+
+func monitorEvent(cmd *cobra.Command, lastEvent *sdk.EventItem, idleNotify time.Duration) {
+	itemOptions := event.NewItemOptions(lastEvent.GetId())
+
+	errWait := idleNotify / 2
+
+	idleThreshold := time.Now().Add(idleNotify)
+
+	for {
+		now := time.Now()
+
+		model, err := event.Get(itemOptions)
+		if err != nil {
+			if now.After(idleThreshold) {
+				_ = lib.FormatCommandError(cmd, err)
+
+				time.Sleep(errWait)
+
+				idleThreshold = now.Add(idleNotify)
+			} else {
+				time.Sleep(errWait)
+			}
+
+			continue
+		}
+
+		if lastEvent.GetUpdatedAt().Equal(model.GetUpdatedAt()) {
+			continue
+		}
+
+		if isFinalStatus(model) {
+			return
+		}
+
+		lastEvent = model
+		_ = lib.FormatCommandData(cmd, model)
+		idleThreshold = now.Add(idleNotify)
+	}
 }
