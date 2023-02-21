@@ -3,6 +3,7 @@ package wizard
 import (
 	"fmt"
 
+	"bunnyshell.com/cli/pkg/api/component"
 	"bunnyshell.com/sdk"
 )
 
@@ -47,28 +48,13 @@ func (w *Wizard) selectComponent(page int32) (*sdk.ComponentCollection, error) {
 }
 
 func (w *Wizard) getComponents(page int32) (*sdk.PaginatedComponentCollection, error) {
-	ctx, cancel := w.getContext()
-	defer cancel()
+	listOptions := component.NewListOptions()
+	listOptions.Page = page
+	listOptions.Profile = w.profile
 
-	request := w.client.ComponentApi.ComponentList(ctx)
+	listOptions.Organization = w.profile.Context.Organization
+	listOptions.Project = w.profile.Context.Project
+	listOptions.Environment = w.profile.Context.Environment
 
-	if page > 1 {
-		request = request.Page(page)
-	}
-
-	if w.profile.Context.Environment != "" {
-		request = request.Environment(w.profile.Context.Environment)
-	}
-
-	if w.profile.Context.Project != "" {
-		request = request.Project(w.profile.Context.Project)
-	}
-
-	if w.profile.Context.Organization != "" {
-		request = request.Organization(w.profile.Context.Organization)
-	}
-
-	paginated, _, err := request.Execute()
-
-	return paginated, err
+	return component.List(listOptions)
 }

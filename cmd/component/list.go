@@ -1,60 +1,31 @@
 package component
 
 import (
-	"net/http"
-
+	"bunnyshell.com/cli/pkg/api/component"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var (
-		page            int32
-		clusterStatus   string
-		operationStatus string
-	)
-
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	listOptions := component.NewListOptions()
+
 	command := &cobra.Command{
-		Use: "list",
+		Use:     "list",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
-				ctx, cancel := lib.GetContext()
-				defer cancel()
+			listOptions.Organization = settings.Profile.Context.Organization
+			listOptions.Project = settings.Profile.Context.Project
+			listOptions.Environment = settings.Profile.Context.Environment
 
-				request := lib.GetAPI().ComponentApi.ComponentList(ctx)
-
-				if page != 0 {
-					request = request.Page(page)
-				}
-
-				if clusterStatus != "" {
-					request = request.ClusterStatus(clusterStatus)
-				}
-
-				if operationStatus != "" {
-					request = request.OperationStatus(operationStatus)
-				}
-
-				if settings.Profile.Context.Organization != "" {
-					request = request.Organization(settings.Profile.Context.Organization)
-				}
-
-				if settings.Profile.Context.Environment != "" {
-					request = request.Environment(settings.Profile.Context.Environment)
-				}
-
-				if settings.Profile.Context.Project != "" {
-					request = request.Project(settings.Profile.Context.Project)
-				}
-
-				return request.Execute()
+			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
+				return component.List(listOptions)
 			})
 		},
 	}
@@ -65,9 +36,7 @@ func init() {
 	flags.AddFlag(options.Project.GetFlag("project"))
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 
-	flags.Int32Var(&page, "page", page, "Listing Page")
-	flags.StringVar(&clusterStatus, "clusterStatus", clusterStatus, "Filter by ClusterStatus")
-	flags.StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by OperationStatus")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

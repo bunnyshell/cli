@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"text/tabwriter"
 
+	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/sdk"
 )
 
@@ -29,6 +30,14 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentVariableCollection:
 		tabulateEnvironmentVariableCollection(writer, dataType)
+	case *sdk.PaginatedKubernetesIntegrationCollection:
+		tabulateKubernetesCollection(writer, dataType)
+	case *sdk.PaginatedPipelineCollection:
+		tabulatePipelineCollection(writer, dataType)
+	case *sdk.PaginatedComponentGitCollection:
+		tabulateComponentGitCollection(writer, dataType)
+	case []sdk.ComponentEndpointCollection:
+		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
 		tabulateOrganizationItem(writer, dataType)
 	case *sdk.ProjectItem:
@@ -41,14 +50,22 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventItem(writer, dataType)
 	case *sdk.EnvironmentVariableItem:
 		tabulateEnvironmentVariableItem(writer, dataType)
+	case *sdk.KubernetesIntegrationItem:
+		tabulateKubernetesItem(writer, dataType)
+	case *sdk.PipelineItem:
+		tabulatePipelineItem(writer, dataType)
+	case *sdk.ComponentGitItem:
+		tabulateComponentGitItem(writer, dataType)
 	case *sdk.ProblemGeneric:
 		tabulateGeneric(writer, dataType)
+	case *api.Error:
+		tabulateAPIError(writer, dataType)
+	case api.Error:
+		tabulateAPIError(writer, &dataType)
+	case error:
+		tabulateError(writer, dataType)
 	default:
-		fmt.Fprintf(writer, "JSON: ")
-
-		var jsonBytes []byte
-		jsonBytes, err = JsonFormatter(data)
-		_, _ = writer.Write(jsonBytes)
+		err = writeJSON(writer, data)
 	}
 
 	writer.Flush()
@@ -139,22 +156,22 @@ func tabulateComponentItem(w *tabwriter.Writer, item *sdk.ComponentItem) {
 	}
 }
 
-func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
-	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
-
-	if data.Embedded != nil {
-		for _, item := range data.Embedded.Item {
-			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetType(), item.GetStatus())
-		}
-	}
-}
-
 func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentVariableCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "EnvVarID", "EnvironmentID", "OrganizationID", "Name")
 
 	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
 			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetName())
+		}
+	}
+}
+
+func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetEnvironment(), item.GetOrganization(), item.GetType(), item.GetStatus())
 		}
 	}
 }
@@ -181,4 +198,23 @@ func tabulateGeneric(w *tabwriter.Writer, item *sdk.ProblemGeneric) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.GetTitle())
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.GetDetail())
+}
+
+func tabulateAPIError(w *tabwriter.Writer, item *api.Error) {
+	fmt.Fprintf(w, "%v\n", "ERROR")
+	fmt.Fprintf(w, "%v\t %v\n", "Title", item.Title)
+	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.Detail)
+}
+
+func tabulateError(w *tabwriter.Writer, err error) {
+	fmt.Fprintf(w, "\n%v\t %v\n", "ERROR", err.Error())
+}
+
+func writeJSON(writer *tabwriter.Writer, data any) error {
+	fmt.Fprintf(writer, "JSON: ")
+
+	jsonBytes, err := JSONFormatter(data)
+	_, _ = writer.Write(jsonBytes)
+
+	return err
 }

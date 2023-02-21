@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"bunnyshell.com/cli/pkg/api/organization"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
@@ -189,12 +190,10 @@ func ensureToken(profile *config.Profile) error {
 }
 
 func checkToken(profile *config.Profile) error {
-	ctx, cancel := lib.GetContextFromProfile(*profile)
-	defer cancel()
+	listOptions := organization.NewListOptions()
+	listOptions.Profile = profile
 
-	request := lib.GetAPIFromProfile(*profile).OrganizationApi.OrganizationList(ctx)
-
-	_, _, err := request.Execute()
+	_, err := organization.List(listOptions)
 
 	return err
 }

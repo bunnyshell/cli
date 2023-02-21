@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/api/component"
+	"bunnyshell.com/cli/pkg/api/environment"
+	"bunnyshell.com/cli/pkg/api/organization"
+	"bunnyshell.com/cli/pkg/api/project"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
-	"bunnyshell.com/cli/pkg/lib"
 	bunnysdk "bunnyshell.com/sdk"
 )
 
@@ -34,12 +37,12 @@ func NewFromWizard(profileContext *config.Context, resourcePath string) (*Enviro
 func getEnvironmentResource(profileContext *config.Context) (*EnvironmentResource, error) {
 	// wizard
 	if profileContext.ServiceComponent != "" {
-		componentItem, _, err := lib.GetComponent(profileContext.ServiceComponent)
+		componentItem, err := component.Get(component.NewItemOptions(profileContext.ServiceComponent))
 		if err != nil {
 			return nil, err
 		}
 
-		environmentItem, _, err := lib.GetEnvironment(componentItem.GetEnvironment())
+		environmentItem, err := environment.Get(environment.NewItemOptions(componentItem.GetEnvironment()))
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +63,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	environmentResource := NewEnvironmentResource()
 
 	if profileContext.Organization != "" {
-		organizationItem, _, err := lib.GetOrganization(profileContext.Organization)
+		itemOptions := organization.NewItemOptions(profileContext.Organization)
+
+		organizationItem, err := organization.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +76,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	}
 
 	if profileContext.Project != "" {
-		projectItem, _, err := lib.GetProject(profileContext.Project)
+		itemOptions := project.NewItemOptions(profileContext.Project)
+
+		projectItem, err := project.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +89,9 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 	}
 
 	if profileContext.Environment != "" {
-		environmentItem, _, err := lib.GetEnvironment(profileContext.Environment)
+		itemOptions := environment.NewItemOptions(profileContext.Environment)
+
+		environmentItem, err := environment.Get(itemOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -100,17 +109,17 @@ func askEnvironmentResource(profileContext *config.Context) (*EnvironmentResourc
 }
 
 func (r *EnvironmentResource) SelectOrganization() error {
-	resp, _, err := lib.GetOrganizations()
+	model, err := organization.List(organization.NewListOptions())
 	if err != nil {
 		return err
 	}
 
-	if resp.Embedded == nil {
+	if model.Embedded == nil {
 		return ErrNoOrganizations
 	}
 
 	items := []string{}
-	for _, item := range resp.Embedded.GetItem() {
+	for _, item := range model.Embedded.GetItem() {
 		items = append(items, item.GetName())
 	}
 
@@ -119,7 +128,9 @@ func (r *EnvironmentResource) SelectOrganization() error {
 		return err
 	}
 
-	organizationItem, _, err := lib.GetOrganization(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := organization.NewItemOptions(model.Embedded.GetItem()[index].GetId())
+
+	organizationItem, err := organization.Get(itemOptions)
 	if err != nil {
 		return err
 	}
@@ -130,7 +141,10 @@ func (r *EnvironmentResource) SelectOrganization() error {
 }
 
 func (r *EnvironmentResource) SelectProject() error {
-	resp, _, err := lib.GetProjects(r.Organization.GetId())
+	listOptions := project.NewListOptions()
+	listOptions.Organization = r.Organization.GetId()
+
+	resp, err := project.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -149,7 +163,9 @@ func (r *EnvironmentResource) SelectProject() error {
 		return err
 	}
 
-	projectItem, _, err := lib.GetProject(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := project.NewItemOptions(resp.Embedded.GetItem()[index].GetId())
+
+	projectItem, err := project.Get(itemOptions)
 	if err != nil {
 		return err
 	}
@@ -160,7 +176,10 @@ func (r *EnvironmentResource) SelectProject() error {
 }
 
 func (r *EnvironmentResource) SelectEnvironment() error {
-	resp, _, err := lib.GetEnvironments(r.Project.GetId())
+	listOptions := environment.NewListOptions()
+	listOptions.Project = r.Project.GetId()
+
+	resp, err := environment.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -179,7 +198,9 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 		return err
 	}
 
-	environmentItem, _, err := lib.GetEnvironment(resp.Embedded.GetItem()[index].GetId())
+	itemOptions := environment.NewItemOptions(resp.Embedded.GetItem()[index].GetId())
+
+	environmentItem, err := environment.Get(itemOptions)
 	if err != nil {
 		return err
 	}
@@ -190,7 +211,11 @@ func (r *EnvironmentResource) SelectEnvironment() error {
 }
 
 func (r *EnvironmentResource) SelectComponent() error {
-	resp, _, err := lib.GetComponents(r.Environment.GetId(), "running")
+	listOptions := component.NewListOptions()
+	listOptions.Environment = r.Environment.GetId()
+	listOptions.OperationStatus = "running"
+
+	resp, err := component.List(listOptions)
 	if err != nil {
 		return err
 	}
@@ -211,7 +236,9 @@ func (r *EnvironmentResource) SelectComponent() error {
 		return err
 	}
 
-	componentItem, _, err := lib.GetComponent(components[index].GetId())
+	itemOptions := component.NewItemOptions(components[index].GetId())
+
+	componentItem, err := component.Get(itemOptions)
 	if err != nil {
 		return err
 	}
@@ -222,7 +249,7 @@ func (r *EnvironmentResource) SelectComponent() error {
 }
 
 func (r *EnvironmentResource) SelectComponentResource() error {
-	resources, _, err := lib.GetComponentResources(r.Component.GetId())
+	resources, err := component.Resources(component.NewResourceOptions(r.Component.GetId()))
 	if err != nil {
 		return err
 	}

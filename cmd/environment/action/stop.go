@@ -1,6 +1,7 @@
 package action
 
 import (
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -10,20 +11,38 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	stopOptions := environment.NewStopOptions("")
+
 	command := &cobra.Command{
 		Use: "stop",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return validateActionOptions(&stopOptions.ActionOptions)
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			stopOptions.ID = settings.Profile.Context.Environment
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentStop(ctx, settings.Profile.Context.Environment)
+			event, err := environment.Stop(stopOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
+			if stopOptions.WithoutPipeline {
+				return lib.FormatCommandData(cmd, event)
+			}
 
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			if err = processEventPipeline(cmd, event, "stop"); err != nil {
+				cmd.Printf("\nEnvironment %s stopping failed\n", stopOptions.ID)
+
+				return err
+			}
+
+			cmd.Printf("\nEnvironment %s successfully stopped\n", stopOptions.ID)
+
+			return nil
 		},
 	}
 
@@ -32,6 +51,8 @@ func init() {
 	idFlag := options.Environment.GetFlag("id")
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
+
+	stopOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

@@ -15,8 +15,10 @@ func init() {
 	settings := config.GetSettings()
 
 	initConfigCommand := &cobra.Command{
-		Use:   "init",
+		Use: "init",
+
 		Short: "Create a configuration file",
+		Long:  "Create a CLI configuration file",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

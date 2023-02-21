@@ -3,7 +3,6 @@ package lib
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
@@ -17,10 +16,7 @@ const (
 	ShowOtherMinPages = 4
 )
 
-var (
-	errHandled = error(nil)
-	errQuit    = errors.New("quit")
-)
+var errQuit = errors.New("quit")
 
 type ModelWithPagination interface {
 	GetPage() int32
@@ -30,18 +26,23 @@ type ModelWithPagination interface {
 	GetTotalItems() int32
 }
 
-type CollectionGenerator func(page int32) (ModelWithPagination, *http.Response, error)
+type Options interface {
+	SetPage(int32)
+}
 
-func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerator) error {
+type CollectionGenerator func() (ModelWithPagination, error)
+
+func ShowCollection(cmd *cobra.Command, options Options, generator CollectionGenerator) error {
+	var page int32
+
 	for {
-		model, resp, err := generator(page)
-		if e := FormatRequestResult(cmd, model, resp, err); e != nil {
-			return e
+		model, err := generator()
+		if err != nil {
+			return err
 		}
 
-		if err != nil {
-			// handled in FormatRequestResult
-			return errHandled
+		if err = FormatCommandData(cmd, model); err != nil {
+			return err
 		}
 
 		page, err = interactivePagination(cmd, model)
@@ -52,6 +53,8 @@ func ShowCollection(cmd *cobra.Command, page int32, generator CollectionGenerato
 
 			return err
 		}
+
+		options.SetPage(page)
 	}
 }
 

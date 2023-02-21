@@ -9,7 +9,10 @@ import (
 	"bunnyshell.com/cli/cmd/configure"
 	"bunnyshell.com/cli/cmd/environment"
 	"bunnyshell.com/cli/cmd/event"
+	"bunnyshell.com/cli/cmd/git"
+	"bunnyshell.com/cli/cmd/k8sIntegration"
 	"bunnyshell.com/cli/cmd/organization"
+	"bunnyshell.com/cli/cmd/pipeline"
 	"bunnyshell.com/cli/cmd/port_forward"
 	"bunnyshell.com/cli/cmd/project"
 	"bunnyshell.com/cli/cmd/remote_development"
@@ -89,6 +92,8 @@ func init() {
 			organization.GetMainCommand(),
 			project.GetMainCommand(),
 			variable.GetMainCommand(),
+			k8sIntegration.GetMainCommand(),
+			pipeline.GetMainCommand(),
 		},
 	)
 
@@ -101,6 +106,7 @@ func init() {
 		[]*cobra.Command{
 			remote_development.GetMainCommand(),
 			port_forward.GetMainCommand(),
+			git.GetMainCommand(),
 		},
 	)
 

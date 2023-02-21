@@ -15,8 +15,15 @@ var mainCmd = &cobra.Command{
 	Long:  "Bunnyshell Components",
 }
 
+var mainGroup = &cobra.Group{
+	ID:    "components",
+	Title: "Commands for Components:",
+}
+
 func init() {
 	config.MainManager.CommandWithAPI(mainCmd)
+
+	mainCmd.AddGroup(mainGroup)
 
 	util.AddGroupedCommands(
 		mainCmd,

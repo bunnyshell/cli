@@ -1,8 +1,7 @@
 package environment
 
 import (
-	"net/http"
-
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -13,11 +12,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	var (
-		page            int32
-		environmentType string
-		operationStatus string
-	)
+	listOptions := environment.NewListOptions()
 
 	command := &cobra.Command{
 		Use:     "list",
@@ -28,33 +23,11 @@ func init() {
 		PersistentPreRunE: util.PersistentPreRunChain,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return lib.ShowCollection(cmd, page, func(page int32) (lib.ModelWithPagination, *http.Response, error) {
-				ctx, cancel := lib.GetContext()
-				defer cancel()
+			listOptions.Organization = settings.Profile.Context.Organization
+			listOptions.Project = settings.Profile.Context.Project
 
-				request := lib.GetAPI().EnvironmentApi.EnvironmentList(ctx)
-
-				if page != 0 {
-					request = request.Page(page)
-				}
-
-				if settings.Profile.Context.Organization != "" {
-					request = request.Organization(settings.Profile.Context.Organization)
-				}
-
-				if settings.Profile.Context.Project != "" {
-					request = request.Project(settings.Profile.Context.Project)
-				}
-
-				if environmentType != "" {
-					request = request.Type_(environmentType)
-				}
-
-				if operationStatus != "" {
-					request = request.OperationStatus(operationStatus)
-				}
-
-				return request.Execute()
+			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
+				return environment.List(listOptions)
 			})
 		},
 	}
@@ -64,9 +37,7 @@ func init() {
 	flags.AddFlag(options.Organization.GetFlag("organization"))
 	flags.AddFlag(options.Project.GetFlag("project"))
 
-	flags.Int32Var(&page, "page", page, "Listing Page")
-	flags.StringVar(&environmentType, "type", environmentType, "Filter by Type")
-	flags.StringVar(&operationStatus, "operationStatus", operationStatus, "Filter by Operation Status")
+	listOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

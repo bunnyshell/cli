@@ -1,6 +1,7 @@
 package action
 
 import (
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -10,20 +11,38 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	deleteOptions := environment.NewDeleteOptions("")
+
 	command := &cobra.Command{
 		Use: "delete",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return validateActionOptions(&deleteOptions.ActionOptions)
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			deleteOptions.ID = settings.Profile.Context.Environment
 
-			request := lib.GetAPI().EnvironmentApi.EnvironmentDelete(ctx, settings.Profile.Context.Environment)
+			event, err := environment.Delete(deleteOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
+			if deleteOptions.WithoutPipeline {
+				return lib.FormatCommandData(cmd, event)
+			}
 
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
+				cmd.Printf("\nEnvironment %s deletion failed\n", deleteOptions.ID)
+
+				return err
+			}
+
+			cmd.Printf("\nEnvironment %s successfully deleted\n", deleteOptions.ID)
+
+			return nil
 		},
 	}
 
@@ -32,6 +51,8 @@ func init() {
 	idFlag := options.Environment.GetFlag("id")
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
+
+	deleteOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

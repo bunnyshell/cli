@@ -1,6 +1,7 @@
 package component
 
 import (
+	"bunnyshell.com/cli/pkg/api/component"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -10,20 +11,23 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	itemOptions := component.NewItemOptions("")
+
 	command := &cobra.Command{
-		Use: "show",
+		Use:     "show",
+		GroupID: mainGroup.ID,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := lib.GetContext()
-			defer cancel()
+			itemOptions.ID = settings.Profile.Context.ServiceComponent
 
-			request := lib.GetAPI().ComponentApi.ComponentView(ctx, settings.Profile.Context.ServiceComponent)
+			model, err := component.Get(itemOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
 
-			model, resp, err := request.Execute()
-
-			return lib.FormatRequestResult(cmd, model, resp, err)
+			return lib.FormatCommandData(cmd, model)
 		},
 	}
 

@@ -1,23 +1,21 @@
 package event
 
 import (
-	"net/http"
 	"time"
 
+	"bunnyshell.com/cli/pkg/api/event"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var (
-		monitor   bool
-		eventID   string
-		lastEvent *sdk.EventItem
-	)
+	var monitor bool
 
 	idleNotify := 10 * time.Second
-	errWait := idleNotify / 2
+
+	itemOptions := event.NewItemOptions("")
 
 	command := &cobra.Command{
 		Use: "show",
@@ -25,52 +23,35 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			resp, r, err := getEvent(eventID)
-			lastEvent = resp
-
-			return lib.FormatRequestResult(cmd, resp, r, err)
-		},
-
-		PostRun: func(cmd *cobra.Command, args []string) {
-			if !monitor || isFinalStatus(lastEvent) {
-				return
+			model, err := event.Get(itemOptions)
+			if err != nil {
+				return err
 			}
 
-			idleThreshold := time.Now().Add(idleNotify)
-			for {
-				now := time.Now()
-				resp, _, err := getEvent(eventID)
-				if err != nil {
-					if now.After(idleThreshold) {
-						_ = lib.FormatCommandError(cmd, err)
-						time.Sleep(errWait)
-						idleThreshold = now.Add(idleNotify)
-					} else {
-						time.Sleep(errWait)
-					}
+			_ = lib.FormatCommandData(cmd, model)
 
-					continue
-				}
-
-				if lastEvent.GetUpdatedAt().Equal(resp.GetUpdatedAt()) {
-					continue
-				}
-
-				if isFinalStatus(resp) {
-					return
-				}
-
-				lastEvent = resp
-				_ = lib.FormatCommandData(cmd, resp)
-				idleThreshold = now.Add(idleNotify)
+			if !monitor || isFinalStatus(model) {
+				return nil
 			}
+
+			resume := net.PauseSpinner()
+			defer resume()
+
+			spinner := net.MakeSpinner()
+
+			spinner.Start()
+			defer spinner.Stop()
+
+			monitorEvent(cmd, model, idleNotify)
+
+			return nil
 		},
 	}
 
 	flags := command.Flags()
 
 	idFlagName := "id"
-	flags.StringVar(&eventID, idFlagName, eventID, "Event Id")
+	flags.StringVar(&itemOptions.ID, idFlagName, itemOptions.ID, "Event Id")
 	_ = command.MarkFlagRequired(idFlagName)
 
 	flags.BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
@@ -80,14 +61,49 @@ func init() {
 }
 
 func isFinalStatus(e *sdk.EventItem) bool {
-	return e.GetStatus() == "success" || e.GetStatus() == "error"
+	switch e.GetStatus() {
+	case "success", "error", "delegated":
+		return true
+	default:
+		return false
+	}
 }
 
-func getEvent(eventID string) (*sdk.EventItem, *http.Response, error) {
-	ctx, cancel := lib.GetContext()
-	defer cancel()
+func monitorEvent(cmd *cobra.Command, lastEvent *sdk.EventItem, idleNotify time.Duration) {
+	itemOptions := event.NewItemOptions(lastEvent.GetId())
 
-	request := lib.GetAPI().EventApi.EventView(ctx, eventID)
+	errWait := idleNotify / 2
 
-	return request.Execute()
+	idleThreshold := time.Now().Add(idleNotify)
+
+	for {
+		now := time.Now()
+
+		model, err := event.Get(itemOptions)
+		if err != nil {
+			if now.After(idleThreshold) {
+				_ = lib.FormatCommandError(cmd, err)
+
+				time.Sleep(errWait)
+
+				idleThreshold = now.Add(idleNotify)
+			} else {
+				time.Sleep(errWait)
+			}
+
+			continue
+		}
+
+		if lastEvent.GetUpdatedAt().Equal(model.GetUpdatedAt()) {
+			continue
+		}
+
+		if isFinalStatus(model) {
+			return
+		}
+
+		lastEvent = model
+		_ = lib.FormatCommandData(cmd, model)
+		idleThreshold = now.Add(idleNotify)
+	}
 }
