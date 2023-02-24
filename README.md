@@ -2,31 +2,41 @@
 Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.
 
 Usage:
-  bunnyshell-cli [command]
+  bns [command]
 
-Available Commands:
-  completion    Generate the autocompletion script for the specified shell
-  components    Bunnyshell Components
-  configure     Configure CLI settings
-  environments  Bunnyshell Environments
-  events        Bunnyshell Events
-  help          Help about any command
-  organizations Bunnyshell Organizations
-  projects      Bunnyshell Projects
-  version       Version Information
+Commands for Bunnyshell Resources:
+  components         Components
+  environments       Environments
+  events             Events
+  k8s-clusters       Kubernetes Cluster Integrations
+  organizations      Organizations
+  pipeline           Pipeline
+  projects           Projects
+  variables          Environment Variables
+
+Commands for Utilities:
+  git                Git Operations
+  port-forward       Port Forward
+  remote-development Remote Development
+
+Commands for CLI:
+  completion         Generate the autocompletion script for the specified shell
+  configure          Configure CLI settings
+  help               Help about any command
+  version            Version Information
 
 Flags:
-  -c, --configFile string   Config file
-  -d, --debug               Show network debug
-      --feedback            Add feedback final output
-  -h, --help                help for bunnyshell-cli
+      --configFile string   Bunnyshell CLI Config File (default "$HOME/.bunnyshell/config.yaml")
+  -d, --debug               Debug network requests
+  -h, --help                Help for bns
       --no-progress         Disable progress spinners
+      --non-interactive     Disable interactive terminal
   -o, --output string       Output format: stylish | json | yaml (default "stylish")
-  -p, --profile string      Force profile usage from config file
-  -t, --timeout duration    Network timeout on requests (default 30s)
-  -v, --verbose count       Number for the log level verbosity
+      --profile string      Use profile from config file
+  -v, --verbose count       Increase log verbosity
+      --version             version for bns
 
-Use "bunnyshell-cli [command] --help" for more information about a command.
+Use "bns [command] --help" for more information about a command.
 ```
 
 - [Installing](#installing)
@@ -41,12 +51,12 @@ Use "bunnyshell-cli [command] --help" for more information about a command.
 
 ### Homebrew
 ```sh
-brew install bunnyshellosi/tap/cli
+brew install bunnyshell/tap/cli
 ```
 
 ### Download Github Release
 
-Download the appropriate archive for your architecture on the [releases page](https://github.com/bunnyshellosi/cli/releases)
+Download the appropriate archive for your architecture on the [releases page](https://github.com/bunnyshell/cli/releases)
 
 And make it available in your `$PATH` or move the binary to `/usr/local/bin`
 
@@ -62,22 +72,19 @@ You will need an access token from https://environments.bunnyshell.com/access-to
 
 You can then setup a profile for easy access to your acccount with:
 ```sh
-# creates the config file
-bunnyshell-cli configure init
-# sets up the profile
-bunnyshell-cli configure profiles add
+bns configure profiles add
 ```
 
 ## Shell Autocomplete
-Using `bunnyshell-cli completion SHELL` you can generate autocomplete for your current shell.
+Using `bns completion SHELL` you can generate autocomplete for your current shell.
 
 ### ZSH
 ```sh
-echo 'source <(bunnyshell-cli completion zsh)' >> ~/.zshrc
-echo 'compdef _bunnyshell-cli bunnyshell-cli' >> ~/.zshrc
+echo 'source <(bns completion zsh)' >> ~/.zshrc
+echo 'compdef _bns bns' >> ~/.zshrc
 ```
 
 ### Bash
 ```sh
-echo 'source <(bunnyshell-cli completion bash)' >> ~/.bashrc
+echo 'source <(bns completion bash)' >> ~/.bashrc
 ```

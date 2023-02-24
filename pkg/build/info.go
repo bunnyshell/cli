@@ -1,7 +1,7 @@
 package build
 
 var (
-	Name = "bunnyshell-cli"
+	Name = "bns"
 
 	EnvPrefix = "bunnyshell"
 
@@ -9,5 +9,5 @@ var (
 	Commit  = "none"
 	Date    = "unknown"
 
-	LatestReleaseUrl = "https://github.com/bunnyshellosi/cli/releases/latest"
+	LatestReleaseUrl = "https://github.com/bunnyshell/cli/releases/latest"
 )

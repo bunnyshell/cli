@@ -1,4 +1,4 @@
-project_name: bunnyshell-cli
+project_name: bns
 
 before:
   hooks:
@@ -10,7 +10,7 @@ brews:
     homepage: https://documentation.bunnyshell.com
 
     tap:
-      owner: bunnyshellosi
+      owner: bunnyshell
       name: homebrew-tap
     folder: Formula
 
@@ -94,14 +94,14 @@ changelog:
       - '^docs:'
       - '^test:'
 
-announce:
-  slack:
-    enabled: true
-    blocks:
-      - type: section
-        text:
-          type: mrkdwn
-          text: |
-            A new release was just performed on *CLI*: `{{ .Tag }}`
+# announce:
+#   slack:
+#     enabled: true
+#     blocks:
+#       - type: section
+#         text:
+#           type: mrkdwn
+#           text: |
+#             A new release was just performed on *CLI*: `{{ .Tag }}`
 
-            Check it out at {{ .ReleaseURL }}
+#             Check it out at {{ .ReleaseURL }}
