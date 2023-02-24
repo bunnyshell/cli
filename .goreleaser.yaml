@@ -94,14 +94,14 @@ changelog:
       - '^docs:'
       - '^test:'
 
-# announce:
-#   slack:
-#     enabled: true
-#     blocks:
-#       - type: section
-#         text:
-#           type: mrkdwn
-#           text: |
-#             A new release was just performed on *CLI*: `{{ .Tag }}`
+announce:
+  slack:
+    enabled: true
+    blocks:
+      - type: section
+        text:
+          type: mrkdwn
+          text: |
+            A new release was just performed on *CLI*: `{{ .Tag }}`
 
-#             Check it out at {{ .ReleaseURL }}
+            Check it out at {{ .ReleaseURL }}
