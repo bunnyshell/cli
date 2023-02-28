@@ -51,7 +51,7 @@ Use "bns [command] --help" for more information about a command.
 
 ### Homebrew
 ```sh
-brew install bunnyshell/tap/cli
+brew install bunnyshell/tap/bunnyshell-cli
 ```
 
 ### Download Github Release
