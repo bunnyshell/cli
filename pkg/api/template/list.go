@@ -13,7 +13,8 @@ import (
 type ListOptions struct {
 	common.ListOptions
 
-	Organization string
+	Organization        string
+	TemplatesRepository string
 
 	Source string
 	Search string
@@ -26,6 +27,7 @@ func NewListOptions() *ListOptions {
 }
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	flags.StringVar(&lo.TemplatesRepository, "templateRepository", lo.TemplatesRepository, "Filter by Templates Repository")
 	flags.StringVar(&lo.Source, "source", lo.Source, "Filter by Source")
 	flags.StringVar(&lo.Search, "search", lo.Search, "Search for value within name, description, and tags")
 
@@ -63,6 +65,10 @@ func applyOptions(request sdk.ApiTemplateListRequest, options *ListOptions) sdk.
 
 	if options.Organization != "" {
 		request = request.Organization(options.Organization)
+	}
+
+	if options.TemplatesRepository != "" {
+		request = request.TemplatesRepository(options.TemplatesRepository)
 	}
 
 	if options.Search != "" {
