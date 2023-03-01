@@ -15,7 +15,6 @@ import (
 
 var (
 	errCreateSourceNotProvided   = errors.New("template id, content or git repository must be provided")
-	errInvalidGitURL             = errors.New("invalid git url")
 	errK8SIntegrationNotProvided = errors.New("kubernetes integration must be provided when deploying")
 )
 
