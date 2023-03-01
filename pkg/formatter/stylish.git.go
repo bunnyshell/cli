@@ -8,7 +8,7 @@ import (
 )
 
 func tabulateComponentGitCollection(writer *tabwriter.Writer, data *sdk.PaginatedComponentGitCollection) {
-	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ComponentID", "Name", "Repository", "Branch", "Sha", "DeployedSha")
+	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ComponentID", "Name", "Repository", "Branch", "Path", "Sha", "DeployedSha")
 
 	if !data.HasEmbedded() {
 		return
@@ -17,12 +17,13 @@ func tabulateComponentGitCollection(writer *tabwriter.Writer, data *sdk.Paginate
 	for _, item := range data.Embedded.Item {
 		fmt.Fprintf(
 			writer,
-			"%v\t %v\t %v\t %v\t %v\t %v\t %v\n",
+			"%v\t %v\t %v\t %v\t %v\t %v\t %v\t %v\n",
 			item.GetEnvironment(),
 			item.GetId(),
 			item.GetName(),
 			item.GetRepository(),
 			item.GetRefName(),
+			item.GetPath(),
 			item.GetRefSha(),
 			item.GetDeployedSha(),
 		)
@@ -35,6 +36,7 @@ func tabulateComponentGitItem(writer *tabwriter.Writer, item *sdk.ComponentGitIt
 	fmt.Fprintf(writer, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(writer, "%v\t %v\n", "Repository", item.GetRepository())
 	fmt.Fprintf(writer, "%v\t %v\n", "Branch", item.GetRefName())
+	fmt.Fprintf(writer, "%v\t %v\n", "Path", item.GetPath())
 	fmt.Fprintf(writer, "%v\t %v\n", "Sha", item.GetRefSha())
 	fmt.Fprintf(writer, "%v\t %v\n", "DeployedSha", item.GetDeployedSha())
 }

@@ -28,7 +28,7 @@ For Remote Development:
 
     Component%[1]s Command
 {{- range .Components }}
-    {{ .Name }}%[1]s %[2]s rdev up --component {{ .Id }} --local-sync-path {{ $.PrepareManager.GetDir .Repository }}
+    {{ .Name }}%[1]s %[2]s rdev up --component {{ .Id }} --local-sync-path {{ $.PrepareManager.GetPath . }}
 {{- end }}
 `, "\t", build.Name)
 
