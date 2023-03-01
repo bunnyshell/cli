@@ -86,6 +86,10 @@ func init() {
 				return err
 			}
 
+			sshConfigFile, _ := remoteDevPkg.GetSSHConfigFilePath()
+			cmd.Println("Pod is ready for Remote Development.")
+			cmd.Printf("You can find the SSH Config file in %s\n", sshConfigFile)
+
 			// start
 			if !noTTY {
 				if err = remoteDevelopment.StartSSHTerminal(); err != nil {
