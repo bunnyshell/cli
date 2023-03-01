@@ -5,7 +5,7 @@ before:
     - go mod tidy
 
 brews:
-  - name: cli
+  - name: bunnyshell-cli
     description: "Bunnyshell's command line tool to create and manage on-demand environments."
     homepage: https://documentation.bunnyshell.com
 
