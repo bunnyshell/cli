@@ -1,0 +1,5 @@
+kind: Environment
+name: {{ .Basename }}
+type: primary
+components: []
+volumes: []
