@@ -12,12 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var errGeneric = errors.New("oops! Something went wrong")
+var ErrGeneric = errors.New("oops! Something went wrong")
 
 func FormatCommandError(cmd *cobra.Command, err error) error {
 	_ = FormatCommandData(cmd, err)
 
-	return errGeneric
+	return ErrGeneric
 }
 
 func FormatCommandData(cmd *cobra.Command, data interface{}) error {
