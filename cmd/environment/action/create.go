@@ -2,7 +2,7 @@ package action
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"bunnyshell.com/cli/pkg/api"
@@ -221,5 +221,5 @@ func readFile(fileName string) ([]byte, error) {
 
 	defer file.Close()
 
-	return ioutil.ReadAll(file)
+	return io.ReadAll(file)
 }
