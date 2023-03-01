@@ -38,6 +38,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateComponentGitCollection(writer, dataType)
 	case *sdk.PaginatedTemplateCollection:
 		tabulateTemplateCollection(writer, dataType)
+	case *sdk.PaginatedTemplatesRepositoryCollection:
+		tabulateTemplatesRepositoryCollection(writer, dataType)
 	case []sdk.ComponentEndpointCollection:
 		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
@@ -60,6 +62,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateComponentGitItem(writer, dataType)
 	case *sdk.TemplateItem:
 		tabulateTemplateItem(writer, dataType)
+	case *sdk.TemplatesRepositoryItem:
+		tabulateTemplatesRepositoryItem(writer, dataType)
 	case *sdk.ProblemGeneric:
 		tabulateGeneric(writer, dataType)
 	case *api.Error:

@@ -1,7 +1,9 @@
 package template
 
 import (
+	"bunnyshell.com/cli/cmd/template/repository"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +24,17 @@ func init() {
 	config.MainManager.CommandWithAPI(mainCmd)
 
 	mainCmd.AddGroup(mainGroup)
+
+	util.AddGroupedCommands(
+		mainCmd,
+		cobra.Group{
+			ID:    "subresources",
+			Title: "Commands for Template subresources:",
+		},
+		[]*cobra.Command{
+			repository.GetMainCommand(),
+		},
+	)
 }
 
 func GetMainCommand() *cobra.Command {
