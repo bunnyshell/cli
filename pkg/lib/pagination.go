@@ -80,6 +80,11 @@ func interactivePagination(cmd *cobra.Command, model ModelWithPagination) (int32
 }
 
 func ProcessPagination(cmd *cobra.Command, m ModelWithPagination) (int32, error) {
+	totalItems := m.GetTotalItems()
+	if totalItems == 0 {
+		return PaginationQuit, nil
+	}
+
 	page := m.GetPage()
 	pages := 1 + (m.GetTotalItems()-1)/m.GetItemsPerPage()
 
