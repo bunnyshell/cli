@@ -204,6 +204,17 @@ func tabulateAPIError(w *tabwriter.Writer, item *api.Error) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.Title)
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.Detail)
+
+	if len(item.Violations) == 0 {
+		return
+	}
+
+	fmt.Fprintf(w, "\n%v\n", "VIOLATIONS")
+	fmt.Fprintf(w, "%v\t %v\n", "Property", "Message")
+
+	for _, violation := range item.Violations {
+		fmt.Fprintf(w, "%v\t %v\n", violation.GetPropertyPath(), violation.GetMessage())
+	}
 }
 
 func tabulateError(w *tabwriter.Writer, err error) {
