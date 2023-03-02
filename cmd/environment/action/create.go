@@ -111,7 +111,6 @@ func init() {
 	_ = command.MarkFlagRequired("project")
 
 	createOptions.UpdateFlagSet(flags)
-	command.MarkFlagsRequiredTogether("deploy", "k8s")
 
 	_ = command.MarkFlagRequired("name")
 
