@@ -8,7 +8,7 @@ import (
 )
 
 func tabulateTemplatesRepositoryCollection(writer *tabwriter.Writer, data *sdk.PaginatedTemplatesRepositoryCollection) {
-	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\n", "TemplateID", "OrganizationID", "Name", "Repository", "Branch", "LastSyncSHA")
+	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\n", "TemplateRepositoryID", "OrganizationID", "Name", "Repository", "Branch", "LastSyncSHA")
 
 	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
@@ -27,7 +27,7 @@ func tabulateTemplatesRepositoryCollection(writer *tabwriter.Writer, data *sdk.P
 }
 
 func tabulateTemplatesRepositoryItem(writer *tabwriter.Writer, item *sdk.TemplatesRepositoryItem) {
-	fmt.Fprintf(writer, "%v\t %v\n", "TemplateID", item.GetId())
+	fmt.Fprintf(writer, "%v\t %v\n", "TemplateRepositoryID", item.GetId())
 	fmt.Fprintf(writer, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(writer, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(writer, "%v\t %v\n", "Repository", item.GetGitRepositoryUrl())
