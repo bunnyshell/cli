@@ -1,7 +1,4 @@
+# https://documentation.bunnyshell.com/docs/templates-prepare-repository-for-custom-templates#templateyaml
 name: bunnyshell - {{ .Basename }}
 description: Bunnyshell template for {{ .Basename }}
-tags: []
-icons: []
-stack:
-  packages: []
-disoverable: true
+discoverable: true
