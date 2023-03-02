@@ -91,14 +91,14 @@ func init() {
 			}
 
 			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-				cmd.Printf("\nEnvironment %s deploying failed\n", createOptions.ID)
+				cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
 
 				return err
 			}
 
-			cmd.Printf("\nEnvironment %s successfully deployed\n", createOptions.ID)
+			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
 
-			return nil
+			return showEnvironmentEndpoints(cmd, deployOptions.ID)
 		},
 	}
 
