@@ -36,6 +36,10 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulatePipelineCollection(writer, dataType)
 	case *sdk.PaginatedComponentGitCollection:
 		tabulateComponentGitCollection(writer, dataType)
+	case *sdk.PaginatedTemplateCollection:
+		tabulateTemplateCollection(writer, dataType)
+	case *sdk.PaginatedTemplatesRepositoryCollection:
+		tabulateTemplatesRepositoryCollection(writer, dataType)
 	case []sdk.ComponentEndpointCollection:
 		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
@@ -56,6 +60,10 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulatePipelineItem(writer, dataType)
 	case *sdk.ComponentGitItem:
 		tabulateComponentGitItem(writer, dataType)
+	case *sdk.TemplateItem:
+		tabulateTemplateItem(writer, dataType)
+	case *sdk.TemplatesRepositoryItem:
+		tabulateTemplatesRepositoryItem(writer, dataType)
 	case *sdk.ProblemGeneric:
 		tabulateGeneric(writer, dataType)
 	case *api.Error:
@@ -204,6 +212,17 @@ func tabulateAPIError(w *tabwriter.Writer, item *api.Error) {
 	fmt.Fprintf(w, "%v\n", "ERROR")
 	fmt.Fprintf(w, "%v\t %v\n", "Title", item.Title)
 	fmt.Fprintf(w, "%v\t %v\n", "Detail", item.Detail)
+
+	if len(item.Violations) == 0 {
+		return
+	}
+
+	fmt.Fprintf(w, "\n%v\n", "VIOLATIONS")
+	fmt.Fprintf(w, "%v\t %v\n", "Property", "Message")
+
+	for _, violation := range item.Violations {
+		fmt.Fprintf(w, "%v\t %v\n", violation.GetPropertyPath(), violation.GetMessage())
+	}
 }
 
 func tabulateError(w *tabwriter.Writer, err error) {

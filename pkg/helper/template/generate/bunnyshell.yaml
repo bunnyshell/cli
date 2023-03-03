@@ -1,0 +1,6 @@
+# https://documentation.bunnyshell.com/docs/templates-prepare-repository-for-custom-templates#bunnyshellyaml
+kind: Environment
+name: {{ .Basename }}
+type: primary
+components: []
+volumes: []

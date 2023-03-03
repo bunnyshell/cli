@@ -16,6 +16,7 @@ import (
 	"bunnyshell.com/cli/cmd/port_forward"
 	"bunnyshell.com/cli/cmd/project"
 	"bunnyshell.com/cli/cmd/remote_development"
+	"bunnyshell.com/cli/cmd/template"
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 	"bunnyshell.com/cli/pkg/build"
@@ -94,6 +95,7 @@ func init() {
 			variable.GetMainCommand(),
 			k8sIntegration.GetMainCommand(),
 			pipeline.GetMainCommand(),
+			template.GetMainCommand(),
 		},
 	)
 

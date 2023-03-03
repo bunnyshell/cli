@@ -44,7 +44,18 @@ func (pr *PrepareManager) GetDir(repository string) string {
 		return dir
 	}
 
-	panic("Missing call to either AddComponents")
+	panic("Missing to AddComponents for repository: " + repository)
+}
+
+func (pr *PrepareManager) GetPath(component sdk.ComponentGitCollection) string {
+	path := component.GetPath()
+	if path == "/" {
+		path = ""
+	} else {
+		path = "/" + strings.TrimPrefix(path, "/")
+	}
+
+	return pr.GetDir(component.GetRepository()) + path
 }
 
 func (pr *PrepareManager) GetEnvironment(repository string) string {
@@ -53,7 +64,7 @@ func (pr *PrepareManager) GetEnvironment(repository string) string {
 		return environment
 	}
 
-	panic("Missing call to either AddComponents or AddRepository")
+	panic("Missing to AddComponents for repository: " + repository)
 }
 
 func (pr *PrepareManager) hasDir(dir string) bool {

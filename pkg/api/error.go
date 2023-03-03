@@ -11,6 +11,8 @@ import (
 type Error struct {
 	Title  string `json:"title" yaml:"title"`
 	Detail string `json:"detail" yaml:"detail"`
+
+	Violations []sdk.ProblemViolation `json:"violations" yaml:"violations"`
 }
 
 func (pe Error) Error() string {
@@ -24,6 +26,8 @@ func ParseError(resp *http.Response, err error) error {
 			return Error{
 				Title:  "Operation timed out",
 				Detail: err.Error(),
+
+				Violations: nil,
 			}
 		}
 	case *sdk.GenericOpenAPIError:
@@ -32,6 +36,8 @@ func ParseError(resp *http.Response, err error) error {
 			return Error{
 				Title:  *problem.Title,
 				Detail: *problem.Detail,
+
+				Violations: problem.Violations,
 			}
 		}
 	}
@@ -43,5 +49,7 @@ func ParseError(resp *http.Response, err error) error {
 	return Error{
 		Title:  fmt.Sprintf("Response Status: %d", resp.StatusCode),
 		Detail: err.Error(),
+
+		Violations: nil,
 	}
 }
