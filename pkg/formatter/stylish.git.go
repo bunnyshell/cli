@@ -7,8 +7,6 @@ import (
 	"bunnyshell.com/sdk"
 )
 
-const shortShaLength = 8
-
 func tabulateComponentGitCollection(writer *tabwriter.Writer, data *sdk.PaginatedComponentGitCollection) {
 	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ComponentID", "Name", "Repository", "Branch", "Path", "Sha", "DeployedSha")
 
