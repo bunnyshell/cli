@@ -65,7 +65,9 @@ func init() {
 			}
 
 			if createOptions.WithDeploy && createOptions.GetKubernetesIntegration() == "" {
-				return errK8SIntegrationNotProvided
+				if !settings.IsStylish() {
+					return errK8SIntegrationNotProvided
+				}
 			}
 
 			return validateActionOptions(&createOptions.ActionOptions)
