@@ -66,7 +66,7 @@ func init() {
 				var apiError api.Error
 
 				if errors.As(err, &apiError) {
-					return handleErrors(cmd, apiError, createOptions)
+					return handleCreateErrors(cmd, apiError, createOptions)
 				}
 
 				return lib.FormatCommandError(cmd, err)
@@ -76,29 +76,10 @@ func init() {
 				return lib.FormatCommandData(cmd, model)
 			}
 
-			cmd.Printf("\nEnvironment %s successfully created... deploying...\n", model.GetId())
-
 			deployOptions := &createOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			event, err := environment.Deploy(deployOptions)
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			if deployOptions.WithoutPipeline {
-				return lib.FormatCommandData(cmd, event)
-			}
-
-			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-				cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
-
-				return err
-			}
-
-			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
-
-			return showEnvironmentEndpoints(cmd, deployOptions.ID)
+			return handleDeploy(cmd, deployOptions, "created", createOptions.GetKubernetesIntegration())
 		},
 	}
 
@@ -130,8 +111,8 @@ func init() {
 	mainCmd.AddCommand(command)
 }
 
-func handleErrors(cmd *cobra.Command, apiError api.Error, createOptions *environment.CreateOptions) error {
-	genesisName := getGenesisName(createOptions)
+func handleCreateErrors(cmd *cobra.Command, apiError api.Error, createOptions *environment.CreateOptions) error {
+	genesisName := getCreateGenesisName(createOptions)
 
 	if len(apiError.Violations) == 0 {
 		return apiError
@@ -144,7 +125,7 @@ func handleErrors(cmd *cobra.Command, apiError api.Error, createOptions *environ
 	return lib.ErrGeneric
 }
 
-func getGenesisName(createOptions *environment.CreateOptions) string {
+func getCreateGenesisName(createOptions *environment.CreateOptions) string {
 	if createOptions.Genesis.FromGitSpec != nil {
 		return "--from-git"
 	}

@@ -5,6 +5,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/api/component/endpoint"
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/progress"
@@ -28,6 +29,31 @@ func validateActionOptions(actionOptions *common.ActionOptions) error {
 	}
 
 	return fmt.Errorf("%w when following pipelines", lib.ErrNotStylish)
+}
+
+func handleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, action string, kubernetesIntegration string) error {
+	if action != "" {
+		cmd.Printf("\nEnvironment %s successfully %s... deploying...\n", deployOptions.ID, action)
+	}
+
+	event, err := environment.Deploy(deployOptions)
+	if err != nil {
+		return lib.FormatCommandError(cmd, err)
+	}
+
+	if deployOptions.WithoutPipeline {
+		return lib.FormatCommandData(cmd, event)
+	}
+
+	if err = processEventPipeline(cmd, event, "deploy"); err != nil {
+		cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
+
+		return err
+	}
+
+	cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
+
+	return showEnvironmentEndpoints(cmd, deployOptions.ID)
 }
 
 func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string) error {

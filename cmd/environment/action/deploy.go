@@ -3,15 +3,19 @@ package action
 import (
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
-	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
+
+type DeployData struct {
+	K8SIntegration string
+}
 
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
 	deployOptions := environment.NewDeployOptions("")
+	deployData := DeployData{}
 
 	command := &cobra.Command{
 		Use: "deploy",
@@ -25,24 +29,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deployOptions.ID = settings.Profile.Context.Environment
 
-			event, err := environment.Deploy(deployOptions)
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			if deployOptions.WithoutPipeline {
-				return lib.FormatCommandData(cmd, event)
-			}
-
-			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-				cmd.Printf("\nEnvironment %s deployment failed\n", deployOptions.ID)
-
-				return err
-			}
-
-			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
-
-			return showEnvironmentEndpoints(cmd, deployOptions.ID)
+			return handleDeploy(cmd, deployOptions, "", deployData.K8SIntegration)
 		},
 	}
 
@@ -53,6 +40,8 @@ func init() {
 	_ = command.MarkFlagRequired(idFlag.Name)
 
 	deployOptions.UpdateFlagSet(flags)
+
+	flags.StringVar(&deployData.K8SIntegration, "k8s", deployData.K8SIntegration, "Use a Kubernetes integration for the deployment (if not set)")
 
 	mainCmd.AddCommand(command)
 }
