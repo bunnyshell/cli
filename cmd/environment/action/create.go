@@ -118,8 +118,8 @@ func init() {
 	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a template ID during creation")
 	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local environment yaml during creation")
 	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
-	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git repository for the environment")
-	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git repository for the environment")
+	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git branch for the environment")
+	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git path for the environment")
 
 	command.MarkFlagsMutuallyExclusive("from-git", "from-template", "from-path", "from-git-repo")
 	command.MarkFlagsRequiredTogether("from-git-branch", "from-git-repo")
