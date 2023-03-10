@@ -30,6 +30,23 @@ type CreateSource struct {
 	GitPath   string
 }
 
+func (createSource *CreateSource) UpdateCommandFlags(command *cobra.Command) {
+	flags := command.Flags()
+
+	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
+	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a template ID during creation")
+	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local environment yaml during creation")
+	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
+	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git branch for the environment")
+	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git path for the environment")
+
+	command.MarkFlagsMutuallyExclusive("from-git", "from-template", "from-path", "from-git-repo")
+	command.MarkFlagsRequiredTogether("from-git-branch", "from-git-repo")
+	command.MarkFlagsRequiredTogether("from-git-path", "from-git-repo")
+
+	_ = command.MarkFlagFilename("from-path", "yaml", "yml")
+}
+
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
@@ -95,18 +112,7 @@ func init() {
 
 	_ = command.MarkFlagRequired("name")
 
-	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
-	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a template ID during creation")
-	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local environment yaml during creation")
-	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
-	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git branch for the environment")
-	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git path for the environment")
-
-	command.MarkFlagsMutuallyExclusive("from-git", "from-template", "from-path", "from-git-repo")
-	command.MarkFlagsRequiredTogether("from-git-branch", "from-git-repo")
-	command.MarkFlagsRequiredTogether("from-git-path", "from-git-repo")
-
-	_ = command.MarkFlagFilename("from-path", "yaml", "yml")
+	createSource.UpdateCommandFlags(command)
 
 	mainCmd.AddCommand(command)
 }
