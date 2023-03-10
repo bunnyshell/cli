@@ -17,7 +17,9 @@ type ListOptions struct {
 	Project      string
 	Environment  string
 
-	Name string
+	Name          string
+	GitRepository string
+	GitBranch     string
 }
 
 func NewListOptions() *ListOptions {
@@ -28,11 +30,14 @@ func NewListOptions() *ListOptions {
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	lo.updateSelfFlags(flags)
+
 	lo.ListOptions.UpdateFlagSet(flags)
 }
 
 func (lo *ListOptions) updateSelfFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.Name, "component-name", lo.Name, "Filter by Component Name")
+	flags.StringVar(&lo.GitRepository, "repository", lo.GitRepository, "Filter by Repository")
+	flags.StringVar(&lo.GitBranch, "branch", lo.GitBranch, "Filter by Branch")
 }
 
 func List(options *ListOptions) (*sdk.PaginatedComponentGitCollection, error) {
@@ -78,6 +83,14 @@ func applyOptions(request sdk.ApiComponentGitListRequest, options *ListOptions) 
 
 	if options.Name != "" {
 		request = request.Name(options.Name)
+	}
+
+	if options.GitRepository != "" {
+		request = request.Repository(options.GitRepository)
+	}
+
+	if options.GitBranch != "" {
+		request = request.Branch(options.GitBranch)
 	}
 
 	return request
