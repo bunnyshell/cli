@@ -1,4 +1,4 @@
-package port_forward
+package utils
 
 import (
 	"os"
@@ -17,9 +17,11 @@ func init() {
 	)
 
 	command := &cobra.Command{
-		Use:     "start mappings...",
-		Short:   "Starts the port forwarding for the given mappings.",
-		Example: "start 8080:80 3306 :9003",
+		Use:     "port-forward",
+		Aliases: []string{"pfwd"},
+
+		Short:   "Starts the port forwarding for the given mappings",
+		Example: "port-forward 8080:80 3306 :9003",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
