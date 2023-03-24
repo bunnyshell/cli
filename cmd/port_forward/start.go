@@ -27,7 +27,7 @@ func init() {
 			root := cmd.Root()
 			root.SetArgs(append([]string{
 				"components", "port-forward",
-				"--component", settings.Profile.Context.ServiceComponent,
+				"--id", settings.Profile.Context.ServiceComponent,
 				"--resource", resourcePath,
 				"--pod", podName,
 			}, portMappings...))
@@ -40,7 +40,9 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.ServiceComponent.AddFlag("component", "Service Component"))
+	componentFlag := options.ServiceComponent.AddFlag("component", "Service Component")
+	flags.AddFlag(componentFlag)
+	_ = command.MarkFlagRequired(componentFlag.Name)
 
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
