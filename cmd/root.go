@@ -9,14 +9,12 @@ import (
 	"bunnyshell.com/cli/cmd/configure"
 	"bunnyshell.com/cli/cmd/environment"
 	"bunnyshell.com/cli/cmd/event"
-	"bunnyshell.com/cli/cmd/git"
 	"bunnyshell.com/cli/cmd/k8sIntegration"
 	"bunnyshell.com/cli/cmd/organization"
 	"bunnyshell.com/cli/cmd/pipeline"
-	"bunnyshell.com/cli/cmd/port_forward"
 	"bunnyshell.com/cli/cmd/project"
-	"bunnyshell.com/cli/cmd/remote_development"
 	"bunnyshell.com/cli/cmd/template"
+	"bunnyshell.com/cli/cmd/utils"
 	"bunnyshell.com/cli/cmd/variable"
 	"bunnyshell.com/cli/cmd/version"
 	"bunnyshell.com/cli/pkg/build"
@@ -105,11 +103,7 @@ func init() {
 			ID:    "utilities",
 			Title: "Commands for Utilities:",
 		},
-		[]*cobra.Command{
-			remote_development.GetMainCommand(),
-			port_forward.GetMainCommand(),
-			git.GetMainCommand(),
-		},
+		utils.GetMainCommand().Commands(),
 	)
 
 	util.AddGroupedCommands(

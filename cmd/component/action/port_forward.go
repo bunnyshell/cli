@@ -82,7 +82,9 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.ServiceComponent.AddFlag("component", "Service Component"))
+	idFlag := options.ServiceComponent.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
 
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
