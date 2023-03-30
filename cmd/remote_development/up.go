@@ -1,6 +1,9 @@
 package remote_development
 
 import (
+	"fmt"
+	"strings"
+
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
 	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
@@ -33,6 +36,14 @@ var SyncModeIds = map[SyncMode][]string{
 	TwoWayResolved: {string(remoteDevMutagenConfig.TwoWayResolved)},
 	OneWaySafe:     {string(remoteDevMutagenConfig.OneWaySafe)},
 	OneWayReplica:  {string(remoteDevMutagenConfig.OneWayReplica)},
+}
+
+var SyncModeList = []string{
+	string(remoteDevMutagenConfig.None),
+	string(remoteDevMutagenConfig.TwoWaySafe),
+	string(remoteDevMutagenConfig.TwoWayResolved),
+	string(remoteDevMutagenConfig.OneWaySafe),
+	string(remoteDevMutagenConfig.OneWayReplica),
 }
 
 func init() {
@@ -125,8 +136,12 @@ func init() {
 	flags.Var(
 		enumflag.New(&syncMode, "sync-mode", SyncModeIds, enumflag.EnumCaseSensitive),
 		"sync-mode",
-		"Mutagen sync mode.\nAvailable sync modes: none, two-way-safe, two-way-resolved, one-way-safe, one-way-replica.\n\"none\" sync mode disables mutagen.",
+		"Mutagen sync mode.\n"+
+			fmt.Sprintf("Available sync modes: %s\n", strings.Join(SyncModeList, ", "))+
+			fmt.Sprintf(`"%s\" sync mode disables mutagen.`, string(remoteDevMutagenConfig.None)),
 	)
+
+	_ = command.RegisterFlagCompletionFunc("sync-mode", cobra.FixedCompletions(SyncModeList, cobra.ShellCompDirectiveDefault))
 
 	mainCmd.AddCommand(command)
 }

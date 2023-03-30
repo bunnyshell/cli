@@ -1,6 +1,7 @@
 package variable
 
 import (
+	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
@@ -42,16 +43,21 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&variableID, idFlagName, variableID, "Environment Variable Id")
-	_ = command.MarkFlagRequired(idFlagName)
-
-	valueFlagName := "value"
-	flags.StringVar(&value, valueFlagName, value, "Environment Variable Value")
-	_ = command.MarkFlagRequired(valueFlagName)
+	flags.AddFlag(getIDOption(&variableID).GetRequiredFlag("id"))
+	flags.AddFlag(getEditValueOption(&value).GetRequiredFlag("value"))
 
 	mainCmd.AddGroup(actionGroup)
 	mainCmd.AddCommand(command)
+}
+
+func getEditValueOption(value *string) *option.String {
+	help := "Update the value of an environment variable. A deployment will be required for the updates to take effect."
+
+	idOption := option.NewStringOption(value)
+
+	idOption.AddFlagWithExtraHelp("value", "Environment Variable Value", help)
+
+	return idOption
 }
 
 func toVariableEdit(value string) *sdk.EnvironmentVariableEdit {

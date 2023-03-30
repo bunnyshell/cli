@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -42,9 +43,9 @@ func init() {
 
 	flags := command.Flags()
 
-	componentFlag := options.ServiceComponent.AddFlag("component", "Service Component")
-	flags.AddFlag(componentFlag)
-	_ = command.MarkFlagRequired(componentFlag.Name)
+	flags.AddFlag(
+		options.ServiceComponent.AddFlag("component", "Service Component", util.FlagRequired),
+	)
 
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")

@@ -5,6 +5,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/pflag"
 )
@@ -30,11 +31,13 @@ func NewCreateOptions() *CreateOptions {
 }
 
 func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	k8sIntegration := co.KubernetesIntegration.Get()
+
 	flags.StringVar(&co.Name, "name", co.Name, "Unique name for the environment")
-
 	flags.BoolVar(&co.WithDeploy, "deploy", co.WithDeploy, "Deploy the environment after creation")
+	flags.StringVar(k8sIntegration, "k8s", *k8sIntegration, "Use a Kubernetes integration for the environment")
 
-	flags.StringVar(co.KubernetesIntegration.Get(), "k8s", *co.KubernetesIntegration.Get(), "Use a Kubernetes integration for the environment")
+	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the new environment")
 
 	co.DeployOptions.UpdateFlagSet(flags)
 }

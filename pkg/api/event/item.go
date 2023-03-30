@@ -9,11 +9,17 @@ import (
 	"bunnyshell.com/sdk"
 )
 
-func NewItemOptions(id string) *common.ItemOptions {
-	return common.NewItemOptions(id)
+type ItemOptions struct {
+	common.ItemOptions
 }
 
-func Get(options *common.ItemOptions) (*sdk.EventItem, error) {
+func NewItemOptions(id string) *ItemOptions {
+	return &ItemOptions{
+		ItemOptions: *common.NewItemOptions(id),
+	}
+}
+
+func Get(options *ItemOptions) (*sdk.EventItem, error) {
 	model, resp, err := GetRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -22,7 +28,7 @@ func Get(options *common.ItemOptions) (*sdk.EventItem, error) {
 	return model, nil
 }
 
-func GetRaw(options *common.ItemOptions) (*sdk.EventItem, *http.Response, error) {
+func GetRaw(options *ItemOptions) (*sdk.EventItem, *http.Response, error) {
 	profile := options.GetProfile()
 
 	ctx, cancel := lib.GetContextFromProfile(profile)

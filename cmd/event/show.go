@@ -1,9 +1,12 @@
 package event
 
 import (
+	"fmt"
 	"time"
 
 	"bunnyshell.com/cli/pkg/api/event"
+	"bunnyshell.com/cli/pkg/build"
+	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/sdk"
@@ -50,14 +53,25 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&itemOptions.ID, idFlagName, itemOptions.ID, "Event Id")
-	_ = command.MarkFlagRequired(idFlagName)
+	flags.AddFlag(getIDOption(&itemOptions.ID).GetRequiredFlag("id"))
 
 	flags.BoolVar(&monitor, "monitor", false, "monitor the event for changes or until finished")
 	flags.DurationVar(&idleNotify, "idle-notify", idleNotify, "Network timeout on requests")
 
 	mainCmd.AddCommand(command)
+}
+
+func getIDOption(value *string) *option.String {
+	help := fmt.Sprintf(
+		`Find available Events with "%s events list"`,
+		build.Name,
+	)
+
+	idOption := option.NewStringOption(value)
+
+	idOption.AddFlagWithExtraHelp("id", "Environment Variable Id", help)
+
+	return idOption
 }
 
 func isFinalStatus(e *sdk.EventItem) bool {

@@ -39,11 +39,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.Environment.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
-
-	definitionOptions.UpdateFlagSet(flags)
+	flags.AddFlag(options.Environment.GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }

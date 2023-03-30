@@ -1,7 +1,11 @@
 package variable
 
 import (
+	"fmt"
+
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/config/option"
 	"github.com/spf13/cobra"
 )
 
@@ -26,4 +30,17 @@ func init() {
 
 func GetMainCommand() *cobra.Command {
 	return mainCmd
+}
+
+func getIDOption(value *string) *option.String {
+	help := fmt.Sprintf(
+		`Find available variables with "%s variabiles list"`,
+		build.Name,
+	)
+
+	idOption := option.NewStringOption(value)
+
+	idOption.AddFlagWithExtraHelp("id", "Environment Variable Id", help)
+
+	return idOption
 }

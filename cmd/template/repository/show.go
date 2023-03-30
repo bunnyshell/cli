@@ -1,14 +1,16 @@
 package repository
 
 import (
+	"fmt"
+
 	"bunnyshell.com/cli/pkg/api/template/repository"
+	"bunnyshell.com/cli/pkg/build"
+	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var templateID string
-
 	itemOptions := repository.NewItemOptions("")
 
 	command := &cobra.Command{
@@ -17,8 +19,6 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			itemOptions.ID = templateID
-
 			model, err := repository.Get(itemOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
@@ -30,9 +30,20 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&templateID, idFlagName, templateID, "Template Id")
-	_ = command.MarkFlagRequired(idFlagName)
+	flags.AddFlag(getIDOption(&itemOptions.ID).GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
+}
+
+func getIDOption(value *string) *option.String {
+	help := fmt.Sprintf(
+		`Find available TemplateRepositories with "%s templates repository list"`,
+		build.Name,
+	)
+
+	option := option.NewStringOption(value)
+
+	option.AddFlagWithExtraHelp("id", "TemplateRepository ID", help)
+
+	return option
 }
