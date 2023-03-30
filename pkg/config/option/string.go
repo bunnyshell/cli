@@ -1,6 +1,7 @@
 package option
 
 import (
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/pflag"
 )
 
@@ -49,8 +50,14 @@ func (option *String) ValueOr(generator StringGenerator) string {
 	return value
 }
 
-func (option *String) AddFlag(name string, usage string) *pflag.Flag {
-	return option.AddFlagShort(name, "", usage)
+func (option *String) AddFlag(name string, usage string, flagTypes ...util.BoolFlagType) *pflag.Flag {
+	flag := option.AddFlagShort(name, "", usage)
+
+	if flagTypes != nil {
+		return flag
+	}
+
+	return util.MarkFlag(flag, flagTypes...)
 }
 
 func (option *String) AddFlagShort(name string, short string, usage string) *pflag.Flag {
@@ -67,6 +74,35 @@ func (option *String) CloneMainFlag() *pflag.Flag {
 	}
 
 	return option.AddFlagShort(option.main.Name, option.main.Shorthand, option.main.Shorthand)
+}
+
+func (option *String) AddFlagWithExtraHelp(name string, usage string, help string, flagTypes ...util.BoolFlagType) *pflag.Flag {
+	flag := option.AddFlag(name, usage, flagTypes...)
+
+	util.AppendFlagHelp(flag, help)
+
+	return flag
+}
+
+func (option *String) GetFlag(name string, flagTypes ...util.BoolFlagType) *pflag.Flag {
+	flag := option.Group.GetFlag(name)
+
+	if flag == nil {
+		return nil
+	}
+
+	if flagTypes == nil {
+		return flag
+	}
+
+	return util.MarkFlag(
+		option.AddFlagShort(flag.Name, flag.Shorthand, flag.Usage),
+		flagTypes...,
+	)
+}
+
+func (option *String) GetRequiredFlag(name string) *pflag.Flag {
+	return option.GetFlag(name, util.FlagRequired)
 }
 
 func (option *String) makeFlag(name string, short string, usage string) *pflag.Flag {

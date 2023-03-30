@@ -31,19 +31,19 @@ func flagOrInteractive(flag *pflag.Flag) {
 		return
 	}
 
-	question := fmt.Sprintf("Provide a value for '%s':", flag.Name)
-	validator := All(
-		AssertMinimumLength(1),
-		setterValidator(flag),
-	)
+	ensure(flag)
+
+	required[0] = util.StrFalse
+}
+
+func ensure(flag *pflag.Flag) {
+	question := getQuestion(flag)
 
 	for {
-		if _, err := Ask(question, validator); err == nil {
+		if err := question(); err == nil {
 			break
 		}
 	}
-
-	required[0] = util.StrFalse
 }
 
 func setterValidator(flag *pflag.Flag) survey.Validator {
@@ -60,5 +60,37 @@ func setterValidator(flag *pflag.Flag) survey.Validator {
 		flag.Changed = true
 
 		return nil
+	}
+}
+
+func getQuestion(flag *pflag.Flag) func() error {
+	message := fmt.Sprintf("Provide a value for flag '%s':", flag.Name)
+	validator := All(
+		AssertMinimumLength(1),
+		setterValidator(flag),
+	)
+
+	if !util.HasHelp(flag) {
+		return func() error {
+			_, err := Ask(message, validator)
+
+			return err
+		}
+	}
+
+	help := util.GetHelp(flag)
+
+	if util.IsHidden(flag) {
+		return func() error {
+			_, err := AskSecretWithHelp(message, help, validator)
+
+			return err
+		}
+	}
+
+	return func() error {
+		_, err := AskWithHelp(message, help, validator)
+
+		return err
 	}
 }

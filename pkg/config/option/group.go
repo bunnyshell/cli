@@ -1,7 +1,7 @@
 package option
 
 import (
-	"github.com/spf13/cobra"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/pflag"
 )
 
@@ -57,8 +57,8 @@ func (group *Group) updateFlags(value string) error {
 			return err
 		}
 
-		if required, ok := flag.Annotations[cobra.BashCompOneRequiredFlag]; ok {
-			required[0] = "false"
+		if required, ok := flag.Annotations[string(util.FlagRequired)]; ok {
+			required[0] = util.StrFalse
 		}
 	}
 
