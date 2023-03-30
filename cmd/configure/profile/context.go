@@ -21,11 +21,15 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if errors.Is(config.MainManager.Error, config.ErrConfigLoad) {
 				return config.MainManager.Error
 			}
 
+			return nil
+		},
+
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := askToFillContext(profile); err != nil {
 				return err
 			}
@@ -44,11 +48,26 @@ func init() {
 
 	flags := command.Flags()
 
-	profileNameFlag := options.ProfileName.CloneMainFlag()
-	flags.AddFlag(profileNameFlag)
-	_ = command.MarkFlagRequired(profileNameFlag.Name)
+	flags.AddFlag(options.ProfileName.GetRequiredFlag("profile"))
 
 	mainCmd.AddCommand(command)
+}
+
+func askToFillContextOrSkip(profile *config.Profile) error {
+	addContext, err := interactive.ConfirmWithHelp(
+		"Do you want to set a context for this profile?",
+		"Context is used to determine which organization, project, environment, and component to use when running commands.\n"+
+			"See more at https://documentation.bunnyshell.com/docs/bunnyshell-cli-authentication#create-a-profile",
+	)
+	if err != nil {
+		return err
+	}
+
+	if !addContext {
+		return nil
+	}
+
+	return askToFillContext(profile)
 }
 
 func askToFillContext(profile *config.Profile) error {
