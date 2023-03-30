@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -134,9 +135,11 @@ func newNonInteractive(settings *Settings) *option.Bool {
 }
 
 func newToken(settings *Settings) *option.String {
+	help := "Get yours from: https://environments.bunnyshell.com/access-token"
+
 	option := option.NewStringOption(&settings.Profile.Token)
 
-	option.AddFlag("token", "Authentication Token")
+	option.AddFlagWithExtraHelp("token", "Authentication Token", help)
 
 	return option
 }
@@ -151,45 +154,70 @@ func newHost(settings *Settings) *option.String {
 }
 
 func newProfileName(settings *Settings) *option.String {
+	help := fmt.Sprintf(
+		`Local profile name. Find available profiles with "%s configure profile list"`,
+		build.Name,
+	)
+
 	option := option.NewStringOption(&settings.Profile.Name)
 
-	option.AddFlag("profile", "Use profile from config file")
+	option.AddFlagWithExtraHelp("profile", "Use profile from config file", help)
 
 	return option
 }
 
 func newOrganization(settings *Settings) *option.String {
+	help := fmt.Sprintf(
+		`Find available Organizations with "%s organization list"`,
+		build.Name,
+	)
+
 	option := option.NewStringOption(&settings.Profile.Context.Organization)
 
-	option.AddFlag("organization", "Filter by Organization")
-	option.AddFlag("id", "Organization ID")
+	option.AddFlagWithExtraHelp("organization", "Filter by Organization", help)
+	option.AddFlagWithExtraHelp("id", "Organization ID", help)
 
 	return option
 }
 
 func newProject(settings *Settings) *option.String {
+	help := fmt.Sprintf(
+		`Find available Projects with "%s project list"`,
+		build.Name,
+	)
+
 	option := option.NewStringOption(&settings.Profile.Context.Project)
 
-	option.AddFlag("project", "Filter by Project")
-	option.AddFlag("id", "Project ID")
+	option.AddFlagWithExtraHelp("project", "Filter by Project", help)
+	option.AddFlagWithExtraHelp("id", "Project ID", help)
 
 	return option
 }
 
 func newEnvironment(settings *Settings) *option.String {
+	help := fmt.Sprintf(
+		`Find available Environments with "%s environment list"`,
+		build.Name,
+	)
+
 	option := option.NewStringOption(&settings.Profile.Context.Environment)
 
-	option.AddFlag("environment", "Filter by Environment")
-	option.AddFlag("id", "Environment ID")
+	option.AddFlagWithExtraHelp("environment", "Filter by Environment", help)
+	option.AddFlagWithExtraHelp("id", "Environment ID", help)
 
 	return option
 }
 
 func newServiceComponent(settings *Settings) *option.String {
+	help := fmt.Sprintf(
+		`Find available Components with "%s components list"`,
+		build.Name,
+	)
+
 	option := option.NewStringOption(&settings.Profile.Context.ServiceComponent)
 
-	option.AddFlag("component", "Filter by ServiceComponent")
-	option.AddFlag("id", "ServiceComponent ID")
+	option.AddFlagWithExtraHelp("component", "Filter by ServiceComponent", help)
+	option.AddFlagWithExtraHelp("id", "ServiceComponent ID", help)
 
 	return option
 }
