@@ -138,7 +138,7 @@ func init() {
 		"sync-mode",
 		"Mutagen sync mode.\n"+
 			fmt.Sprintf("Available sync modes: %s\n", strings.Join(SyncModeList, ", "))+
-			fmt.Sprintf(`"%s\" sync mode disables mutagen.`, string(remoteDevMutagenConfig.None)),
+			fmt.Sprintf(`"%s" sync mode disables mutagen.`, string(remoteDevMutagenConfig.None)),
 	)
 
 	_ = command.RegisterFlagCompletionFunc("sync-mode", cobra.FixedCompletions(SyncModeList, cobra.ShellCompDirectiveDefault))
