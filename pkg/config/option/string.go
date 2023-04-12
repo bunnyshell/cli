@@ -68,14 +68,6 @@ func (option *String) AddFlagShort(name string, short string, usage string) *pfl
 	return flag
 }
 
-func (option *String) CloneMainFlag() *pflag.Flag {
-	if option.main == nil {
-		return nil
-	}
-
-	return option.AddFlagShort(option.main.Name, option.main.Shorthand, option.main.Shorthand)
-}
-
 func (option *String) AddFlagWithExtraHelp(name string, usage string, help string, flagTypes ...util.BoolFlagType) *pflag.Flag {
 	flag := option.AddFlag(name, usage, flagTypes...)
 

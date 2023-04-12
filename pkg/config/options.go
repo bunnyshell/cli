@@ -135,7 +135,7 @@ func newNonInteractive(settings *Settings) *option.Bool {
 }
 
 func newToken(settings *Settings) *option.String {
-	help := "Get yours from: https://environments.bunnyshell.com/access-token"
+	help := "Obtain your token from: https://environments.bunnyshell.com/access-token"
 
 	option := option.NewStringOption(&settings.Profile.Token)
 
