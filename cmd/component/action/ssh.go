@@ -98,7 +98,7 @@ func init() {
 			}
 
 			if !sshOptions.NoBanner {
-				showBanner(cmd, sshOptions, componentItem.GetId())
+				showBanner(cmd, sshOptions, componentItem.GetEnvironment())
 			}
 
 			return execCommand.Run()
