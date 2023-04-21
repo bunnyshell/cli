@@ -155,7 +155,7 @@ func newHost(settings *Settings) *option.String {
 
 func newProfileName(settings *Settings) *option.String {
 	help := fmt.Sprintf(
-		`Local profile name. Find available profiles with "%s configure profile list"`,
+		`Local profile name. Find available profiles with "%s configure profiles list"`,
 		build.Name,
 	)
 
@@ -168,42 +168,42 @@ func newProfileName(settings *Settings) *option.String {
 
 func newOrganization(settings *Settings) *option.String {
 	help := fmt.Sprintf(
-		`Find available Organizations with "%s organization list"`,
+		`Find available Organizations with "%s organizations list"`,
 		build.Name,
 	)
 
 	option := option.NewStringOption(&settings.Profile.Context.Organization)
 
-	option.AddFlagWithExtraHelp("organization", "Filter by Organization", help)
-	option.AddFlagWithExtraHelp("id", "Organization ID", help)
+	option.AddFlagWithExtraHelp("organization", "Filter by OrganizationID", help)
+	option.AddFlagWithExtraHelp("id", "OrganizationID", help)
 
 	return option
 }
 
 func newProject(settings *Settings) *option.String {
 	help := fmt.Sprintf(
-		`Find available Projects with "%s project list"`,
+		`Find available Projects with "%s projects list"`,
 		build.Name,
 	)
 
 	option := option.NewStringOption(&settings.Profile.Context.Project)
 
-	option.AddFlagWithExtraHelp("project", "Filter by Project", help)
-	option.AddFlagWithExtraHelp("id", "Project ID", help)
+	option.AddFlagWithExtraHelp("project", "Filter by ProjectID", help)
+	option.AddFlagWithExtraHelp("id", "ProjectID", help)
 
 	return option
 }
 
 func newEnvironment(settings *Settings) *option.String {
 	help := fmt.Sprintf(
-		`Find available Environments with "%s environment list"`,
+		`Find available Environments with "%s environments list"`,
 		build.Name,
 	)
 
 	option := option.NewStringOption(&settings.Profile.Context.Environment)
 
-	option.AddFlagWithExtraHelp("environment", "Filter by Environment", help)
-	option.AddFlagWithExtraHelp("id", "Environment ID", help)
+	option.AddFlagWithExtraHelp("environment", "Filter by EnvironmentID", help)
+	option.AddFlagWithExtraHelp("id", "EnvironmentID", help)
 
 	return option
 }
@@ -216,8 +216,8 @@ func newServiceComponent(settings *Settings) *option.String {
 
 	option := option.NewStringOption(&settings.Profile.Context.ServiceComponent)
 
-	option.AddFlagWithExtraHelp("component", "Filter by ServiceComponent", help)
-	option.AddFlagWithExtraHelp("id", "ServiceComponent ID", help)
+	option.AddFlagWithExtraHelp("component", "Filter by ServiceComponentID", help)
+	option.AddFlagWithExtraHelp("id", "ServiceComponentID", help)
 
 	return option
 }

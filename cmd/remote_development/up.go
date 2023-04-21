@@ -119,8 +119,22 @@ func init() {
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 	flags.AddFlag(options.ServiceComponent.GetFlag("component"))
 
-	flags.StringVarP(&localSyncPath, "local-sync-path", "l", "", "Local folder path to sync")
-	flags.StringVarP(&remoteSyncPath, "remote-sync-path", "r", "", "Remote folder path to sync")
+	flags.StringVarP(
+		&localSyncPath,
+		"local-sync-path",
+		"l",
+		localSyncPath,
+		"The folder on your machine that will be synced into the container on the path specified by --remote-sync-path",
+	)
+	flags.StringVarP(
+		&remoteSyncPath,
+		"remote-sync-path",
+		"r",
+		remoteSyncPath,
+		"The folder within the container where the source code of the application resides\n"+
+			"This will be used as a persistent volume to perserve your changes across multiple development sessions\n"+
+			"When using --sync-mode=none it will be used only as a workspace where changes to those files will be perserved",
+	)
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringSliceVarP(
 		&portMappings,

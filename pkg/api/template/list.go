@@ -27,7 +27,7 @@ func NewListOptions() *ListOptions {
 }
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	flags.StringVar(&lo.TemplatesRepository, "templateRepository", lo.TemplatesRepository, "Filter by Templates Repository")
+	flags.StringVar(&lo.TemplatesRepository, "templateRepository", lo.TemplatesRepository, "Filter by TemplateRepositoryID")
 	flags.StringVar(&lo.Source, "source", lo.Source, "Filter by Source")
 	flags.StringVar(&lo.Search, "search", lo.Search, "Search for value within name, description, and tags")
 

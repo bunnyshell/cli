@@ -34,7 +34,7 @@ func GetMainCommand() *cobra.Command {
 
 func getIDOption(value *string) *option.String {
 	help := fmt.Sprintf(
-		`Find available variables with "%s variabiles list"`,
+		`Find available variables with "%s variables list"`,
 		build.Name,
 	)
 

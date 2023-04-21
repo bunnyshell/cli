@@ -115,8 +115,9 @@ func init() {
 	createOptions.UpdateFlagSet(flags)
 
 	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
-	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a template ID during creation")
-	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local environment yaml during creation")
+	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a TemplateID during creation")
+	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local bunnyshell.yaml during creation")
+
 	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
 	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git repository for the environment")
 	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git repository for the environment")
