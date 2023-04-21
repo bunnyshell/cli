@@ -5,24 +5,28 @@ import (
 
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	options := config.GetOptions()
-	settings := config.GetSettings()
+	profileName := ""
 
 	command := &cobra.Command{
 		Use: "default",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if errors.Is(config.MainManager.Error, config.ErrConfigLoad) {
 				return config.MainManager.Error
 			}
 
-			if err := setDefaultProfile(&settings.Profile); err != nil {
+			return nil
+		},
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := config.MainManager.SetDefaultProfile(profileName); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
@@ -32,20 +36,23 @@ func init() {
 
 			return lib.FormatCommandData(cmd, map[string]interface{}{
 				"message": "Profile set as default",
-				"data":    settings.Profile.Name,
+				"data":    profileName,
 			})
 		},
 	}
 
 	flags := command.Flags()
 
-	profileNameFlag := options.ProfileName.CloneMainFlag()
-	flags.AddFlag(profileNameFlag)
-	_ = command.MarkFlagRequired(profileNameFlag.Name)
+	flags.StringVar(&profileName, "profile", profileName, "Profile name to set as default")
+	util.MarkFlagRequiredWithHelp(flags.Lookup("profile"), "The local profile name to set as the default profile")
 
 	mainCmd.AddCommand(command)
 }
 
 func setDefaultProfile(profile *config.Profile) error {
-	return config.MainManager.SetDefaultProfile(profile.Name)
+	return setDefaultProfileByName(profile.Name)
+}
+
+func setDefaultProfileByName(name string) error {
+	return config.MainManager.SetDefaultProfile(name)
 }

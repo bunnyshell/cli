@@ -9,6 +9,7 @@ import (
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
@@ -104,19 +105,19 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(
-		options.Project.AddFlag("project", "Project for the environment"),
-	)
-
-	_ = command.MarkFlagRequired("project")
+	flags.AddFlag(options.Project.AddFlagWithExtraHelp(
+		"project",
+		"Project for the environment",
+		"Projects contain environments along with build settings and project variables",
+		util.FlagRequired,
+	))
 
 	createOptions.UpdateFlagSet(flags)
 
-	_ = command.MarkFlagRequired("name")
-
 	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
-	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a template ID during creation")
-	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local environment yaml during creation")
+	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a TemplateID during creation")
+	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local bunnyshell.yaml during creation")
+
 	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
 	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git repository for the environment")
 	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git repository for the environment")

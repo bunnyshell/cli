@@ -7,22 +7,26 @@ import (
 	"time"
 
 	"bunnyshell.com/cli/pkg/api/organization"
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-var tokenFormat = regexp.MustCompile(`^\d+:[0-9a-zA-z]{32}$`)
+var (
+	tokenFormat = regexp.MustCompile(`^\d+:[0-9a-zA-z]{32}$`)
+
+	ErrInvalidToken = errors.New("invalid token")
+)
 
 func init() {
-	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	profile := &settings.Profile
+	profile := &config.Profile{}
 
-	profileName := ""
 	asDefaultProfile := false
 
 	command := &cobra.Command{
@@ -30,11 +34,19 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		PersistentPreRunE: util.PersistentPreRunChain,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := util.PersistentPreRunChain(cmd, args); err != nil {
+				if errors.Is(err, config.ErrUnknownProfile) {
+					return nil
+				}
+
+				return err
+			}
+
+			return nil
+		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			profile.Name = profileName
-
 			if err := ensureProfileName(profile); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -57,7 +69,7 @@ func init() {
 				break
 			}
 
-			if err := askToFillContext(profile); err != nil {
+			if err := askToFillContextOrSkip(profile); err != nil {
 				if errors.Is(err, interactive.ErrNonInteractive) {
 					return nil
 				}
@@ -83,25 +95,49 @@ func init() {
 		},
 	}
 
-	config.MainManager.CommandWithAPI(command)
-
 	flags := command.Flags()
 
-	profileNameFlagName := "name"
-	flags.StringVar(&profileName, profileNameFlagName, profileName, "Unique name for the new profile")
-	_ = command.MarkFlagRequired(profileNameFlagName)
+	flags.AddFlag(getNewProfileNameOption(&profile.Name).GetRequiredFlag("name"))
 
-	flags.AddFlag(
-		options.Organization.AddFlag("organization", "Set Organization context for all resources"),
+	flags.StringVar(
+		&profile.Token,
+		"token",
+		profile.Token,
+		"Set API token for the new profile",
 	)
-	flags.AddFlag(
-		options.Project.AddFlag("project", "Set Project context for all resources"),
+
+	flags.StringVar(
+		&profile.Host,
+		"host",
+		profile.Host,
+		"Set API host for the new profile",
 	)
-	flags.AddFlag(
-		options.Environment.AddFlag("environment", "Set Environment context for all resources"),
+
+	_ = flags.MarkHidden("host")
+
+	flags.StringVar(
+		&profile.Context.Organization,
+		"organization",
+		profile.Context.Organization,
+		"Set Organization context for all resources",
 	)
-	flags.AddFlag(
-		options.ServiceComponent.AddFlag("serviceComponent", "Set ServiceComponent context for all resources"),
+	flags.StringVar(
+		&profile.Context.Project,
+		"project",
+		profile.Context.Project,
+		"Set Project context for all resources",
+	)
+	flags.StringVar(
+		&profile.Context.Environment,
+		"environment",
+		profile.Context.Environment,
+		"Set Environment context for all resources",
+	)
+	flags.StringVar(
+		&profile.Context.ServiceComponent,
+		"service",
+		profile.Context.ServiceComponent,
+		"Set ServiceComponent context for all resources",
 	)
 
 	flags.BoolVar(&asDefaultProfile, "default", asDefaultProfile, "Set as default profile")
@@ -109,12 +145,28 @@ func init() {
 	mainCmd.AddCommand(command)
 }
 
+func getNewProfileNameOption(value *string) *option.String {
+	usage := "Unique name for the new profile"
+	help := usage
+
+	idOption := option.NewStringOption(value)
+
+	idOption.AddFlagWithExtraHelp("name", usage, help)
+
+	return idOption
+}
+
 func askForDefault(command *cobra.Command) bool {
 	if config.GetSettings().NonInteractive {
 		return false
 	}
 
-	setAsDefault, err := interactive.Confirm("Set as default profile?")
+	setAsDefault, err := interactive.ConfirmWithHelp(
+		"Set as default profile?",
+		"The default profile is automatically used when running commands without the --profile flag\n"+
+			fmt.Sprintf("You can change the default profile with '%s configure profiles default' command\n", build.Name)+
+			"See more at https://documentation.bunnyshell.com/docs/bunnyshell-cli-authentication#create-a-profile",
+	)
 	if err != nil {
 		command.PrintErr("Could not determine user input", err)
 
@@ -167,7 +219,7 @@ func ensureToken(profile *config.Profile) error {
 		if err := validateToken(profile.Token); err != nil {
 			profile.Token = ""
 
-			return err
+			return ErrInvalidToken
 		}
 
 		return nil
@@ -177,7 +229,8 @@ func ensureToken(profile *config.Profile) error {
 		return fmt.Errorf("%w (token)", interactive.ErrRequiredValue)
 	}
 
-	help := "Get yours from: https://environments.bunnyshell.com/access-token"
+	tokenFlag := config.GetOptions().Token.GetMainFlag()
+	help := util.GetHelp(tokenFlag)
 
 	token, err := interactive.AskSecretWithHelp("Token:", help, validateToken)
 	if err != nil {

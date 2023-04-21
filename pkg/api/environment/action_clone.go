@@ -6,6 +6,7 @@ import (
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/pflag"
 )
@@ -26,6 +27,8 @@ func NewCloneOptions(id string) *CloneOptions {
 
 func (co *CloneOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&co.EnvironmentCloneAction.Name, "name", co.EnvironmentCloneAction.Name, "Environment Clone Name")
+
+	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the environment clone")
 }
 
 func Clone(options *CloneOptions) (*sdk.EnvironmentItem, error) {

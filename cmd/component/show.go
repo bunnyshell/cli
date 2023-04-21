@@ -33,9 +33,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.ServiceComponent.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
+	flags.AddFlag(options.ServiceComponent.GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }

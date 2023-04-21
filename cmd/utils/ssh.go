@@ -5,6 +5,7 @@ import (
 
 	"bunnyshell.com/cli/cmd/component/action"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -60,9 +61,9 @@ func init() {
 
 	flags := command.Flags()
 
-	componentFlag := options.ServiceComponent.AddFlag("component", "Service Component")
-	flags.AddFlag(componentFlag)
-	_ = command.MarkFlagRequired(componentFlag.Name)
+	flags.AddFlag(
+		options.ServiceComponent.AddFlag("component", "Service Component", util.FlagRequired),
+	)
 
 	sshOptions.UpdateFlagSet(flags)
 

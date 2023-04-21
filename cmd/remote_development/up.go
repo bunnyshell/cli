@@ -1,6 +1,9 @@
 package remote_development
 
 import (
+	"fmt"
+	"strings"
+
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/environment"
 	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
@@ -33,6 +36,14 @@ var SyncModeIds = map[SyncMode][]string{
 	TwoWayResolved: {string(remoteDevMutagenConfig.TwoWayResolved)},
 	OneWaySafe:     {string(remoteDevMutagenConfig.OneWaySafe)},
 	OneWayReplica:  {string(remoteDevMutagenConfig.OneWayReplica)},
+}
+
+var SyncModeList = []string{
+	string(remoteDevMutagenConfig.None),
+	string(remoteDevMutagenConfig.TwoWaySafe),
+	string(remoteDevMutagenConfig.TwoWayResolved),
+	string(remoteDevMutagenConfig.OneWaySafe),
+	string(remoteDevMutagenConfig.OneWayReplica),
 }
 
 func init() {
@@ -108,8 +119,22 @@ func init() {
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 	flags.AddFlag(options.ServiceComponent.GetFlag("component"))
 
-	flags.StringVarP(&localSyncPath, "local-sync-path", "l", "", "Local folder path to sync")
-	flags.StringVarP(&remoteSyncPath, "remote-sync-path", "r", "", "Remote folder path to sync")
+	flags.StringVarP(
+		&localSyncPath,
+		"local-sync-path",
+		"l",
+		localSyncPath,
+		"The folder on your machine that will be synced into the container on the path specified by --remote-sync-path",
+	)
+	flags.StringVarP(
+		&remoteSyncPath,
+		"remote-sync-path",
+		"r",
+		remoteSyncPath,
+		"The folder within the container where the source code of the application resides\n"+
+			"This will be used as a persistent volume to perserve your changes across multiple development sessions\n"+
+			"When using --sync-mode=none it will be used only as a workspace where changes to those files will be perserved",
+	)
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringSliceVarP(
 		&portMappings,
@@ -125,8 +150,12 @@ func init() {
 	flags.Var(
 		enumflag.New(&syncMode, "sync-mode", SyncModeIds, enumflag.EnumCaseSensitive),
 		"sync-mode",
-		"Mutagen sync mode.\nAvailable sync modes: none, two-way-safe, two-way-resolved, one-way-safe, one-way-replica.\n\"none\" sync mode disables mutagen.",
+		"Mutagen sync mode.\n"+
+			fmt.Sprintf("Available sync modes: %s\n", strings.Join(SyncModeList, ", "))+
+			fmt.Sprintf(`"%s" sync mode disables mutagen.`, string(remoteDevMutagenConfig.None)),
 	)
+
+	_ = command.RegisterFlagCompletionFunc("sync-mode", cobra.FixedCompletions(SyncModeList, cobra.ShellCompDirectiveDefault))
 
 	mainCmd.AddCommand(command)
 }

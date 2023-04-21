@@ -31,7 +31,7 @@ var rootCmd = &cobra.Command{
 	Version: build.Version,
 
 	Short: "Bunnyshell CLI",
-	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and enable Remote Development.",
+	Long:  "Bunnyshell CLI helps you manage environments in Bunnyshell and provides tools for remote development and troubleshooting.",
 
 	SilenceUsage: true,
 

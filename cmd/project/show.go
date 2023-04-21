@@ -32,9 +32,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.Project.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
+	flags.AddFlag(options.Project.GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }

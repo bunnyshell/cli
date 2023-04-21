@@ -7,8 +7,6 @@ import (
 )
 
 func init() {
-	var pipelineID string
-
 	itemOptions := pipeline.NewItemOptions("")
 
 	command := &cobra.Command{
@@ -17,8 +15,6 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			itemOptions.ID = pipelineID
-
 			model, err := pipeline.Get(itemOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
@@ -30,9 +26,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&pipelineID, idFlagName, pipelineID, "Pipeline Id")
-	_ = command.MarkFlagRequired(idFlagName)
+	flags.AddFlag(getIDOption(&itemOptions.ID).GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }
