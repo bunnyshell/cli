@@ -175,7 +175,7 @@ func newOrganization(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Context.Organization)
 
 	option.AddFlagWithExtraHelp("organization", "Filter by OrganizationID", help)
-	option.AddFlagWithExtraHelp("id", "OrganizationID", help)
+	option.AddFlag("id", "OrganizationID")
 
 	return option
 }
@@ -189,7 +189,7 @@ func newProject(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Context.Project)
 
 	option.AddFlagWithExtraHelp("project", "Filter by ProjectID", help)
-	option.AddFlagWithExtraHelp("id", "ProjectID", help)
+	option.AddFlag("id", "ProjectID")
 
 	return option
 }
@@ -203,7 +203,7 @@ func newEnvironment(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Context.Environment)
 
 	option.AddFlagWithExtraHelp("environment", "Filter by EnvironmentID", help)
-	option.AddFlagWithExtraHelp("id", "EnvironmentID", help)
+	option.AddFlag("id", "EnvironmentID")
 
 	return option
 }
@@ -217,7 +217,7 @@ func newServiceComponent(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Context.ServiceComponent)
 
 	option.AddFlagWithExtraHelp("component", "Filter by ServiceComponentID", help)
-	option.AddFlagWithExtraHelp("id", "ServiceComponentID", help)
+	option.AddFlag("id", "ServiceComponentID")
 
 	return option
 }

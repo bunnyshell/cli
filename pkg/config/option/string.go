@@ -53,7 +53,7 @@ func (option *String) ValueOr(generator StringGenerator) string {
 func (option *String) AddFlag(name string, usage string, flagTypes ...util.BoolFlagType) *pflag.Flag {
 	flag := option.AddFlagShort(name, "", usage)
 
-	if flagTypes != nil {
+	if flagTypes == nil {
 		return flag
 	}
 
