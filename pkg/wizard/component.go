@@ -7,6 +7,30 @@ import (
 	"bunnyshell.com/sdk"
 )
 
+func (w *Wizard) HasComponent() bool {
+	return w.profile.Context.ServiceComponent != ""
+}
+
+func (w *Wizard) GetComponent() (*sdk.ComponentItem, error) {
+	if !w.HasComponent() {
+		colItem, err := w.SelectComponent()
+		if err != nil {
+			return nil, err
+		}
+
+		w.profile.Context.ServiceComponent = colItem.GetId()
+	}
+
+	item, err := component.Get(component.NewItemOptions(w.profile.Context.ServiceComponent))
+	if err != nil {
+		return nil, err
+	}
+
+	w.profile.Context.Environment = item.GetEnvironment()
+
+	return item, nil
+}
+
 func (w *Wizard) SelectComponent() (*sdk.ComponentCollection, error) {
 	return w.selectComponent(1)
 }
@@ -19,7 +43,7 @@ func (w *Wizard) selectComponent(page int32) (*sdk.ComponentCollection, error) {
 
 	embedded, ok := model.GetEmbeddedOk()
 	if !ok {
-		return nil, ErrEmptyListing
+		return nil, fmt.Errorf("%s %w", "components", ErrEmptyListing)
 	}
 
 	collectionItems := embedded.GetItem()
