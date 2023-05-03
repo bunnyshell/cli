@@ -154,7 +154,11 @@ func (up *Options) makeAbsolutePaths(parameters *action.UpParameters) error {
 		return err
 	}
 
-	for _, syncPath := range parameters.Options.Profile.SyncPaths {
+	if parameters.Options.Profile == nil {
+		return nil
+	}
+
+	for _, syncPath := range parameters.Options.Profile.GetSyncPaths() {
 		if err := up.manager.MakeAbsolute(syncPath.LocalPath.Get()); err != nil {
 			return err
 		}

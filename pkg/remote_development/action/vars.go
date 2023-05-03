@@ -5,5 +5,5 @@ import "errors"
 var (
 	ErrOneSyncPathSupported = errors.New("only one sync path is supported")
 
-	ErrRemoteDevNotInitialized = errors.New("call Up.Run() successfuly before calling other methods")
+	ErrRemoteDevNotInitialized = errors.New("call Up.Run() successfully before calling other methods")
 )
