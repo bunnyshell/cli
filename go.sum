@@ -1,5 +1,5 @@
-bunnyshell.com/dev v0.5.1 h1:YNqhFJD5P3uY7LAz8OYckUt4oe2xpQDrJlI88uzLuZ4=
-bunnyshell.com/dev v0.5.1/go.mod h1:KlqPdOh60vqAfnuGUw9AKc0RVhXpNzWg46QKJSP/jog=
+bunnyshell.com/dev v0.5.2 h1:+V4wTgsFmkzQ4IfSJi59px0JBzGlgEe/vPuC414kyAI=
+bunnyshell.com/dev v0.5.2/go.mod h1:KlqPdOh60vqAfnuGUw9AKc0RVhXpNzWg46QKJSP/jog=
 bunnyshell.com/sdk v0.13.0 h1:4QX8E2Bzk3WRC2SF47JdLAOPJbgBMEVf8+NjWU7uwG8=
 bunnyshell.com/sdk v0.13.0/go.mod h1:TCdr+4UrAXUv/3M7Seawh6V93jp5/9UCJ5PAiwl2HE8=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
@@ -249,8 +249,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/moby/spdystream v0.2.0 h1:cjW1zVyyoiM0T7b6UoySUFqzXMoqRckQtXwGPiBhOM8=
 github.com/moby/spdystream v0.2.0/go.mod h1:f7i0iNDQJ059oMTcWxx8MA/zKFIuD/lY+0GqbN2Wy8c=
-github.com/moby/term v0.0.0-20230501114404-2ff7073d9493 h1:SuDgRDL8HIp4hZZRh54j/9A9SVxUhikNtxgjnGOWnkY=
-github.com/moby/term v0.0.0-20230501114404-2ff7073d9493/go.mod h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y=
+github.com/moby/term v0.5.0 h1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=
+github.com/moby/term v0.5.0/go.mod h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
