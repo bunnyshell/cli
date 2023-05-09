@@ -129,7 +129,7 @@ func (manager *Manager) MakeAbsolute(path *string) error {
 		return nil
 	}
 
-	if (*path)[:2] == "~/" {
+	if (*path)[0] == '~' {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
