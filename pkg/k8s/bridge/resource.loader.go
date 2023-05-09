@@ -71,7 +71,7 @@ func (loader *ResourceLoader) SelectResourceFromSpec(spec *ResourceSpec) error {
 		}
 	}
 
-	return fmt.Errorf("%s (no match)", ErrNoComponentResources)
+	return fmt.Errorf("%w (no match)", ErrNoComponentResources)
 }
 
 func (loader *ResourceLoader) SelectResource() error {

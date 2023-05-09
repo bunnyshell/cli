@@ -104,6 +104,8 @@ func (up *Options) selectExtendedResource(resourceConfigList []sdk.ExtendedResou
 		return nil, bridge.ErrNoComponentResources
 	}
 
+	up.resourcePath = resourceSpec.String()
+
 	return *resource.Containers, nil
 }
 
