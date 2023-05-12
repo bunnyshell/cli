@@ -59,8 +59,6 @@ func (up *Options) UpdateFlagSet(
 
 	up.addContainerConfigFlags(flags)
 	up.manager.UpdateFlagSet(command, flags)
-
-	command.MarkFlagsRequiredTogether("container", "rdev-profile")
 }
 
 func (up *Options) addContainerConfigFlags(
