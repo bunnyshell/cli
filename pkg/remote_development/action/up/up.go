@@ -67,6 +67,8 @@ func (up *Options) ToParameters() (*action.UpParameters, error) {
 	parameters := &action.UpParameters{
 		SyncMode: SyncModeToMutagenMode[up.syncMode],
 
+		ManualSelectSingleResource: up.ManualSelectSingleResource,
+
 		PortMappings: up.portMappings,
 
 		Options: &action.UpOptions{
@@ -80,25 +82,7 @@ func (up *Options) ToParameters() (*action.UpParameters, error) {
 		return nil, err
 	}
 
-	if up.localSyncPath != "" {
-		ensureProfileSyncPath(parameters).SetLocalPath(up.localSyncPath)
-	}
-
-	if up.remoteSyncPath != "" {
-		ensureProfileSyncPath(parameters).SetRemotePath(up.remoteSyncPath)
-	}
-
-	if up.containerName != "" {
-		parameters.Options.ContainerName = up.containerName
-	}
-
-	if len(up.command) > 0 {
-		if parameters.Options.Profile == nil {
-			parameters.Options.Profile = &sdk.ProfileItem{}
-		}
-
-		parameters.Options.Profile.Command = up.command
-	}
+	up.fillFromFlags(parameters)
 
 	if err := up.makeAbsolutePaths(parameters); err != nil {
 		return nil, err
@@ -167,16 +151,92 @@ func (up *Options) makeAbsolutePaths(parameters *action.UpParameters) error {
 	return nil
 }
 
-func ensureProfileSyncPath(parameters *action.UpParameters) *sdk.SyncPathItem {
+func (up *Options) fillFromFlags(parameters *action.UpParameters) {
+	if up.localSyncPath != "" {
+		ensureProfileSyncPath(parameters).SetLocalPath(up.localSyncPath)
+	}
+
+	if up.remoteSyncPath != "" {
+		ensureProfileSyncPath(parameters).SetRemotePath(up.remoteSyncPath)
+	}
+
+	if up.limitCPU != "" {
+		ensureLimits(parameters).SetCpu(up.limitCPU)
+	}
+
+	if up.limitMemory != "" {
+		ensureLimits(parameters).SetMemory(up.limitMemory)
+	}
+
+	if up.requestCPU != "" {
+		ensureRequests(parameters).SetCpu(up.requestCPU)
+	}
+
+	if up.requestMemory != "" {
+		ensureRequests(parameters).SetMemory(up.requestMemory)
+	}
+
+	if up.containerName != "" {
+		parameters.Options.ContainerName = up.containerName
+	}
+
+	if len(up.command) > 0 {
+		ensureProfile(parameters).Command = up.command
+	}
+}
+
+func ensureProfile(parameters *action.UpParameters) *sdk.ProfileItem {
 	if parameters.Options.Profile == nil {
 		parameters.Options.Profile = &sdk.ProfileItem{}
 	}
 
-	if parameters.Options.Profile.SyncPaths == nil {
-		parameters.Options.Profile.SyncPaths = []sdk.SyncPathItem{
+	return parameters.Options.Profile
+}
+
+func ensureRequirements(parameters *action.UpParameters) *sdk.ResourceRequirementItem {
+	profile := ensureProfile(parameters)
+
+	if !profile.HasRequirements() {
+		profile.SetRequirements(sdk.ProfileItemRequirements{
+			ResourceRequirementItem: &sdk.ResourceRequirementItem{},
+		})
+	}
+
+	return profile.GetRequirements().ResourceRequirementItem
+}
+
+func ensureLimits(parameters *action.UpParameters) *sdk.ResourceListItem {
+	requirements := ensureRequirements(parameters)
+
+	if !requirements.HasLimits() {
+		requirements.SetLimits(sdk.ResourceRequirementItemLimits{
+			ResourceListItem: &sdk.ResourceListItem{},
+		})
+	}
+
+	return requirements.GetLimits().ResourceListItem
+}
+
+func ensureRequests(parameters *action.UpParameters) *sdk.ResourceListItem {
+	requirements := ensureRequirements(parameters)
+
+	if !requirements.HasRequests() {
+		requirements.SetRequests(sdk.ResourceRequirementItemRequests{
+			ResourceListItem: &sdk.ResourceListItem{},
+		})
+	}
+
+	return requirements.GetRequests().ResourceListItem
+}
+
+func ensureProfileSyncPath(parameters *action.UpParameters) *sdk.SyncPathItem {
+	profile := ensureProfile(parameters)
+
+	if !profile.HasSyncPaths() {
+		profile.SyncPaths = []sdk.SyncPathItem{
 			*sdk.NewSyncPathItem(),
 		}
 	}
 
-	return &parameters.Options.Profile.SyncPaths[0]
+	return &profile.SyncPaths[0]
 }

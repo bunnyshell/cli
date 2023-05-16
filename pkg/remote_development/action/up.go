@@ -22,6 +22,8 @@ type UpParameters struct {
 
 	SyncMode mutagenConfig.Mode
 
+	ManualSelectSingleResource bool
+
 	LocalSyncPath  string
 	RemoteSyncPath string
 
