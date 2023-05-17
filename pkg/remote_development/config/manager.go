@@ -25,13 +25,21 @@ func NewManager() *Manager {
 	return &Manager{
 		config: &Config{},
 
-		configDirParam:  ".../.bunnyshell",
-		configFileParam: "rdev.yaml",
+		configDirParam:  defaultConfigDirParam,
+		configFileParam: defaultConfigFileParam,
 	}
 }
 
+func (manager *Manager) Validate() error {
+	if manager.configDirParam == defaultConfigDirParam && manager.configFileParam == defaultConfigFileParam {
+		return nil
+	}
+
+	return manager.ensureConfigFile()
+}
+
 func (manager *Manager) Load() error {
-	if err := manager.ensureConfigDir(); err != nil {
+	if err := manager.ensureConfigFile(); err != nil {
 		return err
 	}
 
@@ -51,7 +59,7 @@ func (manager *Manager) GetProfile() (*Profile, error) {
 }
 
 func (manager *Manager) readConfig() error {
-	yamlFile, err := os.ReadFile(manager.configDir + "/" + manager.configFile)
+	yamlFile, err := os.ReadFile(filepath.Join(manager.configDir, manager.configFile))
 	if err != nil {
 		return err
 	}
@@ -69,20 +77,20 @@ func (manager *Manager) readConfig() error {
 	return nil
 }
 
-func (manager *Manager) ensureConfigDir() error {
-	if filepath.IsAbs(manager.configFileParam) {
-		manager.configToOSPath(manager.configFileParam)
-
+func (manager *Manager) ensureConfigFile() error {
+	if manager.configDir != "" || manager.configFile != "" {
 		return nil
+	}
+
+	if filepath.IsAbs(manager.configFileParam) {
+		return manager.configToOSPath(manager.configFileParam)
 	}
 
 	if err := manager.discoverConfigDir(); err != nil {
 		return err
 	}
 
-	manager.configToOSPath(manager.configDirParam + "/" + manager.configFileParam)
-
-	return nil
+	return manager.configToOSPath(filepath.Join(manager.configDirParam, manager.configFileParam))
 }
 
 func (manager *Manager) discoverConfigDir() error {
@@ -98,8 +106,8 @@ func (manager *Manager) discoverConfigDir() error {
 	}
 
 	for {
-		configFileDir := workingDirectory + "/" + subdir
-		configFilePath := configFileDir + "/" + manager.configFileParam
+		configFileDir := filepath.Join(workingDirectory, subdir)
+		configFilePath := filepath.Join(configFileDir, manager.configFileParam)
 
 		if _, err = os.Stat(configFilePath); err == nil {
 			manager.configDirParam = configFileDir
@@ -107,17 +115,23 @@ func (manager *Manager) discoverConfigDir() error {
 			return nil
 		}
 
-		if workingDirectory == "/" {
+		parentDirectory := filepath.Dir(workingDirectory)
+
+		if parentDirectory == workingDirectory {
 			return fmt.Errorf("%w: unable to find %s", ErrConfigLoad, manager.configDirParam)
 		}
 
-		workingDirectory = filepath.Dir(workingDirectory)
+		workingDirectory = parentDirectory
 	}
 }
 
-func (manager *Manager) configToOSPath(file string) {
+func (manager *Manager) configToOSPath(file string) error {
 	manager.configDir = filepath.Dir(file)
 	manager.configFile = filepath.Base(file)
+
+	_, err := os.Stat(filepath.Join(manager.configDir, manager.configFile))
+
+	return err
 }
 
 func (manager *Manager) MakeAbsolute(path *string) error {
@@ -140,7 +154,7 @@ func (manager *Manager) MakeAbsolute(path *string) error {
 		return nil
 	}
 
-	*path = manager.configDir + "/" + *path
+	*path = filepath.Join(manager.configDir, *path)
 
 	return nil
 }

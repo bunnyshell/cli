@@ -25,7 +25,13 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		PreRunE: lib.OnlyStylish,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := upOptions.Validate(); err != nil {
+				return err
+			}
+
+			return lib.OnlyStylish(cmd, args)
+		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			upOptions.SetCommand(args)

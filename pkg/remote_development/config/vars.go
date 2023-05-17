@@ -4,7 +4,10 @@ import (
 	"errors"
 )
 
-const RDevConfigFile = ".bunnyshell/rdev.yaml"
+const (
+	defaultConfigDirParam  = ".../.bunnyshell"
+	defaultConfigFileParam = "rdev.yaml"
+)
 
 var (
 	MainManager = NewManager()

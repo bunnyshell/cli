@@ -61,6 +61,14 @@ func (up *Options) SetCommand(command []string) {
 	up.command = command
 }
 
+func (up *Options) Validate() error {
+	if err := up.manager.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (up *Options) ToParameters() (*action.UpParameters, error) {
 	up.resourceLoader.ManualSelectSingleResource = up.ManualSelectSingleResource
 
