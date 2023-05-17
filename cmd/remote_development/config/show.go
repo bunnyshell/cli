@@ -1,4 +1,4 @@
-package remote_development
+package config
 
 import (
 	"bunnyshell.com/cli/pkg/config"
@@ -17,7 +17,7 @@ func init() {
 	upOptions := up.NewOptions(remoteDevConfig.NewManager(), resourceLoader)
 
 	command := &cobra.Command{
-		Use: "config",
+		Use: "show",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

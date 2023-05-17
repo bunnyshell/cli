@@ -1,0 +1,25 @@
+profiles:
+  # a unique name for the remote dev profile
+  name:
+    # The command to run when starting the container
+    command: [yarn, install]
+    # Sync paths between the container and the host
+    syncPaths:
+      -
+        # absolute path within the container
+        remotePath: /var/www
+        # absolute path or relative to the rdev.yaml file
+        localPath: ..
+    port_forwards:
+      - "9001<9001"
+      - "9003>9003"
+    environment:
+      ENV: dev
+    resources:
+        # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+        limits:
+            cpu: 123m
+            memory: 351Mi
+        requests:
+            cpu: 101m
+            memory: 349Mi
