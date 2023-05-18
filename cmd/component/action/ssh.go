@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"bunnyshell.com/cli/pkg/api/component"
@@ -37,11 +38,21 @@ func (o *SSHOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 }
 
 func (o *SSHOptions) MakeExecOptions(kubeConfig *environment.KubeConfigItem) *k8sExec.Options {
+	motd := "/opt/bunnyshell/motd.txt"
+
 	return &k8sExec.Options{
 		TTY:   !o.NoTTY,
 		Stdin: true,
 
-		Command: []string{o.Shell},
+		Command: []string{
+			"/bin/sh",
+			"-c",
+			fmt.Sprintf(
+				"[ -f %[1]s ] && cat %[1]s; %[2]s",
+				motd,
+				o.Shell,
+			),
+		},
 
 		KubeConfig: kubeConfig.Bytes,
 	}

@@ -17,5 +17,5 @@ var (
 
 	paginationDisplaySize = paginationItemsPerPage + len(paginationOptions)
 
-	ErrEmptyListing = errors.New("no resources found")
+	ErrEmptyListing = errors.New("empty listing")
 )

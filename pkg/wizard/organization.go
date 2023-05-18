@@ -7,6 +7,23 @@ import (
 	"bunnyshell.com/sdk"
 )
 
+func (w *Wizard) HasOrganization() bool {
+	return w.profile.Context.Organization != ""
+}
+
+func (w *Wizard) GetOrganization() (*sdk.OrganizationItem, error) {
+	if !w.HasOrganization() {
+		itemCol, err := w.SelectOrganization()
+		if err != nil {
+			return nil, err
+		}
+
+		w.profile.Context.Organization = itemCol.GetId()
+	}
+
+	return organization.Get(organization.NewItemOptions(w.profile.Context.Organization))
+}
+
 func (w *Wizard) SelectOrganization() (*sdk.OrganizationCollection, error) {
 	return w.selectOrganization(1)
 }
@@ -19,7 +36,7 @@ func (w *Wizard) selectOrganization(page int32) (*sdk.OrganizationCollection, er
 
 	embedded, ok := model.GetEmbeddedOk()
 	if !ok {
-		return nil, ErrEmptyListing
+		return nil, fmt.Errorf("%s %w", "organizations", ErrEmptyListing)
 	}
 
 	collectionItems := embedded.GetItem()

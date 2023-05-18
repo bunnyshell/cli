@@ -66,7 +66,9 @@ func init() {
 			if podName != "" {
 				portForwardManager.WithPodName(podName)
 			} else {
-				_ = portForwardManager.SelectPod()
+				if err = portForwardManager.SelectPod(); err != nil {
+					return err
+				}
 			}
 
 			err = portForwardManager.Start()

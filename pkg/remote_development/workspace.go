@@ -12,6 +12,7 @@ const (
 	KubeConfigFilename = "kube-config.yaml"
 )
 
+// @deprecated Use bunnyshell.com/cli/pkg/remote_development/workspace
 func (r *RemoteDevelopment) ensureEnvironmentWorkspaceDir() error {
 	workspace, err := util.GetWorkspaceDir()
 	if err != nil {
@@ -23,6 +24,7 @@ func (r *RemoteDevelopment) ensureEnvironmentWorkspaceDir() error {
 	return os.MkdirAll(r.environmentWorkspaceDir, 0755)
 }
 
+// @deprecated Use bunnyshell.com/cli/pkg/remote_development/workspace
 func (r *RemoteDevelopment) ensureEnvironmentKubeConfig() error {
 	kubeConfigPath := filepath.Join(r.environmentWorkspaceDir, KubeConfigFilename)
 	if err := lib.DownloadEnvironmentKubeConfig(kubeConfigPath, r.environmentResource.Environment.GetId()); err != nil {
