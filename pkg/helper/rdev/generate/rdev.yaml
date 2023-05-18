@@ -10,7 +10,7 @@ profiles:
         remotePath: /var/www
         # absolute path or relative to the rdev.yaml file
         localPath: ..
-    port_forwards:
+    portForwards:
       - "9001<9001"
       - "9003>9003"
     environment:
