@@ -58,6 +58,12 @@ func create(data Data, filename string) error {
 		return err
 	}
 
+	if file == nil {
+		fmt.Fprintf(os.Stdout, `Skipping "%s" ...`+"\n", filename)
+
+		return nil
+	}
+
 	fmt.Fprintf(os.Stdout, `Generating "%s" ...`+"\n", filename)
 
 	return tpl.Execute(file, data)
@@ -85,7 +91,7 @@ func openFile(directory string, name string) (*os.File, error) {
 		)
 
 		if !clobber {
-			return nil, errFileAlreadyExists
+			return nil, nil
 		}
 	}
 

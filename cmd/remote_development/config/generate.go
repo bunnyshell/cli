@@ -22,8 +22,6 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			cmd.Println("RemoteDevelopment config generated successfully in " + directory)
-
 			return nil
 		},
 	}
