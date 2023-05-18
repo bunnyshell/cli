@@ -3,7 +3,7 @@ module bunnyshell.com/cli
 go 1.19
 
 require (
-	bunnyshell.com/dev v0.5.4
+	bunnyshell.com/dev v0.5.5
 	bunnyshell.com/sdk v0.13.0
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/briandowns/spinner v1.23.0
@@ -13,11 +13,11 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/thediveo/enumflag/v2 v2.0.2
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.27.1
-	k8s.io/apimachinery v0.27.1
-	k8s.io/cli-runtime v0.27.1
-	k8s.io/client-go v0.27.1
-	k8s.io/kubectl v0.27.1
+	k8s.io/api v0.27.2
+	k8s.io/apimachinery v0.27.2
+	k8s.io/cli-runtime v0.27.2
+	k8s.io/client-go v0.27.2
+	k8s.io/kubectl v0.27.2
 )
 
 require (
@@ -90,7 +90,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/component-base v0.27.1 // indirect
+	k8s.io/component-base v0.27.2 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230515203736-54b630e78af5 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
