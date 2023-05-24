@@ -27,7 +27,7 @@ func NewListOptions() *ListOptions {
 }
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	flags.StringVar(&lo.Event, "event", lo.Event, "Filter by Event")
+	flags.StringVar(&lo.Event, "event", lo.Event, "Filter by EventID")
 	flags.StringVar(&lo.Status, "status", lo.Status, "Filter by Status")
 
 	lo.ListOptions.UpdateFlagSet(flags)

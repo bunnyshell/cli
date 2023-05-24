@@ -29,9 +29,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&pipelineID, idFlagName, pipelineID, "Pipeline Id")
-	_ = command.MarkFlagRequired(idFlagName)
+	flags.AddFlag(getIDOption(&pipelineID).GetRequiredFlag("id"))
 
 	flags.DurationVar(&progressOptions.Interval, "interval", progressOptions.Interval, "Pipeline check interval")
 

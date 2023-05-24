@@ -7,8 +7,6 @@ import (
 )
 
 func init() {
-	var templateID string
-
 	itemOptions := template.NewItemOptions("")
 
 	command := &cobra.Command{
@@ -18,8 +16,6 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			itemOptions.ID = templateID
-
 			model, err := template.Get(itemOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
@@ -31,9 +27,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlagName := "id"
-	flags.StringVar(&templateID, idFlagName, templateID, "Template Id")
-	_ = command.MarkFlagRequired(idFlagName)
+	flags.AddFlag(getIDOption(&itemOptions.ID).GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }

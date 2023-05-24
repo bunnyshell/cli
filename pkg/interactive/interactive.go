@@ -17,6 +17,14 @@ func Ask(question string, validate survey.Validator) (string, error) {
 	}, &answer, validate)
 }
 
+func AskWithHelp(question string, help string, validate survey.Validator) (string, error) {
+	prompt := NewInput(question)
+	prompt.Help = help
+	prompt.SetValidate(validate)
+
+	return prompt.AskString()
+}
+
 func AskInt32(question string, validate survey.Validator) (int32, error) {
 	var answer int32
 
@@ -49,6 +57,15 @@ func Confirm(question string) (bool, error) {
 
 	return answer, askPrompt(&survey.Confirm{
 		Message: question,
+	}, &answer, nil)
+}
+
+func ConfirmWithHelp(question string, help string) (bool, error) {
+	var answer bool
+
+	return answer, askPrompt(&survey.Confirm{
+		Message: question,
+		Help:    help,
 	}, &answer, nil)
 }
 

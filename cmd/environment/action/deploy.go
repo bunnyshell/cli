@@ -35,9 +35,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.Environment.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
+	flags.AddFlag(options.Environment.GetRequiredFlag("id"))
 
 	deployOptions.UpdateFlagSet(flags)
 

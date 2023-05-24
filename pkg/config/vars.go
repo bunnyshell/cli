@@ -9,8 +9,8 @@ const (
 	defaultFormat  = "stylish"
 	defaultTimeout = 30 * time.Second
 
-	configDirPerm  = int(0o700)
-	configFilePerm = int(0o600)
+	configDirPerm  = 0o700
+	configFilePerm = 0o600
 )
 
 var (

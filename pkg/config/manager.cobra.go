@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -30,10 +31,7 @@ func (manager *Manager) CommandWithGlobalOptions(command *cobra.Command) {
 func (manager *Manager) CommandWithAPI(command *cobra.Command) {
 	flags := command.PersistentFlags()
 
-	tokenFlag := manager.options.Token.GetMainFlag()
-	flags.AddFlag(tokenFlag)
-	_ = command.MarkPersistentFlagRequired(tokenFlag.Name)
-
+	flags.AddFlag(manager.options.Token.GetFlag("token", util.FlagRequired, util.FlagHidden))
 	flags.AddFlag(manager.options.Host.GetMainFlag())
 	flags.AddFlag(manager.options.Timeout.GetMainFlag())
 }

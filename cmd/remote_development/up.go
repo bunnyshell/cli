@@ -2,87 +2,52 @@ package remote_development
 
 import (
 	"bunnyshell.com/cli/pkg/config"
-	"bunnyshell.com/cli/pkg/environment"
+	"bunnyshell.com/cli/pkg/k8s/bridge"
+	"bunnyshell.com/cli/pkg/lib"
 	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
-	remoteDevMutagenConfig "bunnyshell.com/dev/pkg/mutagen/config"
+	"bunnyshell.com/cli/pkg/remote_development/action"
+	upAction "bunnyshell.com/cli/pkg/remote_development/action/up"
+	remoteDevConfig "bunnyshell.com/cli/pkg/remote_development/config"
 	"github.com/spf13/cobra"
-	"github.com/thediveo/enumflag/v2"
 )
-
-type SyncMode enumflag.Flag
-
-const (
-	None SyncMode = iota
-	TwoWaySafe
-	TwoWayResolved
-	OneWaySafe
-	OneWayReplica
-)
-
-var SyncModeToMutagenMode = map[SyncMode]remoteDevMutagenConfig.Mode{
-	None:           remoteDevMutagenConfig.None,
-	TwoWaySafe:     remoteDevMutagenConfig.TwoWaySafe,
-	TwoWayResolved: remoteDevMutagenConfig.TwoWayResolved,
-	OneWaySafe:     remoteDevMutagenConfig.OneWaySafe,
-	OneWayReplica:  remoteDevMutagenConfig.OneWayReplica,
-}
-
-var SyncModeIds = map[SyncMode][]string{
-	None:           {string(remoteDevMutagenConfig.None)},
-	TwoWaySafe:     {string(remoteDevMutagenConfig.TwoWaySafe)},
-	TwoWayResolved: {string(remoteDevMutagenConfig.TwoWayResolved)},
-	OneWaySafe:     {string(remoteDevMutagenConfig.OneWaySafe)},
-	OneWayReplica:  {string(remoteDevMutagenConfig.OneWayReplica)},
-}
 
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	var (
-		syncMode       SyncMode = TwoWayResolved
-		localSyncPath  string
-		remoteSyncPath string
-		resourcePath   string
+	resourceLoader := bridge.NewResourceLoader()
+	upOptions := upAction.NewOptions(remoteDevConfig.NewManager(), resourceLoader)
 
-		portMappings []string
-
-		waitTimeout int64
-		noTTY       bool
-	)
+	noTTY := false
 
 	command := &cobra.Command{
 		Use: "up",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := upOptions.Validate(); err != nil {
+				return err
+			}
+
+			return lib.OnlyStylish(cmd, args)
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
-			remoteDevelopment := remoteDevPkg.NewRemoteDevelopment()
+			upOptions.SetCommand(args)
 
-			if localSyncPath != "" {
-				remoteDevelopment.WithLocalSyncPath(localSyncPath)
+			if err := resourceLoader.Load(settings.Profile); err != nil {
+				return err
 			}
 
-			if remoteSyncPath != "" {
-				remoteDevelopment.WithRemoteSyncPath(remoteSyncPath)
-			}
-
-			if len(portMappings) > 0 {
-				remoteDevelopment.WithPortMappings(portMappings)
-			}
-
-			environmentResource, err := environment.NewFromWizard(&settings.Profile.Context, resourcePath)
+			upParameters, err := upOptions.ToParameters()
 			if err != nil {
 				return err
 			}
 
-			remoteDevelopment.
-				WithEnvironmentResource(environmentResource).
-				WithWaitTimeout(waitTimeout).
-				WithSyncMode(SyncModeToMutagenMode[syncMode])
+			upAction := action.NewUp(*resourceLoader.Environment)
 
-			// init
-			if err = remoteDevelopment.Up(); err != nil {
+			if err = upAction.Run(upParameters); err != nil {
 				return err
 			}
 
@@ -92,12 +57,12 @@ func init() {
 
 			// start
 			if !noTTY {
-				if err = remoteDevelopment.StartSSHTerminal(); err != nil {
+				if err = upAction.StartSSHTerminal(); err != nil {
 					return err
 				}
 			}
 
-			return remoteDevelopment.Wait()
+			return upAction.Wait()
 		},
 	}
 
@@ -108,25 +73,9 @@ func init() {
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 	flags.AddFlag(options.ServiceComponent.GetFlag("component"))
 
-	flags.StringVarP(&localSyncPath, "local-sync-path", "l", "", "Local folder path to sync")
-	flags.StringVarP(&remoteSyncPath, "remote-sync-path", "r", "", "Remote folder path to sync")
-	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
-	flags.StringSliceVarP(
-		&portMappings,
-		"port-forward",
-		"f",
-		portMappings,
-		"Port forward: '8080>3000'\nReverse port forward: '9003<9003'\nComma separated: '8080>3000,9003<9003'",
-	)
+	upOptions.UpdateFlagSet(command, flags)
 
 	flags.BoolVar(&noTTY, "no-tty", false, "Start remote development with no SSH terminal")
-	flags.Int64VarP(&waitTimeout, "wait-timeout", "w", 120, "Time to wait for the pod to be ready")
-
-	flags.Var(
-		enumflag.New(&syncMode, "sync-mode", SyncModeIds, enumflag.EnumCaseSensitive),
-		"sync-mode",
-		"Mutagen sync mode.\nAvailable sync modes: none, two-way-safe, two-way-resolved, one-way-safe, one-way-replica.\n\"none\" sync mode disables mutagen.",
-	)
 
 	mainCmd.AddCommand(command)
 }

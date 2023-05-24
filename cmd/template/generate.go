@@ -1,13 +1,15 @@
 package template
 
 import (
+	"bunnyshell.com/cli/pkg/config/option"
 	"bunnyshell.com/cli/pkg/helper/template"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	directory := "."
+	directory := ""
 
 	command := &cobra.Command{
 		Use:     "generate",
@@ -29,9 +31,17 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.StringVar(&directory, "directory", directory, "Directory to generate the template in")
-	_ = command.MarkFlagRequired("directory")
-	_ = command.MarkFlagDirname("directory")
+	flags.AddFlag(getDirectoryOption(&directory).GetFlag("directory", util.FlagRequired, util.FlagDirname))
 
 	mainCmd.AddCommand(command)
+}
+
+func getDirectoryOption(value *string) *option.String {
+	help := "New directory in which to generate the template"
+
+	option := option.NewStringOption(value)
+
+	option.AddFlagWithExtraHelp("directory", "Directory to generate the template in", help)
+
+	return option
 }

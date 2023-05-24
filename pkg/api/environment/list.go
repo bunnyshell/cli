@@ -32,7 +32,7 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.Type, "type", lo.Type, "Filter by Type")
 	flags.StringVar(&lo.ClusterStatus, "clusterStatus", lo.ClusterStatus, "Filter by Cluster Status")
 	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
-	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8s Cluster")
+	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8SIntegrationID")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }

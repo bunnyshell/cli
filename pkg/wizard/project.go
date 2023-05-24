@@ -7,6 +7,30 @@ import (
 	"bunnyshell.com/sdk"
 )
 
+func (w *Wizard) HasProject() bool {
+	return w.profile.Context.Project != ""
+}
+
+func (w *Wizard) GetProject() (*sdk.ProjectItem, error) {
+	if !w.HasProject() {
+		itemCol, err := w.SelectProject()
+		if err != nil {
+			return nil, err
+		}
+
+		w.profile.Context.Project = itemCol.GetId()
+	}
+
+	item, err := project.Get(project.NewItemOptions(w.profile.Context.Project))
+	if err != nil {
+		return nil, err
+	}
+
+	w.profile.Context.Organization = item.GetOrganization()
+
+	return item, nil
+}
+
 func (w *Wizard) SelectProject() (*sdk.ProjectCollection, error) {
 	return w.selectProject(1)
 }
@@ -19,7 +43,7 @@ func (w *Wizard) selectProject(page int32) (*sdk.ProjectCollection, error) {
 
 	embedded, ok := model.GetEmbeddedOk()
 	if !ok {
-		return nil, ErrEmptyListing
+		return nil, fmt.Errorf("%s %w", "projects", ErrEmptyListing)
 	}
 
 	collectionItems := embedded.GetItem()

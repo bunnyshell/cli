@@ -7,6 +7,30 @@ import (
 	"bunnyshell.com/sdk"
 )
 
+func (w *Wizard) HasEnvironment() bool {
+	return w.profile.Context.Environment != ""
+}
+
+func (w *Wizard) GetEnvironment() (*sdk.EnvironmentItem, error) {
+	if !w.HasEnvironment() {
+		itemCol, err := w.SelectEnvironment()
+		if err != nil {
+			return nil, err
+		}
+
+		w.profile.Context.Environment = itemCol.GetId()
+	}
+
+	item, err := environment.Get(environment.NewItemOptions(w.profile.Context.Environment))
+	if err != nil {
+		return nil, err
+	}
+
+	w.profile.Context.Project = item.GetProject()
+
+	return item, nil
+}
+
 func (w *Wizard) SelectEnvironment() (*sdk.EnvironmentCollection, error) {
 	return w.selectEnvironment(1)
 }
@@ -19,7 +43,7 @@ func (w *Wizard) selectEnvironment(page int32) (*sdk.EnvironmentCollection, erro
 
 	embedded, ok := model.GetEmbeddedOk()
 	if !ok {
-		return nil, ErrEmptyListing
+		return nil, fmt.Errorf("%s %w", "environments", ErrEmptyListing)
 	}
 
 	collectionItems := embedded.GetItem()

@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	options := config.GetOptions()
 	settings := config.GetSettings()
 
 	definitionOptions := template.NewDefinitionOptions("")
@@ -21,8 +20,6 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			definitionOptions.ID = settings.Profile.Context.Environment
-
 			definition, err := template.Definition(definitionOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
@@ -40,9 +37,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.Environment.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
+	flags.AddFlag(getIDOption(&definitionOptions.ID).GetRequiredFlag("id"))
 
 	definitionOptions.UpdateFlagSet(flags)
 

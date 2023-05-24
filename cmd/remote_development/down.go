@@ -2,8 +2,11 @@ package remote_development
 
 import (
 	"bunnyshell.com/cli/pkg/config"
-	"bunnyshell.com/cli/pkg/environment"
-	remoteDevPkg "bunnyshell.com/cli/pkg/remote_development"
+	"bunnyshell.com/cli/pkg/k8s/bridge"
+	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/remote_development/action"
+	"bunnyshell.com/cli/pkg/remote_development/action/down"
+	remoteDevConfig "bunnyshell.com/cli/pkg/remote_development/config"
 	"github.com/spf13/cobra"
 )
 
@@ -11,24 +14,29 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	var resourcePath string
+	resourceLoader := bridge.NewResourceLoader()
+	downOptions := down.NewOptions(remoteDevConfig.NewManager(), resourceLoader)
 
 	command := &cobra.Command{
 		Use: "down",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
-		RunE: func(cmd *cobra.Command, args []string) error {
-			remoteDevelopment := remoteDevPkg.NewRemoteDevelopment()
+		PreRunE: lib.OnlyStylish,
 
-			environmentResource, err := environment.NewFromWizard(&settings.Profile.Context, resourcePath)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := resourceLoader.Load(settings.Profile); err != nil {
+				return err
+			}
+
+			downParameters, err := downOptions.ToParameters()
 			if err != nil {
 				return err
 			}
 
-			remoteDevelopment.WithEnvironmentResource(environmentResource)
+			downAction := action.NewDown(*resourceLoader.Environment)
 
-			return remoteDevelopment.Down()
+			return downAction.Run(downParameters)
 		},
 	}
 
@@ -39,7 +47,7 @@ func init() {
 	flags.AddFlag(options.Environment.GetFlag("environment"))
 	flags.AddFlag(options.ServiceComponent.GetFlag("component"))
 
-	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
+	downOptions.UpdateFlagSet(command, flags)
 
 	mainCmd.AddCommand(command)
 }

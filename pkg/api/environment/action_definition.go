@@ -18,12 +18,12 @@ type DefinitionItem struct {
 }
 
 type DefinitionOptions struct {
-	common.ActionOptions
+	common.ItemOptions
 }
 
 func NewDefinitionOptions(id string) *DefinitionOptions {
 	return &DefinitionOptions{
-		ActionOptions: *common.NewActionOptions(id),
+		ItemOptions: *common.NewItemOptions(id),
 	}
 }
 
