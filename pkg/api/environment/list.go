@@ -20,6 +20,8 @@ type ListOptions struct {
 	Type            string
 	ClusterStatus   string
 	OperationStatus string
+
+	Search string
 }
 
 func NewListOptions() *ListOptions {
@@ -33,6 +35,7 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.ClusterStatus, "clusterStatus", lo.ClusterStatus, "Filter by Cluster Status")
 	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
 	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8SIntegrationID")
+	flags.StringVar(&lo.Search, "search", lo.Search, "Search by name")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }
@@ -64,6 +67,10 @@ func applyOptions(request sdk.ApiEnvironmentListRequest, options *ListOptions) s
 
 	if options.Page > 1 {
 		request = request.Page(options.Page)
+	}
+
+	if options.Search != "" {
+		request = request.Search(options.Search)
 	}
 
 	if options.Organization != "" {
