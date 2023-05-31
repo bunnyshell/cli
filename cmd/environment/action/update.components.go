@@ -45,8 +45,7 @@ func init() {
 	editSource := &EditComponentsSource{}
 
 	command := &cobra.Command{
-		Use:     "update-components",
-		Aliases: []string{"upcomp"},
+		Use: "update-components",
 
 		Example: commandExample,
 
@@ -164,6 +163,10 @@ func fillWithGitSpec(editSource *EditComponentsSource, editOptions *environment.
 	if editSource.Component != "" {
 		editOptions.Component = editSource.Component
 
+		return nil
+	}
+
+	if editSource.Source == "" {
 		return nil
 	}
 
