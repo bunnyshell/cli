@@ -11,6 +11,7 @@ import (
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/progress"
+	"bunnyshell.com/dev/pkg/build"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
@@ -78,7 +79,13 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 			return fmt.Errorf("%w and cannot be interactively supplied in non-stylish mode", errK8sRequired)
 		}
 
-		kubernetesIntegration, err = interactive.Ask("Deployment requires a Kubernetes integration", interactive.AssertMinimumLength(1))
+		question := interactive.NewInput("Deployment requires a Kubernetes Integration")
+		question.Help = fmt.Sprintf(
+			`Find available kubernetes integrations with "%s k8s list"`,
+			build.Name,
+		)
+
+		kubernetesIntegration, err = question.AskString()
 		if err != nil {
 			return err
 		}
