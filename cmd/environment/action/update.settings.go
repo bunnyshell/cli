@@ -1,0 +1,42 @@
+package action
+
+import (
+	"bunnyshell.com/cli/pkg/api/environment"
+	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/lib"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	options := config.GetOptions()
+	settings := config.GetSettings()
+
+	editSettingsOptions := environment.NewEditSettingsOptions("")
+
+	command := &cobra.Command{
+		Use: "update-settings",
+
+		ValidArgsFunction: cobra.NoFileCompletions,
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			editSettingsOptions.ID = settings.Profile.Context.Environment
+
+			model, err := environment.EditSettings(editSettingsOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+
+			return lib.FormatCommandData(cmd, model)
+		},
+	}
+
+	flags := command.Flags()
+
+	idFlag := options.Environment.GetFlag("id")
+	flags.AddFlag(idFlag)
+	_ = command.MarkFlagRequired(idFlag.Name)
+
+	editSettingsOptions.UpdateFlagSet(flags)
+
+	mainCmd.AddCommand(command)
+}

@@ -44,40 +44,40 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	editOptions := environment.NewEditOptions()
+	editConfigurationOptions := environment.NewEditConfigurationOptions("")
 	editSource := EditSource{}
 
 	command := &cobra.Command{
-		Use: "update",
+		Use: "update-configuration",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			editOptions.ID = settings.Profile.Context.Environment
+			editConfigurationOptions.ID = settings.Profile.Context.Environment
 
-			if err := parseEditOptions(editSource, editOptions); err != nil {
+			if err := parseEditConfigurationOptions(editSource, editConfigurationOptions); err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			model, err := environment.Edit(editOptions)
+			model, err := environment.EditConfiguration(editConfigurationOptions)
 			if err != nil {
 				var apiError api.Error
 
 				if errors.As(err, &apiError) {
-					return handleEditErrors(cmd, apiError, editOptions)
+					return handleEditErrors(cmd, apiError, editConfigurationOptions)
 				}
 
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			if !editOptions.WithDeploy {
+			if !editConfigurationOptions.WithDeploy {
 				return lib.FormatCommandData(cmd, model)
 			}
 
-			deployOptions := &editOptions.DeployOptions
+			deployOptions := &editConfigurationOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			return handleDeploy(cmd, deployOptions, "updated", editOptions.K8SIntegration)
+			return handleDeploy(cmd, deployOptions, "updated", editConfigurationOptions.K8SIntegration)
 		},
 	}
 
@@ -87,14 +87,13 @@ func init() {
 	flags.AddFlag(idFlag)
 	_ = command.MarkFlagRequired(idFlag.Name)
 
-	editOptions.UpdateFlagSet(flags)
-
+	editConfigurationOptions.UpdateFlagSet(flags)
 	editSource.UpdateCommandFlags(command)
 
 	mainCmd.AddCommand(command)
 }
 
-func handleEditErrors(cmd *cobra.Command, apiError api.Error, editOptions *environment.EditOptions) error {
+func handleEditErrors(cmd *cobra.Command, apiError api.Error, editOptions *environment.EditConfigurationOptions) error {
 	genesisName := getEditGenesisName(editOptions)
 
 	if len(apiError.Violations) == 0 {
@@ -108,16 +107,18 @@ func handleEditErrors(cmd *cobra.Command, apiError api.Error, editOptions *envir
 	return lib.ErrGeneric
 }
 
-func getEditGenesisName(editOptions *environment.EditOptions) string {
-	if editOptions.Genesis.FromGitSpec != nil {
+func getEditGenesisName(editOptions *environment.EditConfigurationOptions) string {
+	configuration := editOptions.Configuration
+
+	if configuration.FromGitSpec != nil {
 		return "--from-git"
 	}
 
-	if editOptions.Genesis.FromTemplate != nil {
+	if configuration.FromTemplate != nil {
 		return "--from-template"
 	}
 
-	if editOptions.Genesis.FromString != nil {
+	if configuration.FromString != nil {
 		return "--from-path"
 	}
 
@@ -125,14 +126,17 @@ func getEditGenesisName(editOptions *environment.EditOptions) string {
 }
 
 //nolint:dupl
-func parseEditOptions(editSource EditSource, editOptions *environment.EditOptions) error {
-	editOptions.Genesis = &sdk.EnvironmentEditActionGenesis{}
+func parseEditConfigurationOptions(
+	editSource EditSource,
+	editConfigurationOptions *environment.EditConfigurationOptions,
+) error {
+	editConfigurationOptions.Configuration = &sdk.EnvironmentEditConfigurationConfiguration{}
 
 	if editSource.Git != "" {
 		fromGitSpec := sdk.NewFromGitSpec()
 		fromGitSpec.Spec = &editSource.Git
 
-		editOptions.Genesis.FromGitSpec = fromGitSpec
+		editConfigurationOptions.Configuration.FromGitSpec = fromGitSpec
 
 		return nil
 	}
@@ -141,7 +145,7 @@ func parseEditOptions(editSource EditSource, editOptions *environment.EditOption
 		fromTemplate := sdk.NewFromTemplate()
 		fromTemplate.Template = &editSource.TemplateID
 
-		editOptions.Genesis.FromTemplate = fromTemplate
+		editConfigurationOptions.Configuration.FromTemplate = fromTemplate
 
 		return nil
 	}
@@ -157,7 +161,7 @@ func parseEditOptions(editSource EditSource, editOptions *environment.EditOption
 		content := string(bytes)
 		fromString.Yaml = &content
 
-		editOptions.Genesis.FromString = fromString
+		editConfigurationOptions.Configuration.FromString = fromString
 
 		return nil
 	}
@@ -168,7 +172,7 @@ func parseEditOptions(editSource EditSource, editOptions *environment.EditOption
 		fromGit.Branch = &editSource.GitBranch
 		fromGit.YamlPath = &editSource.GitPath
 
-		editOptions.Genesis.FromGit = fromGit
+		editConfigurationOptions.Configuration.FromGit = fromGit
 
 		return nil
 	}
