@@ -18,6 +18,8 @@ type EditComponentOptions struct {
 }
 
 type EditComponentsData struct {
+	K8SIntegration string
+
 	Component string
 
 	SourceRepository string
@@ -34,7 +36,11 @@ func NewEditComponentOptions() *EditComponentOptions {
 }
 
 func (eo *EditComponentOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	data := eo.EditComponentsData
+
 	flags.BoolVar(&eo.WithDeploy, "deploy", eo.WithDeploy, "Deploy the environment after update")
+
+	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
 
 	eo.DeployOptions.UpdateFlagSet(flags)
 }

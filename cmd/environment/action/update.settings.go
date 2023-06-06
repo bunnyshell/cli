@@ -4,6 +4,7 @@ import (
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -32,9 +33,7 @@ func init() {
 
 	flags := command.Flags()
 
-	idFlag := options.Environment.GetFlag("id")
-	flags.AddFlag(idFlag)
-	_ = command.MarkFlagRequired(idFlag.Name)
+	flags.AddFlag(options.Environment.GetFlag("id", util.FlagRequired))
 
 	editSettingsOptions.UpdateFlagSet(flags)
 

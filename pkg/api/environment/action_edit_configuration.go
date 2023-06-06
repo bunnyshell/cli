@@ -39,6 +39,7 @@ func (eco *EditConfigurationOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
 
 	flags.BoolVar(&eco.WithDeploy, "deploy", eco.WithDeploy, "Deploy the environment after update")
+
 	eco.DeployOptions.UpdateFlagSet(flags)
 }
 
