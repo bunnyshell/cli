@@ -10,6 +10,7 @@ import (
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
@@ -95,15 +96,14 @@ func init() {
 
 	flags := command.Flags()
 
-	envFlag := options.Environment.AddFlag("environment", "Update components for environment")
-	flags.AddFlag(envFlag)
-	_ = command.MarkFlagRequired(envFlag.Name)
+	flags.AddFlag(options.Environment.AddFlag("environment", "Update components for environment", util.FlagRequired))
 
 	editOptions.UpdateFlagSet(flags)
 
 	flags.StringVar(&editSource.Target, "target", editSource.Target, "Target git spec (e.g. https://github.com/fork/templates@main)")
 
-	_ = command.MarkFlagRequired("target")
+	targetFlag := flags.Lookup("target")
+	util.MarkFlagRequiredWithHelp(targetFlag, "Update components git repository and branch. Example: https://github.com/my-fork/my-repo@my-branch")
 
 	flags.StringVar(&editSource.Source, "source", editSource.Source, "Filter by git spec (e.g. https://github.com/bunnyshell/templates@main)")
 	flags.StringVar(&editSource.Component, "component-name", editSource.Component, "Filter by component name")
