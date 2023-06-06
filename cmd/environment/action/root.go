@@ -70,16 +70,31 @@ func handleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, 
 }
 
 func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kubernetesIntegration string) error {
-	if err := checkKubernetesIntegration(deployOptions, kubernetesIntegration); err != nil {
-		if !errors.Is(err, errK8sRequired) {
-			return err
+	model, err := environment.Get(environment.NewItemOptions(deployOptions.ID))
+	if err != nil {
+		return err
+	}
+
+	environmentKubernetesIntegration := model.GetKubernetesIntegration()
+	if environmentKubernetesIntegration != "" {
+		if kubernetesIntegration == "" {
+			return nil
 		}
 
+		if environmentKubernetesIntegration == kubernetesIntegration {
+			return nil
+		}
+
+		return fmt.Errorf("%w: %s", errOtherK8s, environmentKubernetesIntegration)
+	}
+
+	if kubernetesIntegration == "" {
 		if !config.GetSettings().IsStylish() {
 			return fmt.Errorf("%w and cannot be interactively supplied in non-stylish mode", errK8sRequired)
 		}
 
 		question := interactive.NewInput("Deployment requires a Kubernetes Integration")
+		question.SetValidate(interactive.AssertMinimumLength(1))
 		question.Help = fmt.Sprintf(
 			`Find available kubernetes integrations with "%s k8s list"`,
 			build.Name,
@@ -95,32 +110,9 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 
 	editSettingsOptions.EnvironmentEditSettings.KubernetesIntegration.Set(&kubernetesIntegration)
 
-	_, err := environment.EditSettings(editSettingsOptions)
+	_, err = environment.EditSettings(editSettingsOptions)
 
 	return err
-}
-
-func checkKubernetesIntegration(deployOptions *environment.DeployOptions, kubernetesIntegration string) error {
-	model, err := environment.Get(environment.NewItemOptions(deployOptions.ID))
-	if err != nil {
-		return err
-	}
-
-	modelKubernetesIntegration := model.GetKubernetesIntegration()
-
-	if kubernetesIntegration == modelKubernetesIntegration {
-		if modelKubernetesIntegration == "" {
-			return errK8sRequired
-		}
-
-		return nil
-	}
-
-	if kubernetesIntegration == "" {
-		return nil
-	}
-
-	return fmt.Errorf("%w: %s", errOtherK8s, model.GetKubernetesIntegration())
 }
 
 func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string) error {
