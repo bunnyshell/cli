@@ -61,6 +61,8 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	)
 	flags.AddFlag(rdevFlag)
 	rdevFlag.NoOptDefVal = "true"
+
+	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
 }
 
 func EditSettings(options *EditSettingsOptions) (*sdk.EnvironmentItem, error) {
