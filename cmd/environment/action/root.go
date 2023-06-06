@@ -7,11 +7,11 @@ import (
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/api/component/endpoint"
 	"bunnyshell.com/cli/pkg/api/environment"
+	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/progress"
-	"bunnyshell.com/dev/pkg/build"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
@@ -96,7 +96,7 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 		question := interactive.NewInput("Deployment requires a Kubernetes Integration")
 		question.SetValidate(interactive.AssertMinimumLength(1))
 		question.Help = fmt.Sprintf(
-			`Find available kubernetes integrations with "%s k8s list"`,
+			`Find available Kubernetes Integrations with "%s k8s list"`,
 			build.Name,
 		)
 
