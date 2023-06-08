@@ -19,9 +19,9 @@ import (
 var mainCmd = &cobra.Command{}
 
 var (
-	errOtherK8s = errors.New("environment has a different kubernetes integration")
+	errOtherK8s = errors.New("environment has a different Kubernetes Integration")
 
-	errK8sRequired = errors.New("environment requires a kubernetes integration for deployment")
+	errK8sRequired = errors.New("environment requires a Kubernetes Integration for deployment")
 )
 
 func GetMainCommand() *cobra.Command {
@@ -93,7 +93,7 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 			return fmt.Errorf("%w and cannot be interactively supplied in non-stylish mode", errK8sRequired)
 		}
 
-		question := interactive.NewInput("Deployment requires a Kubernetes Integration")
+		question := interactive.NewInput("Deployment requires a Kubernetes Integration:")
 		question.SetValidate(interactive.AssertMinimumLength(1))
 		question.Help = fmt.Sprintf(
 			`Find available Kubernetes Integrations with "%s k8s list"`,
