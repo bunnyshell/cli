@@ -31,6 +31,23 @@ type CreateSource struct {
 	GitPath   string
 }
 
+func (createSource *CreateSource) UpdateCommandFlags(command *cobra.Command) {
+	flags := command.Flags()
+
+	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
+	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a TemplateID during creation")
+	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local bunnyshell.yaml during creation")
+	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
+	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git branch for the environment")
+	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git path for the environment")
+
+	command.MarkFlagsMutuallyExclusive("from-git", "from-template", "from-path", "from-git-repo")
+	command.MarkFlagsRequiredTogether("from-git-branch", "from-git-repo")
+	command.MarkFlagsRequiredTogether("from-git-path", "from-git-repo")
+
+	_ = command.MarkFlagFilename("from-path", "yaml", "yml")
+}
+
 func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
@@ -49,7 +66,9 @@ func init() {
 			}
 
 			if createOptions.WithDeploy && createOptions.GetKubernetesIntegration() == "" {
-				return errK8SIntegrationNotProvided
+				if !settings.IsStylish() {
+					return errK8SIntegrationNotProvided
+				}
 			}
 
 			return validateActionOptions(&createOptions.ActionOptions)
@@ -67,7 +86,7 @@ func init() {
 				var apiError api.Error
 
 				if errors.As(err, &apiError) {
-					return handleErrors(cmd, apiError, createOptions)
+					return handleCreateErrors(cmd, apiError, createOptions)
 				}
 
 				return lib.FormatCommandError(cmd, err)
@@ -77,29 +96,10 @@ func init() {
 				return lib.FormatCommandData(cmd, model)
 			}
 
-			cmd.Printf("\nEnvironment %s successfully created... deploying...\n", model.GetId())
-
 			deployOptions := &createOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			event, err := environment.Deploy(deployOptions)
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-
-			if deployOptions.WithoutPipeline {
-				return lib.FormatCommandData(cmd, event)
-			}
-
-			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-				cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
-
-				return err
-			}
-
-			cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
-
-			return showEnvironmentEndpoints(cmd, deployOptions.ID)
+			return handleDeploy(cmd, deployOptions, "created", createOptions.GetKubernetesIntegration())
 		},
 	}
 
@@ -114,25 +114,13 @@ func init() {
 
 	createOptions.UpdateFlagSet(flags)
 
-	flags.StringVar(&createSource.Git, "from-git", createSource.Git, "Use a template git repository during creation")
-	flags.StringVar(&createSource.TemplateID, "from-template", createSource.TemplateID, "Use a TemplateID during creation")
-	flags.StringVar(&createSource.YamlPath, "from-path", createSource.YamlPath, "Use a local bunnyshell.yaml during creation")
-
-	flags.StringVar(&createSource.GitRepo, "from-git-repo", createSource.GitRepo, "Git repository for the environment")
-	flags.StringVar(&createSource.GitBranch, "from-git-branch", createSource.GitBranch, "Git repository for the environment")
-	flags.StringVar(&createSource.GitPath, "from-git-path", createSource.GitPath, "Git repository for the environment")
-
-	command.MarkFlagsMutuallyExclusive("from-git", "from-template", "from-path", "from-git-repo")
-	command.MarkFlagsRequiredTogether("from-git-branch", "from-git-repo")
-	command.MarkFlagsRequiredTogether("from-git-path", "from-git-repo")
-
-	_ = command.MarkFlagFilename("from-path", "yaml", "yml")
+	createSource.UpdateCommandFlags(command)
 
 	mainCmd.AddCommand(command)
 }
 
-func handleErrors(cmd *cobra.Command, apiError api.Error, createOptions *environment.CreateOptions) error {
-	genesisName := getGenesisName(createOptions)
+func handleCreateErrors(cmd *cobra.Command, apiError api.Error, createOptions *environment.CreateOptions) error {
+	genesisName := getCreateGenesisName(createOptions)
 
 	if len(apiError.Violations) == 0 {
 		return apiError
@@ -145,7 +133,7 @@ func handleErrors(cmd *cobra.Command, apiError api.Error, createOptions *environ
 	return lib.ErrGeneric
 }
 
-func getGenesisName(createOptions *environment.CreateOptions) string {
+func getCreateGenesisName(createOptions *environment.CreateOptions) string {
 	if createOptions.Genesis.FromGitSpec != nil {
 		return "--from-git"
 	}

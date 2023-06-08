@@ -36,6 +36,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulatePipelineCollection(writer, dataType)
 	case *sdk.PaginatedComponentGitCollection:
 		tabulateComponentGitCollection(writer, dataType)
+	case []sdk.ComponentGitCollection:
+		tabulateComponentGitList(writer, dataType)
 	case *sdk.PaginatedTemplateCollection:
 		tabulateTemplateCollection(writer, dataType)
 	case *sdk.PaginatedTemplatesRepositoryCollection:

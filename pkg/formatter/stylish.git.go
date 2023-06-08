@@ -30,6 +30,29 @@ func tabulateComponentGitCollection(writer *tabwriter.Writer, data *sdk.Paginate
 	}
 }
 
+func tabulateComponentGitList(writer *tabwriter.Writer, data []sdk.ComponentGitCollection) {
+	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\n", "ComponentID", "Name", "Repository", "Branch", "Path", "Deployed")
+
+	for _, item := range data {
+		deployed := "latest"
+
+		if item.GetRefSha() != item.GetDeployedSha() {
+			deployed = "outdated"
+		}
+
+		fmt.Fprintf(
+			writer,
+			"%v\t %v\t %v\t %v\t %v\t %v\n",
+			item.GetId(),
+			item.GetName(),
+			item.GetRepository(),
+			item.GetRefName(),
+			item.GetPath(),
+			deployed,
+		)
+	}
+}
+
 func tabulateComponentGitItem(writer *tabwriter.Writer, item *sdk.ComponentGitItem) {
 	fmt.Fprintf(writer, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
 	fmt.Fprintf(writer, "%v\t %v\n", "ComponentID", item.GetId())
