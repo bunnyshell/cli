@@ -6,7 +6,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 require (
 	bunnyshell.com/dev v0.5.5
-	bunnyshell.com/sdk v0.14.2
+	bunnyshell.com/sdk v0.15.0
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/briandowns/spinner v1.23.0
 	github.com/fatih/color v1.15.0
