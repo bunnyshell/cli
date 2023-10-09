@@ -11,7 +11,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	startOptions := environment.NewStartOptions("")
+	startOptions := environment.NewStartOptions("", []string{})
 
 	command := &cobra.Command{
 		Use: "start",
@@ -24,6 +24,8 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			startOptions.ID = settings.Profile.Context.Environment
+
+			startOptions.ProcessCommand(cmd)
 
 			event, err := environment.Start(startOptions)
 			if err != nil {

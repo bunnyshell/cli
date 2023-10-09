@@ -7,16 +7,25 @@ import (
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
+	"github.com/spf13/pflag"
 )
 
 type StartOptions struct {
-	common.ActionOptions
+	common.PartialActionOptions
+
+	WithDependencies bool
 }
 
-func NewStartOptions(id string) *StartOptions {
+func NewStartOptions(id string, components []string) *StartOptions {
 	return &StartOptions{
-		ActionOptions: *common.NewActionOptions(id),
+		PartialActionOptions: *common.NewPartialActionOptions(id, len(components) > 0, components),
 	}
+}
+
+func (options *StartOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	options.PartialActionOptions.UpdateFlagSet(flags)
+
+	flags.BoolVar(&options.WithDependencies, "with-dependencies", options.WithDependencies, "Start the component dependencies too.")
 }
 
 func Start(options *StartOptions) (*sdk.EventItem, error) {
@@ -34,7 +43,12 @@ func StartRaw(options *StartOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentStart(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentStart(ctx, options.ID).
+		EnvironmentPartialStartAction(sdk.EnvironmentPartialStartAction{
+			IsPartial:        &options.IsPartial,
+			Components:       options.Components,
+			WithDependencies: &options.WithDependencies,
+		})
 
 	return request.Execute()
 }

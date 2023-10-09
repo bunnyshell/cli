@@ -27,7 +27,7 @@ func NewEditConfigurationOptions(environment string) *EditConfigurationOptions {
 	environmentEditConfiguration := sdk.NewEnvironmentEditConfiguration()
 
 	return &EditConfigurationOptions{
-		DeployOptions: *NewDeployOptions(environment),
+		DeployOptions: *NewDeployOptions(environment, false, []string{}),
 
 		EnvironmentEditConfiguration: *environmentEditConfiguration,
 	}

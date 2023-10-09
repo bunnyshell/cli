@@ -11,7 +11,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	stopOptions := environment.NewStopOptions("")
+	stopOptions := environment.NewStopOptions("", []string{})
 
 	command := &cobra.Command{
 		Use: "stop",
@@ -24,6 +24,8 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stopOptions.ID = settings.Profile.Context.Environment
+
+			stopOptions.ProcessCommand(cmd)
 
 			event, err := environment.Stop(stopOptions)
 			if err != nil {

@@ -31,7 +31,7 @@ type EditComponentsData struct {
 
 func NewEditComponentOptions() *EditComponentOptions {
 	return &EditComponentOptions{
-		DeployOptions: *NewDeployOptions(""),
+		DeployOptions: *NewDeployOptions("", false, []string{}),
 	}
 }
 

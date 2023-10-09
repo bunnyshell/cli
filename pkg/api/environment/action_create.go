@@ -24,7 +24,7 @@ func NewCreateOptions() *CreateOptions {
 	environmentCreateAction.SetEphemeralKubernetesIntegration("")
 
 	return &CreateOptions{
-		DeployOptions: *NewDeployOptions(""),
+		DeployOptions: *NewDeployOptions("", false, []string{}),
 
 		EnvironmentCreateAction: *environmentCreateAction,
 	}

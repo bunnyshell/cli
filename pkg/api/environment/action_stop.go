@@ -10,12 +10,12 @@ import (
 )
 
 type StopOptions struct {
-	common.ActionOptions
+	common.PartialActionOptions
 }
 
-func NewStopOptions(id string) *StopOptions {
+func NewStopOptions(id string, components []string) *StopOptions {
 	return &StopOptions{
-		ActionOptions: *common.NewActionOptions(id),
+		PartialActionOptions: *common.NewPartialActionOptions(id, len(components) > 0, components),
 	}
 }
 
@@ -34,7 +34,11 @@ func StopRaw(options *StopOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentStop(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentStop(ctx, options.ID).
+		EnvironmentPartialAction(sdk.EnvironmentPartialAction{
+			IsPartial:  &options.IsPartial,
+			Components: options.Components,
+		})
 
 	return request.Execute()
 }

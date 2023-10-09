@@ -14,7 +14,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	deployOptions := environment.NewDeployOptions("")
+	deployOptions := environment.NewDeployOptions("", false, []string{})
 	deployData := DeployData{}
 
 	command := &cobra.Command{
@@ -28,6 +28,8 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deployOptions.ID = settings.Profile.Context.Environment
+
+			deployOptions.ProcessCommand(cmd)
 
 			return handleDeploy(cmd, deployOptions, "", deployData.K8SIntegration)
 		},
