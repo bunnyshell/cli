@@ -34,7 +34,7 @@ func ResourcesRaw(options *ResourceOptions) ([]sdk.ComponentResourceItem, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentApi.ComponentResources(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).ComponentAPI.ComponentResources(ctx, options.ID)
 
 	return request.Execute()
 }

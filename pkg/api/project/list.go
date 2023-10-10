@@ -45,7 +45,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedProjectCollection, *http.Respo
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ProjectApi.ProjectList(ctx)
+	request := lib.GetAPIFromProfile(profile).ProjectAPI.ProjectList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

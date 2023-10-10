@@ -50,7 +50,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedComponentEndpointCollection, *
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentEndpointApi.ComponentEndpointList(ctx)
+	request := lib.GetAPIFromProfile(profile).ComponentEndpointAPI.ComponentEndpointList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

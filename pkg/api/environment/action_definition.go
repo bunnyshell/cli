@@ -50,7 +50,7 @@ func DefinitionRaw(options *DefinitionOptions) (DefinitionData, *http.Response, 
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentDefinition(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDefinition(ctx, options.ID)
 
 	return request.Execute()
 }

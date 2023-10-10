@@ -48,7 +48,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedEventCollection, *http.Respons
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EventApi.EventList(ctx)
+	request := lib.GetAPIFromProfile(profile).EventAPI.EventList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

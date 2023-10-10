@@ -80,7 +80,7 @@ func EditSettingsRaw(options *EditSettingsOptions) (*sdk.EnvironmentItem, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentEditSettings(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentEditSettings(ctx, options.ID)
 
 	return applyEditSettingsOptions(request, options).Execute()
 }

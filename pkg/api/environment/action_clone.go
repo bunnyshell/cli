@@ -46,7 +46,7 @@ func CloneRaw(options *CloneOptions) (*sdk.EnvironmentItem, *http.Response, erro
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentClone(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentClone(ctx, options.ID)
 
 	request = request.EnvironmentCloneAction(options.EnvironmentCloneAction)
 

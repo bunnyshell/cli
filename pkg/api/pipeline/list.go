@@ -48,7 +48,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedPipelineCollection, *http.Resp
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).PipelineApi.PipelineList(ctx)
+	request := lib.GetAPIFromProfile(profile).PipelineAPI.PipelineList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

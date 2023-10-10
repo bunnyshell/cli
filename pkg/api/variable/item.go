@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.EnvironmentVariableItem, *http.Re
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentVariableApi.EnvironmentVariableView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentVariableAPI.EnvironmentVariableView(ctx, options.ID)
 
 	return request.Execute()
 }

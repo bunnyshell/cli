@@ -48,7 +48,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedKubernetesIntegrationCollectio
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).KubernetesIntegrationApi.KubernetesIntegrationList(ctx)
+	request := lib.GetAPIFromProfile(profile).KubernetesIntegrationAPI.KubernetesIntegrationList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

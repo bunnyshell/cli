@@ -34,7 +34,7 @@ func GetRaw(options *ItemOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EventApi.EventView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EventAPI.EventView(ctx, options.ID)
 
 	return request.Execute()
 }

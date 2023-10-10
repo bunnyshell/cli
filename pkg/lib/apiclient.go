@@ -15,7 +15,7 @@ func DownloadEnvironmentKubeConfig(kubeConfigPath, environmentID string) error {
 	ctx, cancel := GetContext()
 	defer cancel()
 
-	request := GetAPI().EnvironmentApi.EnvironmentKubeConfig(ctx, environmentID)
+	request := GetAPI().EnvironmentAPI.EnvironmentKubeConfig(ctx, environmentID)
 
 	_, resp, err := request.Execute()
 	if err != nil && err.Error() != "undefined response type" {

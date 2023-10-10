@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.PipelineItem, *http.Response, err
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).PipelineApi.PipelineView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).PipelineAPI.PipelineView(ctx, options.ID)
 
 	return request.Execute()
 }

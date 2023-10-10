@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.ProjectItem, *http.Response, erro
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ProjectApi.ProjectView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).ProjectAPI.ProjectView(ctx, options.ID)
 
 	return request.Execute()
 }

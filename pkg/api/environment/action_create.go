@@ -57,7 +57,7 @@ func CreateRaw(options *CreateOptions) (*sdk.EnvironmentItem, *http.Response, er
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentCreate(ctx)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentCreate(ctx)
 
 	request = request.EnvironmentCreateAction(options.EnvironmentCreateAction)
 

@@ -60,7 +60,7 @@ func EditComponentsRaw(options *EditComponentOptions) (*sdk.EnvironmentItem, *ht
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentEditComponents(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentEditComponents(ctx, options.ID)
 
 	return appyEditComponentsOptions(request, options).Execute()
 }

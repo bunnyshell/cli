@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.OrganizationItem, *http.Response,
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).OrganizationApi.OrganizationView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).OrganizationAPI.OrganizationView(ctx, options.ID)
 
 	return request.Execute()
 }

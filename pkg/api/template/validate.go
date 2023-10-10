@@ -49,7 +49,7 @@ func ValidateRaw(options *ValidateOptions) (*sdk.TemplateCollection, *http.Respo
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).TemplateApi.TemplateValidate(ctx)
+	request := lib.GetAPIFromProfile(profile).TemplateAPI.TemplateValidate(ctx)
 
 	return applyValidateOptions(request, options).Execute()
 }

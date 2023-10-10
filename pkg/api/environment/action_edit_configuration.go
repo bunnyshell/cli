@@ -58,7 +58,7 @@ func EditConfigurationRaw(options *EditConfigurationOptions) (*sdk.EnvironmentIt
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentEditConfiguration(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentEditConfiguration(ctx, options.ID)
 
 	return applyEditConfigurationoptions(request, options).Execute()
 }
