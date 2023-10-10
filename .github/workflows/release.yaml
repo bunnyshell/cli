@@ -39,7 +39,7 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
