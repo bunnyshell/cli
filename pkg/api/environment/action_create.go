@@ -16,6 +16,8 @@ type CreateOptions struct {
 	sdk.EnvironmentCreateAction
 
 	WithDeploy bool
+
+	Labels map[string]string
 }
 
 func NewCreateOptions() *CreateOptions {
@@ -39,6 +41,8 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the new environment")
 
+	flags.StringToStringVar(&co.Labels, "label", co.Labels, "Set labels for the new environment (key=value)")
+
 	co.DeployOptions.UpdateFlagSet(flags)
 }
 
@@ -58,6 +62,10 @@ func CreateRaw(options *CreateOptions) (*sdk.EnvironmentItem, *http.Response, er
 	defer cancel()
 
 	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentCreate(ctx)
+
+	if len(options.Labels) > 0 {
+		options.EnvironmentCreateAction.SetLabels(options.Labels)
+	}
 
 	request = request.EnvironmentCreateAction(options.EnvironmentCreateAction)
 
