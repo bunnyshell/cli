@@ -9,7 +9,7 @@ brews:
     description: "Bunnyshell's command line tool to create and manage on-demand environments."
     homepage: https://documentation.bunnyshell.com
 
-    tap:
+    repository:
       owner: bunnyshell
       name: homebrew-tap
     folder: Formula
