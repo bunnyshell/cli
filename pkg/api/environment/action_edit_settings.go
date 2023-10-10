@@ -25,6 +25,9 @@ type EditSettingsData struct {
 	RemoteDevelopmentAllowed enum.Bool
 	AutoUpdate               enum.Bool
 
+	Labels       map[string]string
+	LabelReplace bool
+
 	K8SIntegration string
 }
 
@@ -62,6 +65,9 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.AddFlag(rdevFlag)
 	rdevFlag.NoOptDefVal = "true"
 
+	flags.StringToStringVar(&data.Labels, "label", data.Labels, "Set labels for the environment (key=value)")
+	flags.BoolVar(&data.LabelReplace, "label-replace", data.LabelReplace, "Set label strategy to replace (default: merge)")
+
 	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
 }
 
@@ -80,7 +86,7 @@ func EditSettingsRaw(options *EditSettingsOptions) (*sdk.EnvironmentItem, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentEditSettings(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentEditSettings(ctx, options.ID)
 
 	return applyEditSettingsOptions(request, options).Execute()
 }
@@ -103,6 +109,22 @@ func applyEditSettingsOptions(
 
 	if options.EditSettingsData.AutoUpdate != enum.BoolNone {
 		options.EnvironmentEditSettings.SetAutoUpdate(options.EditSettingsData.AutoUpdate == enum.BoolTrue)
+	}
+
+	if options.EditSettingsData.Labels != nil {
+		labelsEdit := *sdk.NewEdit()
+		if options.EditSettingsData.LabelReplace {
+			labelsEdit.SetStrategy("replace")
+		}
+
+		labelsEdit.SetValues(options.EditSettingsData.Labels)
+
+		options.EnvironmentEditSettings.SetLabels(labelsEdit)
+	} else if options.EditSettingsData.LabelReplace {
+		labelsEdit := *sdk.NewEdit()
+		labelsEdit.SetStrategy("replace")
+
+		options.EnvironmentEditSettings.SetLabels(labelsEdit)
 	}
 
 	request = request.EnvironmentEditSettings(options.EnvironmentEditSettings)

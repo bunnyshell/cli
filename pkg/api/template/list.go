@@ -49,7 +49,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedTemplateCollection, *http.Resp
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).TemplateApi.TemplateList(ctx)
+	request := lib.GetAPIFromProfile(profile).TemplateAPI.TemplateList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

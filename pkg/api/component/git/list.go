@@ -55,7 +55,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedComponentGitCollection, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentGitApi.ComponentGitList(ctx)
+	request := lib.GetAPIFromProfile(profile).ComponentGitAPI.ComponentGitList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

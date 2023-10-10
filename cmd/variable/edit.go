@@ -28,7 +28,7 @@ func init() {
 			ctx, cancel := lib.GetContext()
 			defer cancel()
 
-			request := lib.GetAPI().EnvironmentVariableApi.EnvironmentVariableEdit(
+			request := lib.GetAPI().EnvironmentVariableAPI.EnvironmentVariableEdit(
 				ctx,
 				variableID,
 			).EnvironmentVariableEdit(

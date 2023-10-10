@@ -36,7 +36,7 @@ func RDevContextRaw(options *RDevContextOptions) (*sdk.ComponentProfileItem, *ht
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentApi.ComponentRemoteDevProfile(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).ComponentAPI.ComponentRemoteDevProfile(ctx, options.ID)
 
 	return request.Body(options.Profile).Execute()
 }

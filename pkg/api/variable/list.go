@@ -46,7 +46,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedEnvironmentVariableCollection,
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentVariableApi.EnvironmentVariableList(ctx)
+	request := lib.GetAPIFromProfile(profile).EnvironmentVariableAPI.EnvironmentVariableList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

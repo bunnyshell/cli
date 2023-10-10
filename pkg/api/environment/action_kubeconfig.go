@@ -51,7 +51,7 @@ func KubeConfigRaw(options *common.ItemOptions) (*sdk.EnvironmentKubeConfigKubeC
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentKubeConfig(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentKubeConfig(ctx, options.ID)
 
 	return request.Execute()
 }

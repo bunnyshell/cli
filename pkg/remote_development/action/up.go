@@ -175,19 +175,19 @@ func (up *Up) loadProfileIntoRemoteDev(remoteDev *remote.RemoteDevelopment, prof
 		}
 	}
 
-	requirements := profile.GetRequirements().ResourceRequirementItem
+	requirements := profile.GetRequirements()
 	if requirements.HasLimits() {
-		resourceList := requirements.GetLimits().ResourceListItem
+		resourceList := requirements.GetLimits()
 
-		if err := up.setResourceLimits(containerConfig, resourceList); err != nil {
+		if err := up.setResourceLimits(containerConfig, &resourceList); err != nil {
 			return err
 		}
 	}
 
 	if requirements.HasRequests() {
-		resourceList := requirements.GetRequests().ResourceListItem
+		resourceList := requirements.GetRequests()
 
-		if err := up.setResourceRequests(containerConfig, resourceList); err != nil {
+		if err := up.setResourceRequests(containerConfig, &resourceList); err != nil {
 			return err
 		}
 	}

@@ -22,6 +22,8 @@ type ListOptions struct {
 	OperationStatus string
 
 	Search string
+
+	Labels map[string]string
 }
 
 func NewListOptions() *ListOptions {
@@ -36,6 +38,8 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
 	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8SIntegrationID")
 	flags.StringVar(&lo.Search, "search", lo.Search, "Search by name")
+
+	flags.StringToStringVar(&lo.Labels, "label", lo.Labels, "Filter by label (key=value)")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }
@@ -55,7 +59,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedEnvironmentCollection, *http.R
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentList(ctx)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentList(ctx)
 
 	return applyOptions(request, options).Execute()
 }
@@ -95,6 +99,10 @@ func applyOptions(request sdk.ApiEnvironmentListRequest, options *ListOptions) s
 
 	if options.Type != "" {
 		request = request.Type_(options.Type)
+	}
+
+	if len(options.Labels) > 0 {
+		request = request.Labels(options.Labels)
 	}
 
 	return request

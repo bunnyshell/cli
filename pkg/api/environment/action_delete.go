@@ -34,7 +34,7 @@ func DeleteRaw(options *DeleteOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentDelete(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDelete(ctx, options.ID)
 
 	return request.Execute()
 }

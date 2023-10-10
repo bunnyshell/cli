@@ -47,6 +47,10 @@ func profileToConfiguration(profile config.Profile) *sdk.Configuration {
 		configuration.Host = profile.Host
 	}
 
+	if profile.Scheme != "" {
+		configuration.Scheme = profile.Scheme
+	}
+
 	return configuration
 }
 

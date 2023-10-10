@@ -10,8 +10,9 @@ type Context struct {
 type Profile struct {
 	Name string `json:"-" yaml:"-"`
 
-	Host  string `json:"host,omitempty" yaml:"host,omitempty"`
-	Token string `json:"token,omitempty" yaml:"token,omitempty"`
+	Host   string `json:"host,omitempty" yaml:"host,omitempty"`
+	Scheme string `json:"scheme,omitempty" yaml:"scheme,omitempty"`
+	Token  string `json:"token,omitempty" yaml:"token,omitempty"`
 
 	Context Context `json:"context,omitempty" yaml:"context,omitempty"`
 }

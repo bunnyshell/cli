@@ -43,7 +43,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedOrganizationCollection, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).OrganizationApi.OrganizationList(ctx)
+	request := lib.GetAPIFromProfile(profile).OrganizationAPI.OrganizationList(ctx)
 
 	return applyOptions(request, options).Execute()
 }

@@ -25,8 +25,9 @@ type Options struct {
 	ProfileName  *option.String
 
 	// profile options
-	Host  *option.String
-	Token *option.String
+	Host   *option.String
+	Scheme *option.String
+	Token  *option.String
 
 	// Profile.Context options
 	Organization     *option.String
@@ -48,8 +49,9 @@ func NewOptions(settings *Settings) *Options {
 		OutputFormat: newOutputFormat(settings),
 		ProfileName:  newProfileName(settings),
 
-		Token: newToken(settings),
-		Host:  newHost(settings),
+		Host:   newHost(settings),
+		Scheme: newScheme(settings),
+		Token:  newToken(settings),
 
 		Organization:     newOrganization(settings),
 		Project:          newProject(settings),
@@ -148,6 +150,15 @@ func newHost(settings *Settings) *option.String {
 	option := option.NewStringOption(&settings.Profile.Host)
 
 	flag := option.AddFlag("host", "Bunnyshell API Host")
+	flag.Hidden = true
+
+	return option
+}
+
+func newScheme(settings *Settings) *option.String {
+	option := option.NewStringOption(&settings.Profile.Scheme)
+
+	flag := option.AddFlag("scheme", "Bunnyshell API Scheme")
 	flag.Hidden = true
 
 	return option

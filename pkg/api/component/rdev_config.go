@@ -34,7 +34,7 @@ func RDevConfigRaw(options *RDevContextOptions) (*sdk.ComponentConfigItem, *http
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentApi.ComponentRemoteDevConfig(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).ComponentAPI.ComponentRemoteDevConfig(ctx, options.ID)
 
 	return request.Execute()
 }

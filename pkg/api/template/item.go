@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.TemplateItem, *http.Response, err
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).TemplateApi.TemplateView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).TemplateAPI.TemplateView(ctx, options.ID)
 
 	return request.Execute()
 }

@@ -34,7 +34,7 @@ func DeployRaw(options *DeployOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentApi.EnvironmentDeploy(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDeploy(ctx, options.ID)
 
 	return request.Execute()
 }

@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.KubernetesIntegrationItem, *http.
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).KubernetesIntegrationApi.KubernetesIntegrationView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).KubernetesIntegrationAPI.KubernetesIntegrationView(ctx, options.ID)
 
 	return request.Execute()
 }

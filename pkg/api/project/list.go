@@ -16,6 +16,8 @@ type ListOptions struct {
 	Organization string
 
 	Search string
+
+	Labels map[string]string
 }
 
 func NewListOptions() *ListOptions {
@@ -26,6 +28,8 @@ func NewListOptions() *ListOptions {
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.Search, "search", lo.Search, "Search by name")
+
+	flags.StringToStringVar(&lo.Labels, "label", lo.Labels, "Filter by label (key=value)")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }
@@ -45,7 +49,7 @@ func ListRaw(options *ListOptions) (*sdk.PaginatedProjectCollection, *http.Respo
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ProjectApi.ProjectList(ctx)
+	request := lib.GetAPIFromProfile(profile).ProjectAPI.ProjectList(ctx)
 
 	return applyOptions(request, options).Execute()
 }
@@ -65,6 +69,10 @@ func applyOptions(request sdk.ApiProjectListRequest, options *ListOptions) sdk.A
 
 	if options.Organization != "" {
 		request = request.Organization(options.Organization)
+	}
+
+	if len(options.Labels) > 0 {
+		request = request.Labels(options.Labels)
 	}
 
 	return request

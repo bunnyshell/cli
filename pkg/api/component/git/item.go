@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.ComponentGitItem, *http.Response,
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentGitApi.ComponentGitView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).ComponentGitAPI.ComponentGitView(ctx, options.ID)
 
 	return request.Execute()
 }

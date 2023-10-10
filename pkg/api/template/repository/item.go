@@ -28,7 +28,7 @@ func GetRaw(options *common.ItemOptions) (*sdk.TemplatesRepositoryItem, *http.Re
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).TemplatesRepositoryApi.TemplatesRepositoryView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).TemplatesRepositoryAPI.TemplatesRepositoryView(ctx, options.ID)
 
 	return request.Execute()
 }

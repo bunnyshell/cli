@@ -205,36 +205,35 @@ func ensureRequirements(parameters *action.UpParameters) *sdk.ResourceRequiremen
 	profile := ensureProfile(parameters)
 
 	if !profile.HasRequirements() {
-		profile.SetRequirements(sdk.ProfileItemRequirements{
-			ResourceRequirementItem: &sdk.ResourceRequirementItem{},
-		})
+		profile.SetRequirements(sdk.ResourceRequirementItem{})
 	}
 
-	return profile.GetRequirements().ResourceRequirementItem
+	requirements, _ := profile.GetRequirementsOk()
+
+	return requirements
 }
 
 func ensureLimits(parameters *action.UpParameters) *sdk.ResourceListItem {
 	requirements := ensureRequirements(parameters)
 
 	if !requirements.HasLimits() {
-		requirements.SetLimits(sdk.ResourceRequirementItemLimits{
-			ResourceListItem: &sdk.ResourceListItem{},
-		})
+		requirements.SetLimits(sdk.ResourceListItem{})
 	}
 
-	return requirements.GetLimits().ResourceListItem
+	limits, _ := requirements.GetLimitsOk()
+
+	return limits
 }
 
 func ensureRequests(parameters *action.UpParameters) *sdk.ResourceListItem {
 	requirements := ensureRequirements(parameters)
 
 	if !requirements.HasRequests() {
-		requirements.SetRequests(sdk.ResourceRequirementItemRequests{
-			ResourceListItem: &sdk.ResourceListItem{},
-		})
+		requirements.SetRequests(sdk.ResourceListItem{})
 	}
 
-	return requirements.GetRequests().ResourceListItem
+	requests, _ := requirements.GetRequestsOk()
+	return requests
 }
 
 func ensureProfileSyncPath(parameters *action.UpParameters) *sdk.SyncPathItem {

@@ -138,6 +138,17 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "Type", item.GetType())
 	fmt.Fprintf(w, "%v\t %v\n", "Components", item.GetTotalComponents())
 	fmt.Fprintf(w, "%v\t %v\n", "OperationStatus", item.GetOperationStatus())
+
+	first := true
+	for key, value := range item.GetLabels() {
+		if first {
+			fmt.Fprintf(w, "%v\t %v\t %v\n", "Labels", key, value)
+
+			first = false
+		} else {
+			fmt.Fprintf(w, "\t %v\t %v\n", key, value)
+		}
+	}
 }
 
 func tabulateComponentCollection(w *tabwriter.Writer, data *sdk.PaginatedComponentCollection) {

@@ -85,6 +85,13 @@ func (manager *Manager) importProfile(profile *Profile) {
 
 		return profile.Host
 	})
+	manager.options.Scheme.ValueOr(func(flag *pflag.Flag) string {
+		if manager.viper.IsSet(flag.Name) {
+			return manager.viper.GetString(flag.Name)
+		}
+
+		return profile.Scheme
+	})
 	manager.options.Token.ValueOr(func(flag *pflag.Flag) string {
 		if manager.viper.IsSet(flag.Name) {
 			return manager.viper.GetString(flag.Name)
