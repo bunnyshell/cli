@@ -42,6 +42,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateTemplateCollection(writer, dataType)
 	case *sdk.PaginatedTemplatesRepositoryCollection:
 		tabulateTemplatesRepositoryCollection(writer, dataType)
+	case *sdk.PaginatedRegistryIntegrationCollection:
+		tabulateRegistryIntegrationsCollection(writer, dataType)
 	case []sdk.ComponentEndpointCollection:
 		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
@@ -58,6 +60,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEnvironmentVariableItem(writer, dataType)
 	case *sdk.KubernetesIntegrationItem:
 		tabulateKubernetesItem(writer, dataType)
+	case *sdk.RegistryIntegrationItem:
+		tabulateRegistryIntegrationItem(writer, dataType)
 	case *sdk.PipelineItem:
 		tabulatePipelineItem(writer, dataType)
 	case *sdk.ComponentGitItem:

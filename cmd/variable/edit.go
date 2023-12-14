@@ -31,7 +31,7 @@ func init() {
 			request := lib.GetAPI().EnvironmentVariableAPI.EnvironmentVariableEdit(
 				ctx,
 				variableID,
-			).EnvironmentVariableEdit(
+			).EnvironmentVariableEditAction(
 				*toVariableEdit(value),
 			)
 
@@ -60,8 +60,8 @@ func getEditValueOption(value *string) *option.String {
 	return idOption
 }
 
-func toVariableEdit(value string) *sdk.EnvironmentVariableEdit {
-	edit := sdk.NewEnvironmentVariableEdit()
+func toVariableEdit(value string) *sdk.EnvironmentVariableEditAction {
+	edit := sdk.NewEnvironmentVariableEditAction()
 	edit.SetValue(value)
 
 	return edit
