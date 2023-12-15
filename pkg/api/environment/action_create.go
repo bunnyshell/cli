@@ -21,7 +21,7 @@ type CreateOptions struct {
 }
 
 func NewCreateOptions() *CreateOptions {
-	environmentCreateAction := sdk.NewEnvironmentCreateAction("", "")
+	environmentCreateAction := sdk.NewEnvironmentCreateActionWithDefaults()
 	environmentCreateAction.SetKubernetesIntegration("")
 	environmentCreateAction.SetEphemeralKubernetesIntegration("")
 

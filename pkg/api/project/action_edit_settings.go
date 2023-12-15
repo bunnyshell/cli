@@ -31,7 +31,7 @@ func NewEditSettingsOptions(project string) *EditSettingsOptions {
 
 		EditSettingsData: EditSettingsData{},
 
-		ProjectEditSettingsAction: *sdk.NewProjectEditSettingsAction(""),
+		ProjectEditSettingsAction: *sdk.NewProjectEditSettingsActionWithDefaults(),
 	}
 }
 

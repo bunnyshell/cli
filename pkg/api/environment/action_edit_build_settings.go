@@ -1,4 +1,4 @@
-package project
+package environment
 
 import (
 	"net/http"
@@ -12,18 +12,18 @@ import (
 type EditBuildSettingsOptions struct {
 	build_settings.EditOptions
 
-	sdk.ProjectEditBuildSettingsAction
+	sdk.EnvironmentEditBuildSettingsAction
 }
 
 func NewEditBuildSettingsOptions(project string) *EditBuildSettingsOptions {
 	return &EditBuildSettingsOptions{
 		EditOptions: *build_settings.NewEditOptions(project),
 
-		ProjectEditBuildSettingsAction: *sdk.NewProjectEditBuildSettingsAction(),
+		EnvironmentEditBuildSettingsAction: *sdk.NewEnvironmentEditBuildSettingsAction(),
 	}
 }
 
-func EditBuildSettings(options *EditBuildSettingsOptions) (*sdk.ProjectItem, error) {
+func EditBuildSettings(options *EditBuildSettingsOptions) (*sdk.EnvironmentItem, error) {
 	model, resp, err := EditBuildSettingsRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -32,17 +32,17 @@ func EditBuildSettings(options *EditBuildSettingsOptions) (*sdk.ProjectItem, err
 	return model, nil
 }
 
-func EditBuildSettingsRaw(options *EditBuildSettingsOptions) (*sdk.ProjectItem, *http.Response, error) {
+func EditBuildSettingsRaw(options *EditBuildSettingsOptions) (*sdk.EnvironmentItem, *http.Response, error) {
 	profile := options.GetProfile()
 
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	build_settings.ApplyEditOptionsToAction(&options.ProjectEditBuildSettingsAction, &options.EditData)
+	build_settings.ApplyEditOptionsToAction(&options.EnvironmentEditBuildSettingsAction, &options.EditData)
 
-	request := lib.GetAPIFromProfile(profile).ProjectAPI.
-		ProjectEditBuildSettings(ctx, options.ID).
-		ProjectEditBuildSettingsAction(options.ProjectEditBuildSettingsAction)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.
+		EnvironmentEditBuildSettings(ctx, options.ID).
+		EnvironmentEditBuildSettingsAction(options.EnvironmentEditBuildSettingsAction)
 
 	return request.Execute()
 }

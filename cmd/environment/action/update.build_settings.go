@@ -2,7 +2,7 @@ package action
 
 import (
 	"bunnyshell.com/cli/pkg/api/build_settings"
-	"bunnyshell.com/cli/pkg/api/project"
+	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -14,7 +14,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	editBuildSettingsOptions := project.NewEditBuildSettingsOptions("")
+	editBuildSettingsOptions := environment.NewEditBuildSettingsOptions("")
 
 	command := &cobra.Command{
 		Use: "update-build-settings",
@@ -22,15 +22,15 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			editBuildSettingsOptions.ID = settings.Profile.Context.Project
+			editBuildSettingsOptions.ID = settings.Profile.Context.Environment
 
-			_, err := project.EditBuildSettings(editBuildSettingsOptions)
+			_, err := environment.EditBuildSettings(editBuildSettingsOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			model, err := build_settings.CheckBuildSettingsValidation[sdk.ProjectItem](
-				project.Get,
+			model, err := build_settings.CheckBuildSettingsValidation[sdk.EnvironmentItem](
+				environment.Get,
 				&editBuildSettingsOptions.EditOptions,
 				settings.IsStylish(),
 			)
