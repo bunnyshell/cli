@@ -6,6 +6,7 @@ import (
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/pflag"
 )
@@ -16,9 +17,17 @@ type EditBuildSettingsOptions struct {
 	sdk.ProjectEditBuildSettingsAction
 
 	EditBuildSettingsData
+
+	// Seconds to wait for the build settings to be validated
+	ValidationTimeout int32
 }
 
 type EditBuildSettingsData struct {
+	UseManagedRegistry  bool
+	RegistryIntegration string
+
+	UseManagedCluster   bool
+	BuildK8sIntegration string
 }
 
 func NewEditBuildSettingsOptions(project string) *EditBuildSettingsOptions {
@@ -28,16 +37,21 @@ func NewEditBuildSettingsOptions(project string) *EditBuildSettingsOptions {
 		EditBuildSettingsData: EditBuildSettingsData{},
 
 		ProjectEditBuildSettingsAction: *sdk.NewProjectEditBuildSettingsAction(),
+
+		ValidationTimeout: 180,
 	}
 }
 
 func (eso *EditBuildSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	// data := &eso.EditSettingsData
+	data := &eso.EditBuildSettingsData
 
-	// flags.StringVar(&data.Name, "name", data.Name, "Update project name")
+	flags.BoolVar(&data.UseManagedRegistry, "use-managed-registry", data.UseManagedRegistry, "Use the managed Container Registry for the built images")
+	flags.StringVar(&data.RegistryIntegration, "registry", data.RegistryIntegration, "Set the Container Registry integration to push the built images")
 
-	// flags.StringToStringVar(&data.Labels, "label", data.Labels, "Set labels for the project (key=value)")
-	// flags.BoolVar(&data.LabelReplace, "label-replace", data.LabelReplace, "Set label strategy to replace (default: merge)")
+	flags.BoolVar(&data.UseManagedCluster, "use-managed-k8s", data.UseManagedCluster, "Use the managed Kubernetes integration cluster for the image builds")
+	flags.StringVar(&data.BuildK8sIntegration, "k8s", data.BuildK8sIntegration, "Set the Kubernetes integration cluster to be used for the image builds")
+
+	flags.Int32Var(&eso.ValidationTimeout, "validation-timeout", eso.ValidationTimeout, "Seconds to wait for the build settings to be validated")
 }
 
 func EditBuildSettings(options *EditBuildSettingsOptions) (*sdk.ProjectItem, error) {
@@ -64,9 +78,21 @@ func applyEditBuildSettingsOptions(
 	request sdk.ApiProjectEditBuildSettingsRequest,
 	options *EditBuildSettingsOptions,
 ) sdk.ApiProjectEditBuildSettingsRequest {
-	// if options.EditBuildSettingsData.Name != "" {
-	// options.ProjectEditBuildSettingsAction.SetName(options.EditSettingsData.Name)
-	// }
+	if util.IsFlagPassed("use-managed-registry") {
+		options.ProjectEditBuildSettingsAction.SetUseManagedRegistry(options.EditBuildSettingsData.UseManagedRegistry)
+	}
+
+	if options.EditBuildSettingsData.RegistryIntegration != "" {
+		options.ProjectEditBuildSettingsAction.SetRegistryIntegration(options.EditBuildSettingsData.RegistryIntegration)
+	}
+
+	if util.IsFlagPassed("use-managed-k8s") {
+		options.ProjectEditBuildSettingsAction.SetUseManagedCluster(options.EditBuildSettingsData.UseManagedCluster)
+	}
+
+	if options.EditBuildSettingsData.BuildK8sIntegration != "" {
+		options.ProjectEditBuildSettingsAction.SetKubernetesIntegration(options.EditBuildSettingsData.BuildK8sIntegration)
+	}
 
 	request = request.ProjectEditBuildSettingsAction(options.ProjectEditBuildSettingsAction)
 

@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"fmt"
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/project"
@@ -26,8 +25,6 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createOptions.Organization = settings.Profile.Context.Organization
 
-			fmt.Printf("%v", settings.Profile.Context)
-
 			model, err := project.Create(createOptions)
 			if err != nil {
 				var apiError api.Error
@@ -48,7 +45,7 @@ func init() {
 	flags.AddFlag(options.Organization.AddFlagWithExtraHelp(
 		"organization",
 		"Organization for the project",
-		"Organizations contain projects along with build settings and project variables",
+		"Organizations contain projects with their build settings and project variables",
 		util.FlagRequired,
 	))
 

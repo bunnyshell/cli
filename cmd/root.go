@@ -13,6 +13,7 @@ import (
 	"bunnyshell.com/cli/cmd/organization"
 	"bunnyshell.com/cli/cmd/pipeline"
 	"bunnyshell.com/cli/cmd/project"
+	"bunnyshell.com/cli/cmd/project_variable"
 	"bunnyshell.com/cli/cmd/registry_integration"
 	"bunnyshell.com/cli/cmd/template"
 	"bunnyshell.com/cli/cmd/utils"
@@ -91,6 +92,7 @@ func init() {
 			event.GetMainCommand(),
 			organization.GetMainCommand(),
 			project.GetMainCommand(),
+			project_variable.GetMainCommand(),
 			registry_integration.GetMainCommand(),
 			variable.GetMainCommand(),
 			k8sIntegration.GetMainCommand(),

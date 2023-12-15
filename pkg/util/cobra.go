@@ -1,6 +1,7 @@
 package util
 
 import (
+	"flag"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -79,4 +80,14 @@ func AppendFlagHelp(flag *pflag.Flag, helpTemplate string) *pflag.Flag {
 	flag.Annotations[HelpTemplate] = append(flag.Annotations[HelpTemplate], helpTemplate)
 
 	return flag
+}
+
+func IsFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }

@@ -30,6 +30,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentVariableCollection:
 		tabulateEnvironmentVariableCollection(writer, dataType)
+	case *sdk.PaginatedProjectVariableCollection:
+		tabulateProjectVariableCollection(writer, dataType)
 	case *sdk.PaginatedKubernetesIntegrationCollection:
 		tabulateKubernetesCollection(writer, dataType)
 	case *sdk.PaginatedPipelineCollection:
@@ -58,6 +60,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventItem(writer, dataType)
 	case *sdk.EnvironmentVariableItem:
 		tabulateEnvironmentVariableItem(writer, dataType)
+	case *sdk.ProjectVariableItem:
+		tabulateProjectVariableItem(writer, dataType)
 	case *sdk.KubernetesIntegrationItem:
 		tabulateKubernetesItem(writer, dataType)
 	case *sdk.RegistryIntegrationItem:
@@ -191,6 +195,16 @@ func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.Pagina
 	}
 }
 
+func tabulateProjectVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedProjectVariableCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "ProjectVarID", "ProjectID", "OrganizationID", "Name")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetProject(), item.GetOrganization(), item.GetName())
+		}
+	}
+}
+
 func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
 
@@ -213,6 +227,14 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 
 func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentVariableItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
+	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
+	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
+	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())
+	fmt.Fprintf(w, "%v\t %v\n", "Secret", item.GetSecret())
+}
+
+func tabulateProjectVariableItem(w *tabwriter.Writer, item *sdk.ProjectVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "ProjectID", item.GetProject())
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())

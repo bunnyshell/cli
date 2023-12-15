@@ -1,18 +1,18 @@
-package variable
+package project_variable
 
 import (
-	"bunnyshell.com/cli/cmd/variable/action"
+	"bunnyshell.com/cli/cmd/project_variable/action"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
 var mainCmd = &cobra.Command{
-	Use:     "variables",
-	Aliases: []string{"var"},
+	Use:     "project-variables",
+	Aliases: []string{"pvar"},
 
-	Short: "Environment Variables",
-	Long:  "Bunnyshell Environment Variables",
+	Short: "Project Variables",
+	Long:  "Bunnyshell Project Variables",
 }
 
 func init() {
@@ -22,7 +22,7 @@ func init() {
 		mainCmd,
 		cobra.Group{
 			ID:    "actions",
-			Title: "Commands for Environment Variables:",
+			Title: "Commands for Project Variables:",
 		},
 		action.GetMainCommand().Commands(),
 	)

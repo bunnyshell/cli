@@ -24,7 +24,7 @@ func init() {
 		mainCmd,
 		cobra.Group{
 			ID:    "actions",
-			Title: "Commands for Project Actions:",
+			Title: "Commands for Projects:",
 		},
 		action.GetMainCommand().Commands(),
 	)

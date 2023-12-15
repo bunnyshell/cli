@@ -1,22 +1,21 @@
-package variable
+package action
 
 import (
-	"bunnyshell.com/cli/cmd/variable/action"
-	"bunnyshell.com/cli/pkg/api/variable"
+	"bunnyshell.com/cli/pkg/api/project_variable"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	itemOptions := variable.NewItemOptions("")
+	editOptions := project_variable.NewEditOptions("")
 
 	command := &cobra.Command{
-		Use: "show",
+		Use: "edit",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			model, err := variable.Get(itemOptions)
+			model, err := project_variable.Edit(editOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -27,7 +26,9 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(action.GetIDOption(&itemOptions.ID).GetRequiredFlag("id"))
+	flags.AddFlag(GetIDOption(&editOptions.ID).GetRequiredFlag("id"))
+
+	editOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }

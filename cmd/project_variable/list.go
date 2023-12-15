@@ -1,7 +1,7 @@
-package variable
+package project_variable
 
 import (
-	"bunnyshell.com/cli/pkg/api/variable"
+	"bunnyshell.com/cli/pkg/api/project_variable"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	listOptions := variable.NewListOptions()
+	listOptions := project_variable.NewListOptions()
 
 	command := &cobra.Command{
 		Use: "list",
@@ -20,10 +20,10 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			listOptions.Organization = settings.Profile.Context.Organization
-			listOptions.Environment = settings.Profile.Context.Environment
+			listOptions.Project = settings.Profile.Context.Project
 
 			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
-				return variable.List(listOptions)
+				return project_variable.List(listOptions)
 			})
 		},
 	}
@@ -31,7 +31,7 @@ func init() {
 	flags := command.Flags()
 
 	flags.AddFlag(options.Organization.GetFlag("organization"))
-	flags.AddFlag(options.Environment.GetFlag("environment"))
+	flags.AddFlag(options.Project.GetFlag("project"))
 
 	listOptions.UpdateFlagSet(flags)
 
