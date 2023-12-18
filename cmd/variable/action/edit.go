@@ -15,6 +15,11 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			flags := cmd.Flags()
+			if flags.Changed("value") {
+				editOptions.EnvironmentVariableEditAction.SetValue(flags.Lookup("value").Value.String())
+			}
+
 			model, err := variable.Edit(editOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)

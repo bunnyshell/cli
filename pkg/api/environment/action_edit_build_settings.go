@@ -19,7 +19,7 @@ func NewEditBuildSettingsOptions(project string) *EditBuildSettingsOptions {
 	return &EditBuildSettingsOptions{
 		EditOptions: *build_settings.NewEditOptions(project),
 
-		EnvironmentEditBuildSettingsAction: *sdk.NewEnvironmentEditBuildSettingsAction(),
+		EnvironmentEditBuildSettingsAction: *sdk.NewEnvironmentEditBuildSettingsActionWithDefaults(),
 	}
 }
 

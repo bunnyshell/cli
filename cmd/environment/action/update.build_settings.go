@@ -4,6 +4,7 @@ import (
 	"bunnyshell.com/cli/pkg/api/build_settings"
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/config"
+	"bunnyshell.com/cli/pkg/config/enum"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
@@ -14,6 +15,8 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
+	useProjectSettings := enum.BoolFalse
+
 	editBuildSettingsOptions := environment.NewEditBuildSettingsOptions("")
 
 	command := &cobra.Command{
@@ -23,6 +26,13 @@ func init() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			editBuildSettingsOptions.ID = settings.Profile.Context.Environment
+
+			if useProjectSettings == enum.BoolTrue {
+				editBuildSettingsOptions.EditData.UseManagedCluster = enum.BoolFalse
+				editBuildSettingsOptions.EditData.RegistryIntegration = ""
+				editBuildSettingsOptions.Cpu = sdk.NullableString{}
+				editBuildSettingsOptions.Memory = sdk.NullableInt32{}
+			}
 
 			_, err := environment.EditBuildSettings(editBuildSettingsOptions)
 			if err != nil {
@@ -44,7 +54,15 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.Project.GetFlag("id", util.FlagRequired))
+	flags.AddFlag(options.Environment.GetFlag("id", util.FlagRequired))
+
+	useProjectSettingsFlag := enum.BoolFlag(
+		&useProjectSettings,
+		"use-project-settings",
+		"Use the project build settings",
+	)
+	flags.AddFlag(useProjectSettingsFlag)
+	useProjectSettingsFlag.NoOptDefVal = "true"
 
 	editBuildSettingsOptions.UpdateFlagSet(flags)
 

@@ -226,6 +226,7 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 }
 
 func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentVariableID", item.GetId())
 	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
@@ -234,6 +235,7 @@ func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentV
 }
 
 func tabulateProjectVariableItem(w *tabwriter.Writer, item *sdk.ProjectVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "ProjectVariableID", item.GetId())
 	fmt.Fprintf(w, "%v\t %v\n", "ProjectID", item.GetProject())
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())

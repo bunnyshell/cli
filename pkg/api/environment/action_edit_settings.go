@@ -29,10 +29,20 @@ type EditSettingsData struct {
 	LabelReplace bool
 
 	K8SIntegration string
+
+	EphemeralK8SIntegration   string
+	CreateEphemeralOnPrCreate enum.Bool
+	DestroyEphemeralOnPrClose enum.Bool
+	AutoDeployEphemeral       enum.Bool
 }
 
 func NewEditSettingsOptions(environment string) *EditSettingsOptions {
-	return &EditSettingsOptions{
+	envPrimaryEditSettings := sdk.PrimaryAsEnvironmentEditSettingsEdit(sdk.NewPrimaryWithDefaults())
+
+	envEditSettings := sdk.NewEnvironmentEditSettings()
+	envEditSettings.Edit = &envPrimaryEditSettings
+
+	options := &EditSettingsOptions{
 		ItemOptions: *common.NewItemOptions(environment),
 
 		EditSettingsData: EditSettingsData{
@@ -40,8 +50,10 @@ func NewEditSettingsOptions(environment string) *EditSettingsOptions {
 			AutoUpdate:               enum.BoolNone,
 		},
 
-		EnvironmentEditSettings: *sdk.NewEnvironmentEditSettings(),
+		EnvironmentEditSettings: *envEditSettings,
 	}
+
+	return options
 }
 
 func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
@@ -69,6 +81,32 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.BoolVar(&data.LabelReplace, "label-replace", data.LabelReplace, "Set label strategy to replace (default: merge)")
 
 	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
+
+	ephCreateFlag := enum.BoolFlag(
+		&data.CreateEphemeralOnPrCreate,
+		"create-ephemeral-on-pr",
+		"Create ephemeral environments when pull requests are created (for 'primary' environments)",
+	)
+	flags.AddFlag(ephCreateFlag)
+	ephCreateFlag.NoOptDefVal = "false"
+
+	ephDestroyFlag := enum.BoolFlag(
+		&data.DestroyEphemeralOnPrClose,
+		"destroy-ephemeral-on-pr-close",
+		"Destroys the created ephemerals when the pull request is closed (or merged) (for 'primary' environments)",
+	)
+	flags.AddFlag(ephDestroyFlag)
+	ephDestroyFlag.NoOptDefVal = "false"
+
+	ephAutoDeployFlag := enum.BoolFlag(
+		&data.AutoDeployEphemeral,
+		"auto-deploy-ephemerals",
+		"Auto deploy the created ephemerals (for 'primary' environments)",
+	)
+	flags.AddFlag(ephAutoDeployFlag)
+	ephAutoDeployFlag.NoOptDefVal = "false"
+
+	flags.StringVar(&data.EphemeralK8SIntegration, "ephemerals-k8s", data.EphemeralK8SIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment (for 'primary' environments)")
 }
 
 func EditSettings(options *EditSettingsOptions) (*sdk.EnvironmentItem, error) {
@@ -125,6 +163,22 @@ func applyEditSettingsOptions(
 		labelsEdit.SetStrategy("replace")
 
 		options.EnvironmentEditSettings.SetLabels(labelsEdit)
+	}
+
+	if options.EphemeralK8SIntegration != "" {
+		options.EnvironmentEditSettings.Edit.Primary.SetEphemeralKubernetesIntegration(options.EphemeralK8SIntegration)
+	}
+
+	if options.CreateEphemeralOnPrCreate != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetCreateEphemeralOnPrCreate(options.CreateEphemeralOnPrCreate == enum.BoolTrue)
+	}
+
+	if options.AutoDeployEphemeral != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetAutoDeployEphemeral(options.AutoDeployEphemeral == enum.BoolTrue)
+	}
+
+	if options.DestroyEphemeralOnPrClose != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetDestroyEphemeralOnPrClose(options.DestroyEphemeralOnPrClose == enum.BoolTrue)
 	}
 
 	request = request.EnvironmentEditSettings(options.EnvironmentEditSettings)

@@ -33,7 +33,7 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.Project.AddFlagWithExtraHelp(
+	flags.AddFlag(options.Environment.AddFlagWithExtraHelp(
 		"environment",
 		"Environment for the variable",
 		"Environments contain multiple variables",

@@ -5,8 +5,8 @@ import (
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
+	"bunnyshell.com/cli/pkg/config/enum"
 	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/pflag"
 )
@@ -21,7 +21,7 @@ type EditOptions struct {
 
 type EditData struct {
 	Value    string
-	IsSecret bool
+	IsSecret enum.Bool
 }
 
 func NewEditOptions(id string) *EditOptions {
@@ -30,7 +30,7 @@ func NewEditOptions(id string) *EditOptions {
 
 		EditData: EditData{},
 
-		ProjectVariableEditAction: *sdk.NewProjectVariableEditAction(),
+		ProjectVariableEditAction: *sdk.NewProjectVariableEditActionWithDefaults(),
 	}
 }
 
@@ -38,7 +38,14 @@ func (eso *EditOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	data := &eso.EditData
 
 	flags.StringVar(&data.Value, "value", data.Value, "Update the project variable value")
-	flags.BoolVar(&data.IsSecret, "secret", data.IsSecret, "Whether the project variable is secret or not")
+
+	isSecretFlag := enum.BoolFlag(
+		&eso.EditData.IsSecret,
+		"secret",
+		"Whether the project variable is secret or not",
+	)
+	flags.AddFlag(isSecretFlag)
+	isSecretFlag.NoOptDefVal = "false"
 }
 
 func Edit(options *EditOptions) (*sdk.ProjectVariableItem, error) {
@@ -65,12 +72,8 @@ func applyEditOptions(
 	request sdk.ApiProjectVariableEditRequest,
 	options *EditOptions,
 ) sdk.ApiProjectVariableEditRequest {
-	if util.IsFlagPassed("value") {
-		options.ProjectVariableEditAction.SetValue(options.EditData.Value)
-	}
-
-	if util.IsFlagPassed("secret") {
-		options.ProjectVariableEditAction.SetIsSecret(options.EditData.IsSecret)
+	if options.EditData.IsSecret != enum.BoolNone {
+		options.ProjectVariableEditAction.SetIsSecret(options.EditData.IsSecret == enum.BoolTrue)
 	}
 
 	request = request.ProjectVariableEditAction(options.ProjectVariableEditAction)

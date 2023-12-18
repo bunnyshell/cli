@@ -20,8 +20,7 @@ type CreateOptions struct {
 func NewCreateOptions() *CreateOptions {
 	projectCreateOptions := sdk.NewProjectCreateAction("", "")
 
-	labels := make(map[string]string)
-	projectCreateOptions.Labels = &labels
+	projectCreateOptions.Labels = &map[string]string{}
 
 	return &CreateOptions{
 		ProjectCreateAction: *projectCreateOptions,

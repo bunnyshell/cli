@@ -16,11 +16,12 @@ type CreateOptions struct {
 
 	sdk.EnvironmentVariableCreateAction
 
+	Value    string
 	IsSecret bool
 }
 
 func NewCreateOptions() *CreateOptions {
-	variableCreateActionCreateOptions := sdk.NewEnvironmentVariableCreateAction("", "")
+	variableCreateActionCreateOptions := sdk.NewEnvironmentVariableCreateActionWithDefaults()
 
 	return &CreateOptions{
 		EnvironmentVariableCreateAction: *variableCreateActionCreateOptions,
@@ -31,13 +32,14 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&co.Name, "name", co.Name, "Unique name for the environment variable")
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the environment for the new environment variable")
 
+	flags.StringVar(&co.Value, "value", co.Value, "The value of the project variable")
+
 	flags.BoolVar(&co.IsSecret, "secret", co.IsSecret, "Whether the environment variable is secret or not")
 }
 
 func Create(options *CreateOptions) (*sdk.EnvironmentVariableItem, error) {
-	if util.IsFlagPassed("secret") {
-		options.EnvironmentVariableCreateAction.IsSecret.Set(&options.IsSecret)
-	}
+	options.EnvironmentVariableCreateAction.SetIsSecret(options.IsSecret)
+	options.EnvironmentVariableCreateAction.SetValue(options.Value)
 
 	model, resp, err := CreateRaw(options)
 	if err != nil {

@@ -16,11 +16,12 @@ type CreateOptions struct {
 
 	sdk.ProjectVariableCreateAction
 
+	Value    string
 	IsSecret bool
 }
 
 func NewCreateOptions() *CreateOptions {
-	projectVariableCreateOptions := sdk.NewProjectVariableCreateAction("", "")
+	projectVariableCreateOptions := sdk.NewProjectVariableCreateAction("", "", "")
 
 	return &CreateOptions{
 		ProjectVariableCreateAction: *projectVariableCreateOptions,
@@ -31,13 +32,14 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&co.Name, "name", co.Name, "Unique name for the project variable")
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the new project variable")
 
+	flags.StringVar(&co.Value, "value", co.Value, "The value of the project variable")
+
 	flags.BoolVar(&co.IsSecret, "secret", co.IsSecret, "Whether the project variable is secret or not")
 }
 
 func Create(options *CreateOptions) (*sdk.ProjectVariableItem, error) {
-	if util.IsFlagPassed("secret") {
-		options.ProjectVariableCreateAction.IsSecret.Set(&options.IsSecret)
-	}
+	options.ProjectVariableCreateAction.SetValue(options.Value)
+	options.ProjectVariableCreateAction.SetIsSecret(options.IsSecret)
 
 	model, resp, err := CreateRaw(options)
 	if err != nil {
