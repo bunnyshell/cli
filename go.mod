@@ -111,5 +111,3 @@ require (
 	sigs.k8s.io/kustomize/api v0.14.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.14.3 // indirect
 )
-
-replace bunnyshell.com/sdk => ../neo-sdk-generator/go/sdk

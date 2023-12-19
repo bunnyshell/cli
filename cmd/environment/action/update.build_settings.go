@@ -66,5 +66,11 @@ func init() {
 
 	editBuildSettingsOptions.UpdateFlagSet(flags)
 
+	// use-project-settings excludes the other build settings flags for the cluster
+	command.MarkFlagsMutuallyExclusive("use-project-settings", "use-managed-k8s")
+	command.MarkFlagsMutuallyExclusive("use-project-settings", "k8s")
+	command.MarkFlagsMutuallyExclusive("use-project-settings", "cpu")
+	command.MarkFlagsMutuallyExclusive("use-project-settings", "memory")
+
 	mainCmd.AddCommand(command)
 }

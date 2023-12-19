@@ -20,6 +20,10 @@ type ActionWithBuildSettings interface {
 	SetUseManagedCluster(bool)
 
 	SetKubernetesIntegration(string)
+
+	SetMemory(int32)
+
+	SetCpu(string)
 }
 
 type EditOptions struct {
@@ -37,6 +41,8 @@ type EditData struct {
 
 	UseManagedCluster   enum.Bool
 	BuildK8sIntegration string
+	Memory              int32
+	Cpu                 string
 }
 
 func NewEditOptions(entityId string) *EditOptions {
@@ -72,6 +78,9 @@ func (eso *EditOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 	flags.StringVar(&data.BuildK8sIntegration, "k8s", data.BuildK8sIntegration, "Set the Kubernetes integration cluster to be used for the image builds")
 
+	flags.Int32Var(&data.Memory, "memory", data.Memory, "Set the maximum memory to be used by a build job (in Mi)")
+	flags.StringVar(&data.Cpu, "cpu", data.Cpu, "Set the maximum amount of CPU to be used by a build job (ie. 0.2)")
+
 	flags.Int32Var(&eso.ValidationTimeout, "validation-timeout", eso.ValidationTimeout, "Seconds to wait for the build settings to be validated")
 }
 
@@ -90,5 +99,13 @@ func ApplyEditOptionsToAction(action ActionWithBuildSettings, options *EditData)
 
 	if options.BuildK8sIntegration != "" {
 		action.SetKubernetesIntegration(options.BuildK8sIntegration)
+	}
+
+	if options.Cpu != "" {
+		action.SetCpu(options.Cpu)
+	}
+
+	if options.Memory > 0 {
+		action.SetMemory(options.Memory)
 	}
 }
