@@ -22,6 +22,12 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			editSettingsOptions.ID = settings.Profile.Context.Environment
 
+			environmentModel, err := environment.Get(&editSettingsOptions.ItemOptions)
+			if err != nil {
+				return lib.FormatCommandError(cmd, err)
+			}
+			editSettingsOptions.UpdateEditSettingsForType(environmentModel.GetType())
+
 			model, err := environment.EditSettings(editSettingsOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)

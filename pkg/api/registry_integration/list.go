@@ -27,9 +27,6 @@ func NewListOptions() *ListOptions {
 }
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	// flags.StringVar(&lo.CloudProvider, "cloudProvider", lo.CloudProvider, "Filter by Cloud Provider")
-	// flags.StringVar(&lo.Status, "status", lo.Status, "Filter by Status")
-
 	lo.ListOptions.UpdateFlagSet(flags)
 }
 
@@ -65,18 +62,6 @@ func applyOptions(request sdk.ApiRegistryIntegrationListRequest, options *ListOp
 	if options.Organization != "" {
 		request = request.Organization(options.Organization)
 	}
-
-	// if options.Environment != "" {
-	// 	request = request.Environment(options.Environment)
-	// }
-
-	// if options.CloudProvider != "" {
-	// 	request = request.CloudProvider(options.CloudProvider)
-	// }
-
-	// if options.Status != "" {
-	// 	request = request.Status(options.Status)
-	// }
 
 	return request
 }

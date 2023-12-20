@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"bunnyshell.com/cli/pkg/api/common"
+	"bunnyshell.com/cli/pkg/net"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/avast/retry-go/v4"
@@ -22,7 +23,13 @@ type ModelFetcher[T any, PT ModelWithBuildSettings[T]] func(*common.ItemOptions)
 
 func CheckBuildSettingsValidation[T any, PT ModelWithBuildSettings[T]](fetcher ModelFetcher[T, PT], options *EditOptions, showSpinner bool) (PT, error) {
 	if showSpinner {
-		util.MakeSpinner("Validating the build settings...")
+		resume := net.PauseSpinner()
+		defer resume()
+
+		spinner := util.MakeSpinner("Validating the build settings...")
+
+		spinner.Start()
+		defer spinner.Stop()
 	}
 
 	itemOptions := common.NewItemOptions(options.ID)

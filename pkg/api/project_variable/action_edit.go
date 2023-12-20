@@ -45,7 +45,7 @@ func (eso *EditOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 		"Whether the project variable is secret or not",
 	)
 	flags.AddFlag(isSecretFlag)
-	isSecretFlag.NoOptDefVal = "false"
+	isSecretFlag.NoOptDefVal = "true"
 }
 
 func Edit(options *EditOptions) (*sdk.ProjectVariableItem, error) {

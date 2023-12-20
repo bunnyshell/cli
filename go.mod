@@ -8,13 +8,13 @@ require (
 	bunnyshell.com/dev v0.5.5
 	bunnyshell.com/sdk v0.15.1
 	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/avast/retry-go/v4 v4.5.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/fatih/color v1.15.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
 	github.com/thediveo/enumflag/v2 v2.0.4
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.2
 	k8s.io/apimachinery v0.28.2
@@ -26,7 +26,6 @@ require (
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-	github.com/avast/retry-go/v4 v4.5.1 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
@@ -85,6 +84,7 @@ require (
 	go.starlark.net v0.0.0-20231013162135-47c85baa7a64 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.13.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect

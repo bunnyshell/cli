@@ -31,7 +31,6 @@ func init() {
 	flags := command.Flags()
 
 	flags.AddFlag(options.Organization.GetFlag("organization"))
-	// flags.AddFlag(options.Environment.GetFlag("environment"))
 
 	listOptions.UpdateFlagSet(flags)
 

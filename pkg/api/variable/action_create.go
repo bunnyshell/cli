@@ -5,6 +5,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
+	"bunnyshell.com/cli/pkg/config/enum"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
@@ -17,7 +18,7 @@ type CreateOptions struct {
 	sdk.EnvironmentVariableCreateAction
 
 	Value    string
-	IsSecret bool
+	IsSecret enum.Bool
 }
 
 func NewCreateOptions() *CreateOptions {
@@ -34,12 +35,21 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 	flags.StringVar(&co.Value, "value", co.Value, "The value of the project variable")
 
-	flags.BoolVar(&co.IsSecret, "secret", co.IsSecret, "Whether the environment variable is secret or not")
+	isSecretFlag := enum.BoolFlag(
+		&co.IsSecret,
+		"secret",
+		"Whether the project variable is secret or not",
+	)
+	flags.AddFlag(isSecretFlag)
+	isSecretFlag.NoOptDefVal = "true"
 }
 
 func Create(options *CreateOptions) (*sdk.EnvironmentVariableItem, error) {
-	options.EnvironmentVariableCreateAction.SetIsSecret(options.IsSecret)
 	options.EnvironmentVariableCreateAction.SetValue(options.Value)
+
+	if options.IsSecret == enum.BoolTrue {
+		options.EnvironmentVariableCreateAction.SetIsSecret(true)
+	}
 
 	model, resp, err := CreateRaw(options)
 	if err != nil {

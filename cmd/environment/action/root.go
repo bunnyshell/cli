@@ -107,6 +107,7 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 	}
 
 	editSettingsOptions := environment.NewEditSettingsOptions(deployOptions.ID)
+	editSettingsOptions.UpdateEditSettingsForType(model.GetType())
 
 	editSettingsOptions.EnvironmentEditSettings.KubernetesIntegration.Set(&kubernetesIntegration)
 
