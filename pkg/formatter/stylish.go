@@ -127,6 +127,17 @@ func tabulateProjectItem(w *tabwriter.Writer, item *sdk.ProjectItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Environments", item.GetTotalEnvironments())
 
+	first := true
+	for key, value := range item.GetLabels() {
+		if first {
+			fmt.Fprintf(w, "%v\t %v\t %v\n", "Labels", key, value)
+
+			first = false
+		} else {
+			fmt.Fprintf(w, "\t %v\t %v\n", key, value)
+		}
+	}
+
 	if buildSettings, ok := item.GetBuildSettingsOk(); ok {
 		tabulateBuildSettings(w, buildSettings)
 	}
