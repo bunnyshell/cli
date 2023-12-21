@@ -9,6 +9,7 @@ import (
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func init() {
@@ -27,12 +28,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			editBuildSettingsOptions.ID = settings.Profile.Context.Environment
 
-			if useProjectSettings == enum.BoolTrue {
-				editBuildSettingsOptions.EditData.UseManagedCluster = enum.BoolFalse
-				editBuildSettingsOptions.EditData.RegistryIntegration = ""
-				editBuildSettingsOptions.Cpu = sdk.NullableString{}
-				editBuildSettingsOptions.Memory = sdk.NullableInt32{}
-			}
+			parseEditBuildSettingsOptions(cmd.Flags(), useProjectSettings, editBuildSettingsOptions)
 
 			_, err := environment.EditBuildSettings(editBuildSettingsOptions)
 			if err != nil {
@@ -73,4 +69,17 @@ func init() {
 	command.MarkFlagsMutuallyExclusive("use-project-settings", "memory")
 
 	mainCmd.AddCommand(command)
+}
+
+func parseEditBuildSettingsOptions(
+	flags *pflag.FlagSet,
+	useProjectSettings enum.Bool,
+	editBuildSettingsOptions *environment.EditBuildSettingsOptions,
+) {
+	if useProjectSettings == enum.BoolTrue {
+		editBuildSettingsOptions.EditData.UseManagedCluster = enum.BoolFalse
+		editBuildSettingsOptions.SetKubernetesIntegration(flags.Lookup("k8s").Value.String())
+		editBuildSettingsOptions.Cpu = sdk.NullableString{}
+		editBuildSettingsOptions.Memory = sdk.NullableInt32{}
+	}
 }
