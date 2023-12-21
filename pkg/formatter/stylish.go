@@ -126,6 +126,38 @@ func tabulateProjectItem(w *tabwriter.Writer, item *sdk.ProjectItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Environments", item.GetTotalEnvironments())
+
+	if buildSettings, ok := item.GetBuildSettingsOk(); ok {
+		tabulateBuildSettings(w, buildSettings)
+	}
+}
+
+func tabulateBuildSettings(w *tabwriter.Writer, item *sdk.BuildSettingsItem) {
+	buildCluster := ""
+	if useManagedCluster, ok := item.GetUseManagedClusterOk(); ok && !*useManagedCluster {
+		if k8sCluster, ok := item.GetKubernetesIntegrationOk(); ok && k8sCluster != nil {
+			buildCluster = *k8sCluster
+		} else {
+			buildCluster = "Project cluster"
+		}
+	}
+
+	if buildCluster != "" {
+		fmt.Fprintf(w, "%v\t %v\n", "Build Cluster", buildCluster)
+	}
+
+	registryIntegration := ""
+	if useManagedRegistry, ok := item.GetUseManagedRegistryOk(); ok && !*useManagedRegistry {
+		if registry, ok := item.GetRegistryIntegrationOk(); ok && registry != nil {
+			registryIntegration = *registry
+		} else {
+			registryIntegration = "Project registry"
+		}
+	}
+
+	if registryIntegration != "" {
+		fmt.Fprintf(w, "%v\t %v\n", "Build Registry", registryIntegration)
+	}
 }
 
 func tabulateEnvironmentCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentCollection) {
@@ -155,6 +187,15 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 			first = false
 		} else {
 			fmt.Fprintf(w, "\t %v\t %v\n", key, value)
+		}
+	}
+
+	if buildSettings, ok := item.GetBuildSettingsOk(); ok {
+		if buildSettings == nil {
+			fmt.Fprintf(w, "%v\t %v\n", "Build Cluster", "Project cluster")
+			fmt.Fprintf(w, "%v\t %v\n", "Build Registry", "Project registry")
+		} else {
+			tabulateBuildSettings(w, buildSettings)
 		}
 	}
 }
