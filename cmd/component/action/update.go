@@ -11,6 +11,7 @@ import (
 	"bunnyshell.com/cli/pkg/config"
 	githelper "bunnyshell.com/cli/pkg/helper/git"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -97,9 +98,10 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.ServiceComponent.GetRequiredFlag("id"))
-
 	flags.StringVar(&editComponentsData.GitTarget, "git-target", editComponentsData.GitTarget, "Target git spec (e.g. https://github.com/fork/templates@main)")
+	util.MarkFlagRequiredWithHelp(flags.Lookup("git-target"), "The target git spec (e.g. https://github.com/fork/templates@main)")
+
+	flags.AddFlag(options.ServiceComponent.GetRequiredFlag("id"))
 
 	flags.BoolVar(&editComponentsData.WithDeploy, "deploy", editComponentsData.WithDeploy, "Deploy the environment after update")
 	flags.StringVar(&editComponentsData.K8SIntegration, "k8s", editComponentsData.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")

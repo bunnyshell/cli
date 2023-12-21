@@ -1,11 +1,18 @@
 package git
 
 import (
+	"errors"
 	"net/url"
 	"strings"
 )
 
+var errEmptySpec = errors.New("empty spec")
+
 func ParseGitSec(spec string) (string, string, error) {
+	if len(spec) == 0 {
+		return "", "", errEmptySpec
+	}
+
 	if spec[0] == '@' {
 		return "", spec[1:], nil
 	}
