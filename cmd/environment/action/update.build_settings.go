@@ -16,7 +16,8 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	useProjectSettings := enum.BoolFalse
+	useClusterProjectSettings := enum.BoolFalse
+	useRegistryProjectSettings := enum.BoolFalse
 
 	editBuildSettingsOptions := environment.NewEditBuildSettingsOptions("")
 
@@ -28,7 +29,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			editBuildSettingsOptions.ID = settings.Profile.Context.Environment
 
-			parseEditBuildSettingsOptions(cmd.Flags(), useProjectSettings, editBuildSettingsOptions)
+			parseEditBuildSettingsOptions(cmd.Flags(), editBuildSettingsOptions, useClusterProjectSettings, useRegistryProjectSettings)
 
 			_, err := environment.EditBuildSettings(editBuildSettingsOptions)
 			if err != nil {
@@ -52,34 +53,51 @@ func init() {
 
 	flags.AddFlag(options.Environment.GetFlag("id", util.FlagRequired))
 
-	useProjectSettingsFlag := enum.BoolFlag(
-		&useProjectSettings,
-		"use-project-settings",
-		"Use the project build settings",
+	useClusterProjectSettingsFlag := enum.BoolFlag(
+		&useClusterProjectSettings,
+		"use-project-k8s",
+		"Use the project build cluster settings",
 	)
-	flags.AddFlag(useProjectSettingsFlag)
-	useProjectSettingsFlag.NoOptDefVal = "true"
+	flags.AddFlag(useClusterProjectSettingsFlag)
+	useClusterProjectSettingsFlag.NoOptDefVal = "true"
+
+	useRegistryProjectSettingsFlag := enum.BoolFlag(
+		&useRegistryProjectSettings,
+		"use-project-registry",
+		"Use the project build registry settings",
+	)
+	flags.AddFlag(useRegistryProjectSettingsFlag)
+	useRegistryProjectSettingsFlag.NoOptDefVal = "true"
 
 	editBuildSettingsOptions.UpdateFlagSet(flags)
 
 	// use-project-settings excludes the other build settings flags for the cluster
-	command.MarkFlagsMutuallyExclusive("use-project-settings", "use-managed-k8s")
-	command.MarkFlagsMutuallyExclusive("use-project-settings", "k8s")
-	command.MarkFlagsMutuallyExclusive("use-project-settings", "cpu")
-	command.MarkFlagsMutuallyExclusive("use-project-settings", "memory")
+	command.MarkFlagsMutuallyExclusive("use-project-k8s", "use-managed-k8s")
+	command.MarkFlagsMutuallyExclusive("use-project-k8s", "k8s")
+	command.MarkFlagsMutuallyExclusive("use-project-k8s", "cpu")
+	command.MarkFlagsMutuallyExclusive("use-project-k8s", "memory")
+
+	command.MarkFlagsMutuallyExclusive("use-project-registry", "use-managed-registry")
+	command.MarkFlagsMutuallyExclusive("use-project-registry", "registry")
 
 	mainCmd.AddCommand(command)
 }
 
 func parseEditBuildSettingsOptions(
 	flags *pflag.FlagSet,
-	useProjectSettings enum.Bool,
 	editBuildSettingsOptions *environment.EditBuildSettingsOptions,
+	useClusterProjectSettings enum.Bool,
+	useRegistryProjectSettings enum.Bool,
 ) {
-	if useProjectSettings == enum.BoolTrue {
+	if useClusterProjectSettings == enum.BoolTrue {
 		editBuildSettingsOptions.EditData.UseManagedCluster = enum.BoolFalse
-		editBuildSettingsOptions.SetKubernetesIntegration(flags.Lookup("k8s").Value.String())
+		editBuildSettingsOptions.SetKubernetesIntegration("")
 		editBuildSettingsOptions.Cpu = sdk.NullableString{}
 		editBuildSettingsOptions.Memory = sdk.NullableInt32{}
+	}
+
+	if useRegistryProjectSettings == enum.BoolTrue {
+		editBuildSettingsOptions.EditData.UseManagedRegistry = enum.BoolFalse
+		editBuildSettingsOptions.SetRegistryIntegration("")
 	}
 }
