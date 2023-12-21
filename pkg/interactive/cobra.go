@@ -65,8 +65,14 @@ func setterValidator(flag *pflag.Flag) survey.Validator {
 
 func getQuestion(flag *pflag.Flag) func() error {
 	message := fmt.Sprintf("Provide a value for flag '%s':", flag.Name)
+
+	minimumLength := 1
+	if util.GetFlagBoolAnnotation(flag, util.FlagAllowBlank) {
+		minimumLength = 0
+	}
+
 	validator := All(
-		AssertMinimumLength(1),
+		AssertMinimumLength(minimumLength),
 		setterValidator(flag),
 	)
 

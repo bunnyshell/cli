@@ -14,9 +14,10 @@ const (
 )
 
 const (
-	FlagHidden   BoolFlagType = "bns_annotation_hidden"
-	FlagRequired BoolFlagType = cobra.BashCompOneRequiredFlag
-	FlagDirname  BoolFlagType = cobra.BashCompSubdirsInDir
+	FlagHidden     BoolFlagType = "bns_annotation_hidden"
+	FlagRequired   BoolFlagType = cobra.BashCompOneRequiredFlag
+	FlagDirname    BoolFlagType = cobra.BashCompSubdirsInDir
+	FlagAllowBlank BoolFlagType = "bns_annotation_allow_blank"
 )
 
 func HasHelp(flag *pflag.Flag) bool {
@@ -79,4 +80,16 @@ func AppendFlagHelp(flag *pflag.Flag, helpTemplate string) *pflag.Flag {
 	flag.Annotations[HelpTemplate] = append(flag.Annotations[HelpTemplate], helpTemplate)
 
 	return flag
+}
+
+func GetFlagBoolAnnotation(flag *pflag.Flag, annotation BoolFlagType) bool {
+	if flag.Annotations == nil {
+		return false
+	}
+
+	if flag.Annotations[string(annotation)] == nil {
+		return false
+	}
+
+	return flag.Annotations[string(annotation)][0] == StrTrue
 }

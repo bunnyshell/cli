@@ -33,12 +33,14 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&co.Name, "name", co.Name, "Unique name for the environment variable")
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the environment for the new environment variable")
 
-	flags.StringVar(&co.Value, "value", co.Value, "The value of the project variable")
+	flags.StringVar(&co.Value, "value", co.Value, "The value of the environment variable")
+	util.MarkFlagRequiredWithHelp(flags.Lookup("value"), "A value for this environment variable")
+	util.MarkFlag(flags.Lookup("value"), util.FlagAllowBlank)
 
 	isSecretFlag := enum.BoolFlag(
 		&co.IsSecret,
 		"secret",
-		"Whether the project variable is secret or not",
+		"Whether the environment variable is secret or not",
 	)
 	flags.AddFlag(isSecretFlag)
 	isSecretFlag.NoOptDefVal = "true"
