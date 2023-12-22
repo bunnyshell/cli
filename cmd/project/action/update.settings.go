@@ -1,7 +1,7 @@
 package action
 
 import (
-	"bunnyshell.com/cli/pkg/api/environment"
+	"bunnyshell.com/cli/pkg/api/project"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
@@ -12,7 +12,7 @@ func init() {
 	options := config.GetOptions()
 	settings := config.GetSettings()
 
-	editSettingsOptions := environment.NewEditSettingsOptions("")
+	editSettingsOptions := project.NewEditSettingsOptions("")
 
 	command := &cobra.Command{
 		Use: "update-settings",
@@ -20,15 +20,9 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			editSettingsOptions.ID = settings.Profile.Context.Environment
+			editSettingsOptions.ID = settings.Profile.Context.Project
 
-			environmentModel, err := environment.Get(&editSettingsOptions.ItemOptions)
-			if err != nil {
-				return lib.FormatCommandError(cmd, err)
-			}
-			editSettingsOptions.UpdateEditSettingsForType(environmentModel.GetType())
-
-			model, err := environment.EditSettings(editSettingsOptions)
+			model, err := project.EditSettings(editSettingsOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
@@ -39,7 +33,7 @@ func init() {
 
 	flags := command.Flags()
 
-	flags.AddFlag(options.Environment.GetFlag("id", util.FlagRequired))
+	flags.AddFlag(options.Project.GetFlag("id", util.FlagRequired))
 
 	editSettingsOptions.UpdateFlagSet(flags)
 

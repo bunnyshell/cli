@@ -1,33 +1,34 @@
-package variable
+package action
 
 import (
-	"bunnyshell.com/cli/cmd/variable/action"
 	"bunnyshell.com/cli/pkg/api/variable"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	itemOptions := variable.NewItemOptions("")
+	deleteOptions := variable.NewDeleteOptions()
 
 	command := &cobra.Command{
-		Use: "show",
+		Use: "delete",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			model, err := variable.Get(itemOptions)
+			err := variable.Delete(deleteOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			return lib.FormatCommandData(cmd, model)
+			cmd.Printf("\nEnvironment variable %s successfully deleted\n", deleteOptions.ID)
+
+			return nil
 		},
 	}
 
 	flags := command.Flags()
 
-	flags.AddFlag(action.GetIDOption(&itemOptions.ID).GetRequiredFlag("id"))
+	flags.AddFlag(GetIDOption(&deleteOptions.ID).GetRequiredFlag("id"))
 
 	mainCmd.AddCommand(command)
 }

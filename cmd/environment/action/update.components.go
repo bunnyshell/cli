@@ -2,13 +2,13 @@ package action
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	"bunnyshell.com/cli/pkg/api/component/git"
 	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
+	githelper "bunnyshell.com/cli/pkg/helper/git"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
@@ -18,10 +18,10 @@ import (
 type EditComponentsSource struct {
 	// filters
 	Component string
-	Source    string
+	GitSource string
 
 	// updates
-	Target string
+	GitTarget string
 
 	// deployment
 	K8SIntegration string
@@ -30,13 +30,13 @@ type EditComponentsSource struct {
 var commandExample = fmt.Sprintf(`This command updates the Git details for components in an environment.
 
 You can update the Git details for a specific component in an environment by using the --component-name flag:
-%[1]s%[2]s env update-components --component-name my-component --target https://github.com/my-fork/my-repo@my-main
+%[1]s%[2]s env update-components --component-name my-component --git-target https://github.com/my-fork/my-repo@my-main
 
 You can update all components matching a specific repository:
-%[1]s%[2]s env update-components --source https://github.com/original/repo --target git@github.com/my-fork/my-repo
+%[1]s%[2]s env update-components --git-source https://github.com/original/repo --git-target git@github.com/my-fork/my-repo
 
 You can update all components matching a specific branch:
-%[1]s%[2]s env update-components --source @main --target @feature-branch`, "\t", build.Name)
+%[1]s%[2]s env update-components --git-source @main --git-target @feature-branch`, "\t", build.Name)
 
 func init() {
 	options := config.GetOptions()
@@ -86,7 +86,7 @@ func init() {
 			deployOptions := &editOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			if err = handleDeploy(cmd, deployOptions, "updated", editSource.K8SIntegration); err != nil {
+			if err = HandleDeploy(cmd, deployOptions, "updated", editSource.K8SIntegration); err != nil {
 				return err
 			}
 
@@ -100,14 +100,14 @@ func init() {
 
 	editOptions.UpdateFlagSet(flags)
 
-	flags.StringVar(&editSource.Target, "target", editSource.Target, "Target git spec (e.g. https://github.com/fork/templates@main)")
+	flags.StringVar(&editSource.GitTarget, "git-target", editSource.GitTarget, "Target git spec (e.g. https://github.com/fork/templates@main)")
 
-	targetFlag := flags.Lookup("target")
+	targetFlag := flags.Lookup("git-target")
 	util.MarkFlagRequiredWithHelp(targetFlag, "Update components git repository and branch. Example: https://github.com/my-fork/my-repo@my-branch")
 
-	flags.StringVar(&editSource.Source, "source", editSource.Source, "Filter by git spec (e.g. https://github.com/bunnyshell/templates@main)")
+	flags.StringVar(&editSource.GitSource, "git-source", editSource.GitSource, "Filter by git spec (e.g. https://github.com/bunnyshell/templates@main)")
 	flags.StringVar(&editSource.Component, "component-name", editSource.Component, "Filter by component name")
-	command.MarkFlagsMutuallyExclusive("source", "component-name")
+	command.MarkFlagsMutuallyExclusive("git-source", "component-name")
 
 	mainCmd.AddCommand(command)
 }
@@ -150,10 +150,10 @@ func componentToString(matched []sdk.ComponentGitCollection) string {
 }
 
 func fillWithGitSpec(editSource *EditComponentsSource, editOptions *environment.EditComponentOptions) error {
-	if editSource.Target != "" {
-		target, branch, err := parseGitSec(editSource.Target)
+	if editSource.GitTarget != "" {
+		target, branch, err := githelper.ParseGitSec(editSource.GitTarget)
 		if err != nil {
-			return fmt.Errorf("invalid git spec for %s: %w", editSource.Target, err)
+			return fmt.Errorf("invalid git spec for %s: %w", editSource.GitTarget, err)
 		}
 
 		editOptions.TargetRepository = target
@@ -166,37 +166,17 @@ func fillWithGitSpec(editSource *EditComponentsSource, editOptions *environment.
 		return nil
 	}
 
-	if editSource.Source == "" {
+	if editSource.GitSource == "" {
 		return nil
 	}
 
-	target, branch, err := parseGitSec(editSource.Source)
+	target, branch, err := githelper.ParseGitSec(editSource.GitSource)
 	if err != nil {
-		return fmt.Errorf("invalid git spec for %s: %w", editSource.Source, err)
+		return fmt.Errorf("invalid git spec for %s: %w", editSource.GitSource, err)
 	}
 
 	editOptions.SourceRepository = target
 	editOptions.SourceBranch = branch
 
 	return nil
-}
-
-func parseGitSec(spec string) (string, string, error) {
-	if spec[0] == '@' {
-		return "", spec[1:], nil
-	}
-
-	info, err := url.Parse(spec)
-	if err != nil {
-		return "", "", err
-	}
-
-	if !strings.Contains(info.Path, "@") {
-		return spec, "", nil
-	}
-
-	chunks := strings.SplitN(info.Path, "@", 2)
-	info.Path = chunks[0]
-
-	return info.String(), chunks[1], nil
 }

@@ -1,6 +1,8 @@
 package environment
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"bunnyshell.com/cli/pkg/api"
@@ -11,10 +13,15 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var (
+	errUnknownEnvironmentType   = errors.New("unknown environment type")
+	errUndefinedEnvironmentType = errors.New("undefined environment type")
+)
+
 type EditSettingsOptions struct {
 	common.ItemOptions
 
-	sdk.EnvironmentEditSettings
+	*sdk.EnvironmentEditSettings
 
 	EditSettingsData
 }
@@ -29,10 +36,15 @@ type EditSettingsData struct {
 	LabelReplace bool
 
 	K8SIntegration string
+
+	EphemeralK8SIntegration   string
+	CreateEphemeralOnPrCreate enum.Bool
+	DestroyEphemeralOnPrClose enum.Bool
+	AutoDeployEphemeral       enum.Bool
 }
 
 func NewEditSettingsOptions(environment string) *EditSettingsOptions {
-	return &EditSettingsOptions{
+	options := &EditSettingsOptions{
 		ItemOptions: *common.NewItemOptions(environment),
 
 		EditSettingsData: EditSettingsData{
@@ -40,8 +52,25 @@ func NewEditSettingsOptions(environment string) *EditSettingsOptions {
 			AutoUpdate:               enum.BoolNone,
 		},
 
-		EnvironmentEditSettings: *sdk.NewEnvironmentEditSettings(),
+		EnvironmentEditSettings: sdk.NewEnvironmentEditSettingsWithDefaults(),
 	}
+
+	return options
+}
+
+func (eso *EditSettingsOptions) UpdateEditSettingsForType(environmentType string) error {
+	switch environmentType {
+	case "primary":
+		primaryEdit := sdk.PrimaryAsEnvironmentEditSettingsEdit(sdk.NewPrimaryWithDefaults())
+		eso.Edit = &primaryEdit
+	case "ephemeral":
+		ephemeralEdit := sdk.EphemeralAsEnvironmentEditSettingsEdit(sdk.NewEphemeralWithDefaults())
+		eso.Edit = &ephemeralEdit
+	default:
+		return fmt.Errorf("%w: %s", errUnknownEnvironmentType, environmentType)
+	}
+
+	return nil
 }
 
 func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
@@ -69,9 +98,39 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.BoolVar(&data.LabelReplace, "label-replace", data.LabelReplace, "Set label strategy to replace (default: merge)")
 
 	flags.StringVar(&data.K8SIntegration, "k8s", data.K8SIntegration, "Set Kubernetes integration for the environment (if not set)")
+
+	ephCreateFlag := enum.BoolFlag(
+		&data.CreateEphemeralOnPrCreate,
+		"create-ephemeral-on-pr",
+		"Create ephemeral environments when pull requests are created (for 'primary' environments)",
+	)
+	flags.AddFlag(ephCreateFlag)
+	ephCreateFlag.NoOptDefVal = "true"
+
+	ephDestroyFlag := enum.BoolFlag(
+		&data.DestroyEphemeralOnPrClose,
+		"destroy-ephemeral-on-pr-close",
+		"Destroys the created ephemerals when the pull request is closed (or merged) (for 'primary' environments)",
+	)
+	flags.AddFlag(ephDestroyFlag)
+	ephDestroyFlag.NoOptDefVal = "true"
+
+	ephAutoDeployFlag := enum.BoolFlag(
+		&data.AutoDeployEphemeral,
+		"auto-deploy-ephemerals",
+		"Auto deploy the created ephemerals (for 'primary' environments)",
+	)
+	flags.AddFlag(ephAutoDeployFlag)
+	ephAutoDeployFlag.NoOptDefVal = "true"
+
+	flags.StringVar(&data.EphemeralK8SIntegration, "ephemerals-k8s", data.EphemeralK8SIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment (for 'primary' environments)")
 }
 
 func EditSettings(options *EditSettingsOptions) (*sdk.EnvironmentItem, error) {
+	if options.Edit == nil {
+		return nil, fmt.Errorf("%w", errUndefinedEnvironmentType)
+	}
+
 	model, resp, err := EditSettingsRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -127,7 +186,30 @@ func applyEditSettingsOptions(
 		options.EnvironmentEditSettings.SetLabels(labelsEdit)
 	}
 
-	request = request.EnvironmentEditSettings(options.EnvironmentEditSettings)
+	isPrimaryType := options.EnvironmentEditSettings.Edit.Primary != nil
+	if isPrimaryType {
+		applyPrimaryEditSettingsOptions(options)
+	}
+
+	request = request.EnvironmentEditSettings(*options.EnvironmentEditSettings)
 
 	return request
+}
+
+func applyPrimaryEditSettingsOptions(options *EditSettingsOptions) {
+	if options.EphemeralK8SIntegration != "" {
+		options.EnvironmentEditSettings.Edit.Primary.SetEphemeralKubernetesIntegration(options.EphemeralK8SIntegration)
+	}
+
+	if options.CreateEphemeralOnPrCreate != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetCreateEphemeralOnPrCreate(options.CreateEphemeralOnPrCreate == enum.BoolTrue)
+	}
+
+	if options.AutoDeployEphemeral != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetAutoDeployEphemeral(options.AutoDeployEphemeral == enum.BoolTrue)
+	}
+
+	if options.DestroyEphemeralOnPrClose != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetDestroyEphemeralOnPrClose(options.DestroyEphemeralOnPrClose == enum.BoolTrue)
+	}
 }

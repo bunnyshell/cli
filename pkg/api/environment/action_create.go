@@ -16,14 +16,16 @@ type CreateOptions struct {
 	sdk.EnvironmentCreateAction
 
 	WithDeploy bool
-
-	Labels map[string]string
 }
 
 func NewCreateOptions() *CreateOptions {
-	environmentCreateAction := sdk.NewEnvironmentCreateAction("", "")
+	environmentCreateAction := sdk.NewEnvironmentCreateActionWithDefaults()
 	environmentCreateAction.SetKubernetesIntegration("")
 	environmentCreateAction.SetEphemeralKubernetesIntegration("")
+	environmentCreateAction.SetLabels(map[string]string{})
+	environmentCreateAction.SetAutoDeployEphemeral(false)
+	environmentCreateAction.SetCreateEphemeralOnPrCreate(false)
+	environmentCreateAction.SetDestroyEphemeralOnPrClose(false)
 
 	return &CreateOptions{
 		DeployOptions: *NewDeployOptions(""),
@@ -41,7 +43,13 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the new environment")
 
-	flags.StringToStringVar(&co.Labels, "label", co.Labels, "Set labels for the new environment (key=value)")
+	flags.StringToStringVar(co.Labels, "label", *co.Labels, "Set labels for the new environment (key=value)")
+
+	ephemeralsK8sIntegration := co.EphemeralKubernetesIntegration.Get()
+	flags.BoolVar(co.CreateEphemeralOnPrCreate, "create-ephemeral-on-pr", *co.CreateEphemeralOnPrCreate, "Create ephemeral environments when pull requests are created")
+	flags.BoolVar(co.DestroyEphemeralOnPrClose, "destroy-ephemeral-on-pr-close", *co.DestroyEphemeralOnPrClose, "Destroys the created ephemerals when the pull request is closed (or merged)")
+	flags.BoolVar(co.AutoDeployEphemeral, "auto-deploy-ephemerals", *co.AutoDeployEphemeral, "Auto deploy the created ephemerals")
+	flags.StringVar(ephemeralsK8sIntegration, "ephemerals-k8s", *ephemeralsK8sIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment")
 
 	co.DeployOptions.UpdateFlagSet(flags)
 }
@@ -63,8 +71,8 @@ func CreateRaw(options *CreateOptions) (*sdk.EnvironmentItem, *http.Response, er
 
 	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentCreate(ctx)
 
-	if len(options.Labels) > 0 {
-		options.EnvironmentCreateAction.SetLabels(options.Labels)
+	if len(*options.Labels) > 0 {
+		options.EnvironmentCreateAction.SetLabels(*options.Labels)
 	}
 
 	request = request.EnvironmentCreateAction(options.EnvironmentCreateAction)

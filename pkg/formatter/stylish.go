@@ -30,6 +30,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentVariableCollection:
 		tabulateEnvironmentVariableCollection(writer, dataType)
+	case *sdk.PaginatedProjectVariableCollection:
+		tabulateProjectVariableCollection(writer, dataType)
 	case *sdk.PaginatedKubernetesIntegrationCollection:
 		tabulateKubernetesCollection(writer, dataType)
 	case *sdk.PaginatedPipelineCollection:
@@ -42,6 +44,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateTemplateCollection(writer, dataType)
 	case *sdk.PaginatedTemplatesRepositoryCollection:
 		tabulateTemplatesRepositoryCollection(writer, dataType)
+	case *sdk.PaginatedRegistryIntegrationCollection:
+		tabulateRegistryIntegrationsCollection(writer, dataType)
 	case []sdk.ComponentEndpointCollection:
 		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
@@ -56,8 +60,12 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventItem(writer, dataType)
 	case *sdk.EnvironmentVariableItem:
 		tabulateEnvironmentVariableItem(writer, dataType)
+	case *sdk.ProjectVariableItem:
+		tabulateProjectVariableItem(writer, dataType)
 	case *sdk.KubernetesIntegrationItem:
 		tabulateKubernetesItem(writer, dataType)
+	case *sdk.RegistryIntegrationItem:
+		tabulateRegistryIntegrationItem(writer, dataType)
 	case *sdk.PipelineItem:
 		tabulatePipelineItem(writer, dataType)
 	case *sdk.ComponentGitItem:
@@ -118,6 +126,49 @@ func tabulateProjectItem(w *tabwriter.Writer, item *sdk.ProjectItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Environments", item.GetTotalEnvironments())
+
+	first := true
+	for key, value := range item.GetLabels() {
+		if first {
+			fmt.Fprintf(w, "%v\t %v\t %v\n", "Labels", key, value)
+
+			first = false
+		} else {
+			fmt.Fprintf(w, "\t %v\t %v\n", key, value)
+		}
+	}
+
+	if buildSettings, ok := item.GetBuildSettingsOk(); ok {
+		tabulateBuildSettings(w, buildSettings)
+	}
+}
+
+func tabulateBuildSettings(w *tabwriter.Writer, item *sdk.BuildSettingsItem) {
+	buildCluster := ""
+	if useManagedCluster, ok := item.GetUseManagedClusterOk(); ok && !*useManagedCluster {
+		if k8sCluster, ok := item.GetKubernetesIntegrationOk(); ok && k8sCluster != nil {
+			buildCluster = *k8sCluster
+		} else {
+			buildCluster = "Project cluster"
+		}
+	}
+
+	if buildCluster != "" {
+		fmt.Fprintf(w, "%v\t %v\n", "Build Cluster", buildCluster)
+	}
+
+	registryIntegration := ""
+	if useManagedRegistry, ok := item.GetUseManagedRegistryOk(); ok && !*useManagedRegistry {
+		if registry, ok := item.GetRegistryIntegrationOk(); ok && registry != nil {
+			registryIntegration = *registry
+		} else {
+			registryIntegration = "Project registry"
+		}
+	}
+
+	if registryIntegration != "" {
+		fmt.Fprintf(w, "%v\t %v\n", "Build Registry", registryIntegration)
+	}
 }
 
 func tabulateEnvironmentCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentCollection) {
@@ -147,6 +198,15 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 			first = false
 		} else {
 			fmt.Fprintf(w, "\t %v\t %v\n", key, value)
+		}
+	}
+
+	if buildSettings, ok := item.GetBuildSettingsOk(); ok {
+		if buildSettings == nil {
+			fmt.Fprintf(w, "%v\t %v\n", "Build Cluster", "Project cluster")
+			fmt.Fprintf(w, "%v\t %v\n", "Build Registry", "Project registry")
+		} else {
+			tabulateBuildSettings(w, buildSettings)
 		}
 	}
 }
@@ -187,6 +247,16 @@ func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.Pagina
 	}
 }
 
+func tabulateProjectVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedProjectVariableCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", "ProjectVarID", "ProjectID", "OrganizationID", "Name")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\n", item.GetId(), item.GetProject(), item.GetOrganization(), item.GetName())
+		}
+	}
+}
+
 func tabulateEventCollection(w *tabwriter.Writer, data *sdk.PaginatedEventCollection) {
 	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "EventID", "EnvironmentID", "OrganizationID", "Type", "Status")
 
@@ -208,7 +278,17 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 }
 
 func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentVariableID", item.GetId())
 	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
+	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
+	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
+	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())
+	fmt.Fprintf(w, "%v\t %v\n", "Secret", item.GetSecret())
+}
+
+func tabulateProjectVariableItem(w *tabwriter.Writer, item *sdk.ProjectVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "ProjectVariableID", item.GetId())
+	fmt.Fprintf(w, "%v\t %v\n", "ProjectID", item.GetProject())
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())

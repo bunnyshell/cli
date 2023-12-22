@@ -40,7 +40,7 @@ func validateActionOptions(actionOptions *common.ActionOptions) error {
 	return fmt.Errorf("%w when following pipelines", lib.ErrNotStylish)
 }
 
-func handleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, action string, kubernetesIntegration string) error {
+func HandleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, action string, kubernetesIntegration string) error {
 	if err := ensureKubernetesIntegration(deployOptions, kubernetesIntegration); err != nil {
 		return err
 	}
@@ -107,6 +107,7 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 	}
 
 	editSettingsOptions := environment.NewEditSettingsOptions(deployOptions.ID)
+	editSettingsOptions.UpdateEditSettingsForType(model.GetType())
 
 	editSettingsOptions.EnvironmentEditSettings.KubernetesIntegration.Set(&kubernetesIntegration)
 
