@@ -15,8 +15,6 @@ RUN echo 'source <(bns completion bash)' >> /root/.bashrc
 
 # binaries
 COPY bns /usr/bin
-# @deprecated but kept for backwards compatibility
-RUN ln -sf /usr/bin/bns /bns
 
 # main config file
 RUN mkdir /root/.bunnyshell
