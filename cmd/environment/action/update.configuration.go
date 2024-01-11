@@ -77,7 +77,7 @@ func init() {
 			deployOptions := &editConfigurationOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			return HandleDeploy(cmd, deployOptions, "updated", editConfigurationOptions.K8SIntegration)
+			return HandleDeploy(cmd, deployOptions, "updated", editConfigurationOptions.K8SIntegration, settings.IsStylish())
 		},
 	}
 

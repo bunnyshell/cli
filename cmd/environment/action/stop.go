@@ -34,13 +34,19 @@ func init() {
 				return lib.FormatCommandData(cmd, event)
 			}
 
-			if err = processEventPipeline(cmd, event, "stop"); err != nil {
-				cmd.Printf("\nEnvironment %s stopping failed\n", stopOptions.ID)
+			printLogs := settings.IsStylish()
+
+			if err = processEventPipeline(cmd, event, "stop", printLogs); err != nil {
+				if printLogs {
+					cmd.Printf("\nEnvironment %s stopping failed\n", stopOptions.ID)
+				}
 
 				return err
 			}
 
-			cmd.Printf("\nEnvironment %s successfully stopped\n", stopOptions.ID)
+			if printLogs {
+				cmd.Printf("\nEnvironment %s successfully stopped\n", stopOptions.ID)
+			}
 
 			return nil
 		},

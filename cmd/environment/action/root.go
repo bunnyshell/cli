@@ -40,12 +40,12 @@ func validateActionOptions(actionOptions *common.ActionOptions) error {
 	return fmt.Errorf("%w when following pipelines", lib.ErrNotStylish)
 }
 
-func HandleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, action string, kubernetesIntegration string) error {
+func HandleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, action string, kubernetesIntegration string, printLogs bool) error {
 	if err := ensureKubernetesIntegration(deployOptions, kubernetesIntegration); err != nil {
 		return err
 	}
 
-	if action != "" {
+	if printLogs && action != "" {
 		cmd.Printf("\nEnvironment %s successfully %s... deploying...\n", deployOptions.ID, action)
 	}
 
@@ -58,13 +58,17 @@ func HandleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, 
 		return lib.FormatCommandData(cmd, event)
 	}
 
-	if err = processEventPipeline(cmd, event, "deploy"); err != nil {
-		cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
+	if err = processEventPipeline(cmd, event, "deploy", printLogs); err != nil {
+		if printLogs {
+			cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
+		}
 
 		return err
 	}
 
-	cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
+	if printLogs {
+		cmd.Printf("\nEnvironment %s successfully deployed\n", deployOptions.ID)
+	}
 
 	return showEnvironmentEndpoints(cmd, deployOptions.ID)
 }
@@ -116,27 +120,31 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 	return err
 }
 
-func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string) error {
+func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string, printLogs bool) error {
 	progressOptions := progress.NewOptions()
 
-	cmd.Printf(
-		"Environment %s scheduled to %s with EventID %s\n",
-		event.GetEnvironment(),
-		action,
-		event.GetId(),
-	)
+	if printLogs {
+		cmd.Printf(
+			"Environment %s scheduled to %s with EventID %s\n",
+			event.GetEnvironment(),
+			action,
+			event.GetId(),
+		)
+	}
 
 	pipeline, err := progress.EventToPipeline(event, progressOptions)
 	if err != nil {
 		return err
 	}
 
-	cmd.Printf(
-		"EventID %s generated %s pipeline %s\n",
-		pipeline.GetEvent(),
-		action,
-		pipeline.GetId(),
-	)
+	if printLogs {
+		cmd.Printf(
+			"EventID %s generated %s pipeline %s\n",
+			pipeline.GetEvent(),
+			action,
+			pipeline.GetId(),
+		)
+	}
 
 	if err = progress.Pipeline(pipeline.GetId(), nil); err != nil {
 		return err
