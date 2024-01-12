@@ -34,7 +34,7 @@ func init() {
 				return lib.FormatCommandData(cmd, event)
 			}
 
-			if err = processEventPipeline(cmd, event, "deploy"); err != nil {
+			if err = processEventPipeline(cmd, event, "delete", settings.IsStylish()); err != nil {
 				cmd.Printf("\nEnvironment %s deletion failed\n", deleteOptions.ID)
 
 				return err

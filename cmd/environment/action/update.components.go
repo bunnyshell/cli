@@ -66,20 +66,27 @@ func init() {
 			}
 
 			if len(matched) == 0 {
-				cmd.Println("No components matched the filter")
+				cmd.PrintErrln("No components matched the filter")
 
 				return nil
 			}
 
 			matchedComponentNames := componentToNamesList(matched)
-			cmd.Printf(`Updating components "%s"%s`, strings.Join(matchedComponentNames, ", "), "\n\n")
+
+			printLogs := settings.IsStylish()
+
+			if printLogs {
+  			cmd.Printf(`Updating components "%s"%s`, strings.Join(matchedComponentNames, ", "), "\n\n")
+			}
 
 			model, err := environment.EditComponents(editOptions)
 			if err != nil {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			cmd.Printf("Successfully updated Git details...%s", "\n\n")
+			if printLogs {
+				cmd.Printf("Successfully updated Git details...%s", "\n\n")
+			}
 
 			if !editOptions.WithDeploy {
 				return showUpdateGitInfo(cmd, model.GetId(), matchedComponentNames)
@@ -88,7 +95,7 @@ func init() {
 			deployOptions := &editOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			if err = HandleDeploy(cmd, deployOptions, "updated", editSource.K8SIntegration); err != nil {
+			if err = HandleDeploy(cmd, deployOptions, "updated", editSource.K8SIntegration, printLogs); err != nil {
 				return err
 			}
 

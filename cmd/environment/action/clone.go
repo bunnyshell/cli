@@ -26,7 +26,11 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			cmd.Printf("\nEnvironment %s successfully cloned:\n\n", cloneOptions.ID)
+			printLogs := settings.IsStylish()
+
+			if printLogs {
+				cmd.Printf("\nEnvironment %s successfully cloned:\n\n", cloneOptions.ID)
+			}
 
 			return lib.FormatCommandData(cmd, model)
 		},

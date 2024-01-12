@@ -29,7 +29,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deployOptions.ID = settings.Profile.Context.Environment
 
-			return HandleDeploy(cmd, deployOptions, "", deployData.K8SIntegration)
+			return HandleDeploy(cmd, deployOptions, "", deployData.K8SIntegration, settings.IsStylish())
 		},
 	}
 

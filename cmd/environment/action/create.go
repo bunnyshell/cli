@@ -99,7 +99,7 @@ func init() {
 			deployOptions := &createOptions.DeployOptions
 			deployOptions.ID = model.GetId()
 
-			return HandleDeploy(cmd, deployOptions, "created", createOptions.GetKubernetesIntegration())
+			return HandleDeploy(cmd, deployOptions, "created", createOptions.GetKubernetesIntegration(), settings.IsStylish())
 		},
 	}
 
