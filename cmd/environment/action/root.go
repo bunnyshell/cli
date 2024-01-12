@@ -144,6 +144,10 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 			action,
 			pipeline.GetId(),
 		)
+
+		if pipeline.GetWebUrl() != "" {
+			cmd.Printf("\nPipeline details: %s\n\n", pipeline.GetWebUrl())
+		}
 	}
 
 	if err = progress.Pipeline(pipeline.GetId(), nil); err != nil {

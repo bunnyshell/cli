@@ -22,6 +22,10 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			listOptions.Organization = settings.Profile.Context.Organization
 
+			if listOptions.Source == "public" {
+				listOptions.Organization = ""
+			}
+
 			return lib.ShowCollection(cmd, listOptions, func() (lib.ModelWithPagination, error) {
 				return template.List(listOptions)
 			})
