@@ -13,6 +13,7 @@ import (
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
+	"k8s.io/kubectl/pkg/util/slice"
 )
 
 type EditComponentsSource struct {
@@ -70,10 +71,12 @@ func init() {
 				return nil
 			}
 
+			matchedComponentNames := componentToNamesList(matched)
+
 			printLogs := settings.IsStylish()
 
 			if printLogs {
-				cmd.Printf(`Updating components "%s"%s`, componentToString(matched), "\n\n")
+  			cmd.Printf(`Updating components "%s"%s`, strings.Join(matchedComponentNames, ", "), "\n\n")
 			}
 
 			model, err := environment.EditComponents(editOptions)
@@ -86,7 +89,7 @@ func init() {
 			}
 
 			if !editOptions.WithDeploy {
-				return showGitInfo(cmd, model.GetId())
+				return showUpdateGitInfo(cmd, model.GetId(), matchedComponentNames)
 			}
 
 			deployOptions := &editOptions.DeployOptions
@@ -96,7 +99,7 @@ func init() {
 				return err
 			}
 
-			return showGitInfo(cmd, model.GetId())
+			return showUpdateGitInfo(cmd, model.GetId(), matchedComponentNames)
 		},
 	}
 
@@ -130,10 +133,14 @@ func findMatchedComponents(editOptions *environment.EditComponentOptions) ([]sdk
 		aggOptions.GitBranch = editOptions.SourceBranch
 	}
 
+	if editOptions.Component != "" {
+		aggOptions.Name = editOptions.Component
+	}
+
 	return git.Aggregate(aggOptions)
 }
 
-func showGitInfo(cmd *cobra.Command, environment string) error {
+func showUpdateGitInfo(cmd *cobra.Command, environment string, componentNames []string) error {
 	listOptions := git.NewAggregateOptions()
 	listOptions.Environment = environment
 
@@ -142,17 +149,24 @@ func showGitInfo(cmd *cobra.Command, environment string) error {
 		return err
 	}
 
-	return lib.FormatCommandData(cmd, agg)
+	filtered := []sdk.ComponentGitCollection{}
+	for _, element := range agg {
+		if slice.ContainsString(componentNames, element.GetName(), nil) {
+			filtered = append(filtered, element)
+		}
+	}
+
+	return lib.FormatCommandData(cmd, filtered)
 }
 
-func componentToString(matched []sdk.ComponentGitCollection) string {
+func componentToNamesList(matched []sdk.ComponentGitCollection) []string {
 	components := []string{}
 
 	for _, item := range matched {
 		components = append(components, item.GetName())
 	}
 
-	return strings.Join(components, ", ")
+	return components
 }
 
 func fillWithGitSpec(editSource *EditComponentsSource, editOptions *environment.EditComponentOptions) error {
