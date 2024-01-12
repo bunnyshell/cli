@@ -7,6 +7,7 @@ import (
 
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/formatter"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -84,7 +85,7 @@ func (manager *Manager) Save() error {
 }
 
 func (manager *Manager) SafeSave() error {
-	exists, err := fileExists(manager.settings.ConfigFile)
+	exists, err := util.FileExists(manager.settings.ConfigFile)
 	if err != nil {
 		return err
 	}
@@ -123,17 +124,4 @@ func getFormatForFile(file string) string {
 	default:
 		return "yaml"
 	}
-}
-
-func fileExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-
-	return false, err
 }

@@ -70,6 +70,10 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulatePipelineItem(writer, dataType)
 	case *sdk.ComponentGitItem:
 		tabulateComponentGitItem(writer, dataType)
+	case *sdk.SecretDecryptedItem:
+		tabulateSecretDecryptedItem(writer, dataType)
+	case *sdk.SecretEncryptedItem:
+		tabulateSecretEncryptedItem(writer, dataType)
 	case *sdk.TemplateItem:
 		tabulateTemplateItem(writer, dataType)
 	case *sdk.TemplatesRepositoryItem:
