@@ -88,7 +88,7 @@ func init() {
 			deployOptions := &editOptions.DeployOptions
 			deployOptions.ID = model.GetEnvironment()
 
-			if err = action.HandleDeploy(cmd, deployOptions, "updated", editComponentsData.K8SIntegration); err != nil {
+			if err = action.HandleDeploy(cmd, deployOptions, "updated", editComponentsData.K8SIntegration, settings.IsStylish()); err != nil {
 				return err
 			}
 
