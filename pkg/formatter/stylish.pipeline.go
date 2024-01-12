@@ -27,11 +27,17 @@ func tabulatePipelineCollection(writer *tabwriter.Writer, data *sdk.PaginatedPip
 }
 
 func tabulatePipelineItem(writer *tabwriter.Writer, item *sdk.PipelineItem) {
+	hasWebUrl := item.GetWebUrl() != ""
+
 	fmt.Fprintf(writer, "%v\t %v\n", "PipelineID", item.GetId())
 	fmt.Fprintf(writer, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
 	fmt.Fprintf(writer, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(writer, "%v\t %v\n", "Description", item.GetDescription())
 	fmt.Fprintf(writer, "%v\t %v\n", "Status", item.GetStatus())
+
+	if hasWebUrl {
+		fmt.Fprintf(writer, "%v\t %v\n", "URL", item.GetWebUrl())
+	}
 
 	for index, stage := range item.GetStages() {
 		if index == 0 {
