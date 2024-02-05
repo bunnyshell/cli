@@ -2,6 +2,7 @@ package component
 
 import (
 	"bunnyshell.com/cli/cmd/component/action"
+	"bunnyshell.com/cli/cmd/component/variable"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -33,6 +34,17 @@ func init() {
 		},
 		action.GetMainCommand().Commands(),
 	)
+
+	util.AddGroupedCommands(
+		mainCmd,
+		cobra.Group{
+			ID:    "variables",
+			Title: "Commands for Component Variables:",
+		},
+		[]*cobra.Command{variable.GetMainCommand()},
+	)
+
+	config.MainManager.CommandWithGlobalOptions(mainCmd)
 }
 
 func GetMainCommand() *cobra.Command {

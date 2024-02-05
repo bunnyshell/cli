@@ -20,7 +20,7 @@ func init() {
 				return lib.FormatCommandError(cmd, err)
 			}
 
-			cmd.Printf("\nProject %s successfully deleted\n", deleteOptions.ID)
+			cmd.Printf("\nProject variable %s successfully deleted\n", deleteOptions.ID)
 
 			return nil
 		},

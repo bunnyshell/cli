@@ -6,8 +6,9 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 require (
 	bunnyshell.com/dev v0.5.6
-	bunnyshell.com/sdk v0.15.3
+	bunnyshell.com/sdk v0.15.4
 	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/avast/retry-go/v4 v4.5.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/fatih/color v1.15.0
@@ -25,7 +26,6 @@ require (
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect

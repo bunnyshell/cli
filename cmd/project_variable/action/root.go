@@ -1,11 +1,17 @@
 package action
 
 import (
+	"errors"
 	"fmt"
 
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config/option"
 	"github.com/spf13/cobra"
+)
+
+var (
+	errMissingValue        = errors.New("the plain value must be provided")
+	errMultipleValueInputs = errors.New("the value must be provided either by argument or by stdin, not both")
 )
 
 var mainCmd = &cobra.Command{}
