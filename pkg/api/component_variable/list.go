@@ -1,4 +1,4 @@
-package component
+package component_variable
 
 import (
 	"net/http"
@@ -17,9 +17,9 @@ type ListOptions struct {
 	Project      string
 	Environment  string
 
-	Name            string
-	ClusterStatus   string
-	OperationStatus string
+	Name          string
+	Component     string
+	ComponentName string
 }
 
 func NewListOptions() *ListOptions {
@@ -29,14 +29,13 @@ func NewListOptions() *ListOptions {
 }
 
 func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
-	flags.StringVar(&lo.ClusterStatus, "clusterStatus", lo.ClusterStatus, "Filter by Cluster Status")
-	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
-	flags.StringVar(&lo.Name, "componentName", lo.OperationStatus, "Filter by Name")
+	flags.StringVar(&lo.Name, "name", lo.Name, "Filter by Name")
+	flags.StringVar(&lo.ComponentName, "component-name", lo.ComponentName, "Filter by Component Name")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }
 
-func List(options *ListOptions) (*sdk.PaginatedComponentCollection, error) {
+func List(options *ListOptions) (*sdk.PaginatedServiceComponentVariableCollection, error) {
 	model, resp, err := ListRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -45,18 +44,18 @@ func List(options *ListOptions) (*sdk.PaginatedComponentCollection, error) {
 	return model, nil
 }
 
-func ListRaw(options *ListOptions) (*sdk.PaginatedComponentCollection, *http.Response, error) {
+func ListRaw(options *ListOptions) (*sdk.PaginatedServiceComponentVariableCollection, *http.Response, error) {
 	profile := options.GetProfile()
 
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).ComponentAPI.ComponentList(ctx)
+	request := lib.GetAPIFromProfile(profile).ServiceComponentVariableAPI.ServiceComponentVariableList(ctx)
 
 	return applyOptions(request, options).Execute()
 }
 
-func applyOptions(request sdk.ApiComponentListRequest, options *ListOptions) sdk.ApiComponentListRequest {
+func applyOptions(request sdk.ApiServiceComponentVariableListRequest, options *ListOptions) sdk.ApiServiceComponentVariableListRequest {
 	if options == nil {
 		return request
 	}
@@ -69,24 +68,20 @@ func applyOptions(request sdk.ApiComponentListRequest, options *ListOptions) sdk
 		request = request.Organization(options.Organization)
 	}
 
-	if options.Project != "" {
-		request = request.Project(options.Project)
-	}
-
 	if options.Environment != "" {
 		request = request.Environment(options.Environment)
 	}
 
-	if options.ClusterStatus != "" {
-		request = request.ClusterStatus(options.ClusterStatus)
-	}
-
-	if options.OperationStatus != "" {
-		request = request.OperationStatus(options.OperationStatus)
-	}
-
 	if options.Name != "" {
 		request = request.Name(options.Name)
+	}
+
+	if options.Component != "" {
+		request = request.ServiceComponent(options.Component)
+	}
+
+	if options.ComponentName != "" {
+		request = request.ServiceComponentName(options.ComponentName)
 	}
 
 	return request

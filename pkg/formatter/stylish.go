@@ -46,6 +46,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateTemplatesRepositoryCollection(writer, dataType)
 	case *sdk.PaginatedRegistryIntegrationCollection:
 		tabulateRegistryIntegrationsCollection(writer, dataType)
+	case *sdk.PaginatedServiceComponentVariableCollection:
+		tabulateServiceComponentVariableCollection(writer, dataType)
 	case []sdk.ComponentEndpointCollection:
 		tabulateAggregateEndpoint(writer, dataType)
 	case *sdk.OrganizationItem:
@@ -62,6 +64,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEnvironmentVariableItem(writer, dataType)
 	case *sdk.ProjectVariableItem:
 		tabulateProjectVariableItem(writer, dataType)
+	case *sdk.ServiceComponentVariableItem:
+		tabulateServiceComponentVariableItem(writer, dataType)
 	case *sdk.KubernetesIntegrationItem:
 		tabulateKubernetesItem(writer, dataType)
 	case *sdk.RegistryIntegrationItem:
@@ -239,6 +243,26 @@ func tabulateComponentItem(w *tabwriter.Writer, item *sdk.ComponentItem) {
 			fmt.Fprintf(w, "\t %v\n", url)
 		}
 	}
+}
+
+func tabulateServiceComponentVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedServiceComponentVariableCollection) {
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", "ComponentVarID", "ComponentID", "EnvironmentId", "ProjectID", "Name")
+
+	if data.Embedded != nil {
+		for _, item := range data.Embedded.Item {
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetServiceComponent(), item.GetEnvironment(), item.GetProject(), item.GetName())
+		}
+	}
+}
+
+func tabulateServiceComponentVariableItem(w *tabwriter.Writer, item *sdk.ServiceComponentVariableItem) {
+	fmt.Fprintf(w, "%v\t %v\n", "ComponentVariableID", item.GetId())
+	fmt.Fprintf(w, "%v\t %v\n", "ComponentID", item.GetServiceComponent())
+	fmt.Fprintf(w, "%v\t %v\n", "EnvironmentID", item.GetEnvironment())
+	fmt.Fprintf(w, "%v\t %v\n", "ProjectID", item.GetProject())
+	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
+	fmt.Fprintf(w, "%v\t %v\n", "Value", item.GetValue())
+	fmt.Fprintf(w, "%v\t %v\n", "Secret", item.GetSecret())
 }
 
 func tabulateEnvironmentVariableCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentVariableCollection) {

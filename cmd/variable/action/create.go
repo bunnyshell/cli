@@ -1,6 +1,9 @@
 package action
 
 import (
+	"io"
+	"os"
+
 	"bunnyshell.com/cli/pkg/api/variable"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
@@ -19,8 +22,40 @@ func init() {
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			hasStdin, err := util.IsStdinPresent()
+			if err != nil {
+				return err
+			}
+
+			flags := cmd.Flags()
+			if !flags.Changed("value") && !hasStdin {
+				return errMissingValue
+			}
+
+			if flags.Changed("value") && hasStdin {
+				return errMultipleValueInputs
+			}
+
+			return nil
+		},
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			createOptions.Environment = settings.Profile.Context.Environment
+
+			hasStdin, err := util.IsStdinPresent()
+			if err != nil {
+				return err
+			}
+
+			if hasStdin {
+				buf, err := io.ReadAll(os.Stdin)
+				if err != nil {
+					return err
+				}
+
+				createOptions.Value = string(buf)
+			}
 
 			model, err := variable.Create(createOptions)
 			if err != nil {

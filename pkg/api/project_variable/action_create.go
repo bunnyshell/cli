@@ -36,7 +36,7 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	util.MarkFlagRequiredWithHelp(flags.Lookup("name"), "A unique name within the project for the new project variable")
 
 	flags.StringVar(&co.Value, "value", co.Value, "The value of the project variable")
-	util.MarkFlagRequiredWithHelp(flags.Lookup("value"), "A value for this project variable")
+	util.AppendFlagHelp(flags.Lookup("value"), "A value for this project variable")
 	util.MarkFlag(flags.Lookup("value"), util.FlagAllowBlank)
 
 	isSecretFlag := enum.BoolFlag(

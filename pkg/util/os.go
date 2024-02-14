@@ -14,3 +14,12 @@ func FileExists(path string) (bool, error) {
 
 	return false, err
 }
+
+func IsStdinPresent() (bool, error) {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false, err
+	}
+
+	return (fi.Mode() & os.ModeCharDevice) == 0, nil
+}

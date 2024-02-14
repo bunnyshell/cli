@@ -9,6 +9,7 @@ import (
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
+	"bunnyshell.com/cli/pkg/util"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 )
@@ -39,7 +40,7 @@ func init() {
 		ValidArgsFunction: cobra.NoFileCompletions,
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			hasStdin, err := isStdinPresent()
+			hasStdin, err := util.IsStdinPresent()
 			if err != nil {
 				return err
 			}

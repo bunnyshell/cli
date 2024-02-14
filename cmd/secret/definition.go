@@ -43,7 +43,7 @@ func executeTranscriptConfiguration(options *secret.TranscriptConfigurationOptio
 }
 
 func validateDefinitionCommand(options *secret.TranscriptConfigurationOptions) error {
-	hasStdin, err := isStdinPresent()
+	hasStdin, err := util.IsStdinPresent()
 	if err != nil {
 		return err
 	}
