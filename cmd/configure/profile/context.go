@@ -54,6 +54,10 @@ func init() {
 }
 
 func askToFillContextOrSkip(profile *config.Profile) error {
+	if config.GetSettings().NonInteractive {
+		return nil
+	}
+
 	addContext, err := interactive.ConfirmWithHelp(
 		"Do you want to set a context for this profile?",
 		"Context is used to determine which organization, project, environment, and component to use when running commands.\n"+
