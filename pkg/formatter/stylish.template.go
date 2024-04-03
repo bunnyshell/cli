@@ -43,4 +43,6 @@ func tabulateTemplateItem(writer *tabwriter.Writer, item *sdk.TemplateItem) {
 			fmt.Fprintf(writer, "\t %v\n", tag)
 		}
 	}
+
+	tabulateTemplateVariableFromItem(writer, item)
 }
