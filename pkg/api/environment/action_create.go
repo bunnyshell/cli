@@ -1,19 +1,23 @@
 package environment
 
 import (
+	"errors"
 	"net/http"
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"bunnyshell.com/sdk"
-	"github.com/spf13/pflag"
+
+	"github.com/spf13/cobra"
 )
 
 type CreateOptions struct {
 	DeployOptions
 
 	sdk.EnvironmentCreateAction
+
+	genesisSourceOptions GenesisSourceOptions
 
 	WithDeploy bool
 }
@@ -31,10 +35,14 @@ func NewCreateOptions() *CreateOptions {
 		DeployOptions: *NewDeployOptions(""),
 
 		EnvironmentCreateAction: *environmentCreateAction,
+
+		genesisSourceOptions: *NewGenesisSourceOptions(),
 	}
 }
 
-func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+func (co *CreateOptions) UpdateCommandFlags(command *cobra.Command) {
+	flags := command.Flags()
+
 	k8sIntegration := co.KubernetesIntegration.Get()
 
 	flags.StringVar(&co.Name, "name", co.Name, "Unique name for the environment")
@@ -52,6 +60,38 @@ func (co *CreateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(ephemeralsK8sIntegration, "ephemerals-k8s", *ephemeralsK8sIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment")
 
 	co.DeployOptions.UpdateFlagSet(flags)
+
+	co.genesisSourceOptions.updateCommandFlags(command, "creation")
+}
+
+func (co *CreateOptions) Validate() error {
+	return co.genesisSourceOptions.validate()
+}
+
+func (co *CreateOptions) AttachGenesis() error {
+	fromGit, fromGitSpec, fromString, fromTemplate, err := co.genesisSourceOptions.getGenesis()
+	if err != nil {
+		return err
+	}
+
+	co.Genesis = &sdk.EnvironmentCreateActionGenesis{
+		FromGit:      fromGit,
+		FromGitSpec:  fromGitSpec,
+		FromTemplate: fromTemplate,
+		FromString:   fromString,
+	}
+
+	return nil
+}
+
+func (co *CreateOptions) HandleError(cmd *cobra.Command, err error) error {
+	var apiError api.Error
+
+	if errors.As(err, &apiError) {
+		return co.genesisSourceOptions.handleError(cmd, apiError)
+	}
+
+	return lib.FormatCommandError(cmd, err)
 }
 
 func Create(options *CreateOptions) (*sdk.EnvironmentItem, error) {
