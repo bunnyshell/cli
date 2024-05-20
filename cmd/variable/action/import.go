@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	"fmt"
 
 	"bunnyshell.com/cli/pkg/api/variable"
 	"bunnyshell.com/cli/pkg/config"
@@ -59,7 +60,7 @@ func init() {
 				for key, value := range data.Vars {
 					err := createEnvVar(cmd, key, value, false)
 					if err != nil {
-						if ignoreDuplicates && err.Error() == "An Environment Variable with this name already exists in this environment." {
+						if ignoreDuplicates && err.Error() == "An error occurred: name: An Environment Variable with this name already exists in this environment." {
 							continue
 						} else {
 							return lib.FormatCommandError(cmd, err)
@@ -72,7 +73,7 @@ func init() {
 				for key, value := range data.Secrets {
 					err := createEnvVar(cmd, key, value, true)
 					if err != nil {
-						if ignoreDuplicates && err.Error() == "An Environment Variable with this name already exists in this environment." {
+						if ignoreDuplicates && err.Error() == "An error occurred: name: An Environment Variable with this name already exists in this environment." {
 							continue
 						} else {
 							return lib.FormatCommandError(cmd, err)
@@ -89,7 +90,7 @@ func init() {
 
 	flags.StringVar(&varFile, "vars-file", varFile, "File to import variables from")
 	flags.StringVar(&secretFile, "secrets-file", secretFile, "File to import secrets from")
-	flags.BoolVarP(&ignoreDuplicates, "ignore-duplicates", "ign-dp", false, "Skip variables that already exist in the environment")
+	flags.BoolVarP(&ignoreDuplicates, "ignore-duplicates", "", false, "Skip variables that already exist in the environment")
 
 	flags.AddFlag(options.Environment.AddFlagWithExtraHelp(
 		"environment",
