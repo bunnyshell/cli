@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"fmt"
 
 	"bunnyshell.com/cli/pkg/api/variable"
 	"bunnyshell.com/cli/pkg/config"
