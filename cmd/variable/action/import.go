@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"fmt"
 
 	"bunnyshell.com/cli/pkg/api/variable"
 	"bunnyshell.com/cli/pkg/config"
@@ -21,6 +20,7 @@ type BulkImport struct {
 func init() {
 	varFile := ""
 	secretFile := ""
+	ignoreDuplicates := false
 	options := config.GetOptions()
 	data := BulkImport{
 		Vars:    make(map[string]string),
@@ -54,40 +54,29 @@ func init() {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			settings := config.GetSettings()
 
 			if len(data.Vars) > 0 {
 				for key, value := range data.Vars {
-					createOptions := variable.NewCreateOptions()
-					createOptions.Environment = settings.Profile.Context.Environment
-					createOptions.Name = key
-					createOptions.Value = value
-
-					model, err := variable.Create(createOptions)
+					err := createEnvVar(cmd, key, value, false)
 					if err != nil {
-						// Log the error or notify that the particular variable couldn't be created
-						fmt.Printf("Error creating variable %s: %v\n", key, err)
-					} else {
-						// Successfully created model, output the results immediately
-						lib.FormatCommandData(cmd, model)
+						if ignoreDuplicates && err.Error() == "An Environment Variable with this name already exists in this environment." {
+							continue
+						} else {
+							return lib.FormatCommandError(cmd, err)
+						}
 					}
 				}
 			}
 
 			if len(data.Secrets) > 0 {
 				for key, value := range data.Secrets {
-					createOptions := variable.NewCreateOptions()
-					createOptions.Environment = settings.Profile.Context.Environment
-					createOptions.Name = key
-					createOptions.Value = value
-					createOptions.IsSecret = enum.BoolTrue
-					model, err := variable.Create(createOptions)
+					err := createEnvVar(cmd, key, value, true)
 					if err != nil {
-						// Log the error or notify that the particular variable couldn't be created
-						fmt.Printf("Error creating variable %s: %v\n", key, err)
-					} else {
-						// Successfully created model, output the results immediately
-						lib.FormatCommandData(cmd, model)
+						if ignoreDuplicates && err.Error() == "An Environment Variable with this name already exists in this environment." {
+							continue
+						} else {
+							return lib.FormatCommandError(cmd, err)
+						}
 					}
 				}
 			}
@@ -100,6 +89,7 @@ func init() {
 
 	flags.StringVar(&varFile, "vars-file", varFile, "File to import variables from")
 	flags.StringVar(&secretFile, "secrets-file", secretFile, "File to import secrets from")
+	flags.BoolVarP(&ignoreDuplicates, "ignore-duplicates", "ign-dp", false, "Skip variables that already exist in the environment")
 
 	flags.AddFlag(options.Environment.AddFlagWithExtraHelp(
 		"environment",
@@ -107,8 +97,6 @@ func init() {
 		"Environments contain multiple variables",
 		util.FlagRequired,
 	))
-
-	// createOptions.UpdateFlagSet(flags)
 
 	mainCmd.AddCommand(command)
 }
@@ -131,4 +119,25 @@ func readFile(fileName string, data *map[string]string) error {
 	}
 
 	return nil
+}
+
+func createEnvVar(cmd *cobra.Command, name string, value string, isSecret bool) error {
+	settings := config.GetSettings()
+	createOptions := variable.NewCreateOptions()
+	createOptions.Environment = settings.Profile.Context.Environment
+	createOptions.Name = name
+	createOptions.Value = value
+	if isSecret {
+		createOptions.IsSecret = enum.BoolTrue
+	}
+
+	model, err := variable.Create(createOptions)
+
+	if err != nil {
+		return err
+	} else {
+		lib.FormatCommandData(cmd, model)
+	}
+
+	return nil 
 }
