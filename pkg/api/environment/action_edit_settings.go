@@ -41,6 +41,7 @@ type EditSettingsData struct {
 	CreateEphemeralOnPrCreate enum.Bool
 	DestroyEphemeralOnPrClose enum.Bool
 	AutoDeployEphemeral       enum.Bool
+	TerminationProtection     enum.Bool
 }
 
 func NewEditSettingsOptions(environment string) *EditSettingsOptions {
@@ -122,6 +123,14 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	)
 	flags.AddFlag(ephAutoDeployFlag)
 	ephAutoDeployFlag.NoOptDefVal = "true"
+
+	terminationProtectionFlag := enum.BoolFlag(
+		&data.TerminationProtection,
+		"termination-protection",
+		"Prevent environment from being accidentally terminated (for 'primary' environments)",
+	)
+	flags.AddFlag(terminationProtectionFlag)
+	terminationProtectionFlag.NoOptDefVal = "true"
 
 	flags.StringVar(&data.EphemeralK8SIntegration, "ephemerals-k8s", data.EphemeralK8SIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment (for 'primary' environments)")
 }
@@ -207,6 +216,10 @@ func applyPrimaryEditSettingsOptions(options *EditSettingsOptions) {
 
 	if options.AutoDeployEphemeral != enum.BoolNone {
 		options.EnvironmentEditSettings.Edit.Primary.SetAutoDeployEphemeral(options.AutoDeployEphemeral == enum.BoolTrue)
+	}
+
+	if options.TerminationProtection != enum.BoolNone {
+		options.EnvironmentEditSettings.Edit.Primary.SetTerminationProtection(options.TerminationProtection == enum.BoolTrue)
 	}
 
 	if options.DestroyEphemeralOnPrClose != enum.BoolNone {
