@@ -28,6 +28,7 @@ func NewCreateOptions() *CreateOptions {
 	environmentCreateAction.SetEphemeralKubernetesIntegration("")
 	environmentCreateAction.SetLabels(map[string]string{})
 	environmentCreateAction.SetAutoDeployEphemeral(false)
+	environmentCreateAction.SetTerminationProtection(false)
 	environmentCreateAction.SetCreateEphemeralOnPrCreate(false)
 	environmentCreateAction.SetDestroyEphemeralOnPrClose(false)
 
@@ -57,6 +58,7 @@ func (co *CreateOptions) UpdateCommandFlags(command *cobra.Command) {
 	flags.BoolVar(co.CreateEphemeralOnPrCreate, "create-ephemeral-on-pr", *co.CreateEphemeralOnPrCreate, "Create ephemeral environments when pull requests are created")
 	flags.BoolVar(co.DestroyEphemeralOnPrClose, "destroy-ephemeral-on-pr-close", *co.DestroyEphemeralOnPrClose, "Destroys the created ephemerals when the pull request is closed (or merged)")
 	flags.BoolVar(co.AutoDeployEphemeral, "auto-deploy-ephemerals", *co.AutoDeployEphemeral, "Auto deploy the created ephemerals")
+	flags.BoolVar(co.TerminationProtection, "termination-protection", *co.TerminationProtection, "Prevent environment from being accidentally terminated")
 	flags.StringVar(ephemeralsK8sIntegration, "ephemerals-k8s", *ephemeralsK8sIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment")
 
 	co.DeployOptions.UpdateFlagSet(flags)
