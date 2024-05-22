@@ -217,6 +217,14 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 			tabulateBuildSettings(w, buildSettings)
 		}
 	}
+
+	if item.GetType() == "primary" {
+		fmt.Fprintf(w, "\n%s\n", "Primary Environment Settings")
+		fmt.Fprintf(w, "%v\t %v\n", "Create Ephemeral On PR", item.GetHasEphemeralCreateOnPr())
+		fmt.Fprintf(w, "%v\t %v\n", "Destroy Ephemeral On PR Close", item.GetHasEphemeralDestroyOnPrClose())
+		fmt.Fprintf(w, "%v\t %v\n", "Auto Deploy Ephemeral", item.GetHasEphemeralAutoDeploy())
+		fmt.Fprintf(w, "%v\t %v\n", "Termination Protection", item.GetHasTerminationProtection())
+	}
 }
 
 func tabulateComponentCollection(w *tabwriter.Writer, data *sdk.PaginatedComponentCollection) {
