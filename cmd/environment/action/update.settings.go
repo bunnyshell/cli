@@ -41,7 +41,7 @@ func init() {
 
 	flags.AddFlag(options.Environment.GetFlag("id", util.FlagRequired))
 
-	editSettingsOptions.UpdateFlagSet(flags)
+	editSettingsOptions.UpdateCommandFlags(command)
 
 	mainCmd.AddCommand(command)
 }
