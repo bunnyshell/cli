@@ -10,7 +10,7 @@ import (
 	"bunnyshell.com/cli/pkg/config/enum"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -42,6 +42,9 @@ type EditSettingsData struct {
 	DestroyEphemeralOnPrClose enum.Bool
 	AutoDeployEphemeral       enum.Bool
 	TerminationProtection     enum.Bool
+
+	DisableEphemeralBranchWhitelist bool
+	EphemeralBranchWhitelistRegex   string
 }
 
 func NewEditSettingsOptions(environment string) *EditSettingsOptions {
@@ -74,7 +77,9 @@ func (eso *EditSettingsOptions) UpdateEditSettingsForType(environmentType string
 	return nil
 }
 
-func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+func (eso *EditSettingsOptions) UpdateCommandFlags(command *cobra.Command) {
+	flags := command.Flags()
+
 	data := &eso.EditSettingsData
 
 	flags.StringVar(&data.Name, "name", data.Name, "Update environment name")
@@ -131,6 +136,10 @@ func (eso *EditSettingsOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	)
 	flags.AddFlag(terminationProtectionFlag)
 	terminationProtectionFlag.NoOptDefVal = "true"
+
+	flags.BoolVar(&data.DisableEphemeralBranchWhitelist, "disable-ephemeral-branch-whitelist", data.DisableEphemeralBranchWhitelist, "Disable ephemerl branch whitelist")
+	flags.StringVar(&data.EphemeralBranchWhitelistRegex, "ephemeral-branch-whitelist", data.EphemeralBranchWhitelistRegex, "Set ephemeral branch whitelist regex")
+	command.MarkFlagsMutuallyExclusive("disable-ephemeral-branch-whitelist", "ephemeral-branch-whitelist")
 
 	flags.StringVar(&data.EphemeralK8SIntegration, "ephemerals-k8s", data.EphemeralK8SIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment (for 'primary' environments)")
 }
@@ -224,5 +233,20 @@ func applyPrimaryEditSettingsOptions(options *EditSettingsOptions) {
 
 	if options.DestroyEphemeralOnPrClose != enum.BoolNone {
 		options.EnvironmentEditSettings.Edit.Primary.SetDestroyEphemeralOnPrClose(options.DestroyEphemeralOnPrClose == enum.BoolTrue)
+	}
+
+	if options.DisableEphemeralBranchWhitelist {
+		primaryOptions := sdk.NewPrimaryOptionsEdit()
+		primaryOptions.SetWhitelistEnabled(false)
+
+		options.EnvironmentEditSettings.Edit.Primary.SetPrimaryOptions(*primaryOptions)
+	}
+
+	if options.EphemeralBranchWhitelistRegex != "" {
+		primaryOptions := sdk.NewPrimaryOptionsEdit()
+		primaryOptions.SetWhitelistEnabled(true)
+		primaryOptions.SetBranchWhitelist(options.EphemeralBranchWhitelistRegex)
+
+		options.EnvironmentEditSettings.Edit.Primary.SetPrimaryOptions(*primaryOptions)
 	}
 }

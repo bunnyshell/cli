@@ -20,6 +20,8 @@ type CreateOptions struct {
 	genesisSourceOptions GenesisSourceOptions
 
 	WithDeploy bool
+
+	EphemeralBranchWhitelist string
 }
 
 func NewCreateOptions() *CreateOptions {
@@ -60,6 +62,8 @@ func (co *CreateOptions) UpdateCommandFlags(command *cobra.Command) {
 	flags.BoolVar(co.AutoDeployEphemeral, "auto-deploy-ephemerals", *co.AutoDeployEphemeral, "Auto deploy the created ephemerals")
 	flags.BoolVar(co.TerminationProtection, "termination-protection", *co.TerminationProtection, "Prevent environment from being accidentally terminated")
 	flags.StringVar(ephemeralsK8sIntegration, "ephemerals-k8s", *ephemeralsK8sIntegration, "The Kubernetes integration to be used for the ephemeral environments triggered by this environment")
+
+	flags.StringVar(&co.EphemeralBranchWhitelist, "ephemeral-branch-whitelist", co.EphemeralBranchWhitelist, "Ephemeral branch whitelist regex when create-ephemeral-on-pr is set")
 
 	co.DeployOptions.UpdateFlagSet(flags)
 
@@ -115,6 +119,14 @@ func CreateRaw(options *CreateOptions) (*sdk.EnvironmentItem, *http.Response, er
 
 	if len(*options.Labels) > 0 {
 		options.EnvironmentCreateAction.SetLabels(*options.Labels)
+	}
+
+	if options.EphemeralBranchWhitelist != "" {
+		primaryOptions := sdk.NewPrimaryOptionsCreate()
+		primaryOptions.SetWhitelistEnabled(true)
+		primaryOptions.SetBranchWhitelist(options.EphemeralBranchWhitelist)
+
+		options.SetPrimaryOptions(*primaryOptions)
 	}
 
 	request = request.EnvironmentCreateAction(options.EnvironmentCreateAction)
