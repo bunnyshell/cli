@@ -40,6 +40,7 @@ Use "bns [command] --help" for more information about a command.
 ```
 
 - [Installing](#installing)
+  - [Generic Installer](#generic-installer)
   - [Homebrew](#homebrew)
   - [Downloading a Release from GitHub](#download-github-release)
   - [Docker Hub](#docker-hub)
@@ -48,6 +49,35 @@ Use "bns [command] --help" for more information about a command.
 - [Shell Autocomplete](#shell-autocomplete)
 
 ## Installing
+
+### Generic Installer
+```sh
+installer=$(curl --silent https://raw.githubusercontent.com/bunnyshell/cli/master/installer.sh) \
+    && [ "33cdd268adb1e26511b0cc90c9f4bf017bb145041677ca52d23a0f93cd13bd58 *stdin" = "$(echo -n "${installer}" | openssl dgst -sha256 -r)" ] \
+    && (
+        sh -c "${installer}" || :
+    ) \
+    || echo "Checksum did not match $(echo -n "${installer}" | openssl dgst -sha256 -r)" \
+;
+```
+
+| Env Var         | DEFAULT  | Description               |
+| --------------- | -------- | ------------------------- |
+| DEBUG_INSTALLER | false    | Add set -x for the script |
+| PREFER_BREW     | false    | Allow brew installation   |
+| INSTALL_PATH    | .        | Install path for binary   |
+| SUDO_INSTALL    | false    | Use sudo when moving binary to INSTALL_PATH |
+
+Examples:
+```sh
+installer=$(curl --silent https://raw.githubusercontent.com/bunnyshell/cli/master/installer.sh) \
+    && [ "33cdd268adb1e26511b0cc90c9f4bf017bb145041677ca52d23a0f93cd13bd58 *stdin" = "$(echo -n "${installer}" | openssl dgst -sha256 -r)" ] \
+    && (
+        SUDO_INSTALL=true INSTALL_PATH=/usr/local/bin sh -c "${installer}" || :
+    ) \
+    || echo "Checksum did not match $(echo -n "${installer}" | openssl dgst -sha256 -r)" \
+;
+```
 
 ### Homebrew
 ```sh
