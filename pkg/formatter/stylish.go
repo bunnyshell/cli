@@ -30,6 +30,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventCollection(writer, dataType)
 	case *sdk.PaginatedEnvironmentVariableCollection:
 		tabulateEnvironmentVariableCollection(writer, dataType)
+	case *sdk.PaginatedEnvironItemCollection:
+		tabulateEnvironCollection(writer, dataType)
 	case *sdk.PaginatedProjectVariableCollection:
 		tabulateProjectVariableCollection(writer, dataType)
 	case *sdk.PaginatedKubernetesIntegrationCollection:
@@ -62,6 +64,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateEventItem(writer, dataType)
 	case *sdk.EnvironmentVariableItem:
 		tabulateEnvironmentVariableItem(writer, dataType)
+	case *sdk.EnvironItemItem:
+		tabulateEnvironItem(writer, dataType)
 	case *sdk.ProjectVariableItem:
 		tabulateProjectVariableItem(writer, dataType)
 	case *sdk.ServiceComponentVariableItem:

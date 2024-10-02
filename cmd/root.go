@@ -19,6 +19,7 @@ import (
 	"bunnyshell.com/cli/cmd/template"
 	"bunnyshell.com/cli/cmd/utils"
 	"bunnyshell.com/cli/cmd/variable"
+	"bunnyshell.com/cli/cmd/variable_group"
 	"bunnyshell.com/cli/cmd/version"
 	"bunnyshell.com/cli/pkg/build"
 	"bunnyshell.com/cli/pkg/config"
@@ -96,6 +97,7 @@ func init() {
 			project_variable.GetMainCommand(),
 			registry_integration.GetMainCommand(),
 			variable.GetMainCommand(),
+			variable_group.GetMainCommand(),
 			k8sIntegration.GetMainCommand(),
 			pipeline.GetMainCommand(),
 			secret.GetMainCommand(),
