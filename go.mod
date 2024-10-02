@@ -1,14 +1,14 @@
 module bunnyshell.com/cli
 
-go 1.22.0
+go 1.23
 
-toolchain go1.22.3
+toolchain go1.23.2
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 require (
 	bunnyshell.com/dev v0.6.0
-	bunnyshell.com/sdk v0.19.2
+	bunnyshell.com/sdk v0.20.0
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/avast/retry-go/v4 v4.6.0
