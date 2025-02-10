@@ -125,6 +125,10 @@ func (up *Up) run(
 		return err
 	}
 
+    if err := remoteDev.CanUp(); err != nil {
+        return err
+    }
+
 	if err := remoteDev.PrepareSSHTunnels(parameters.PortMappings); err != nil {
 		return err
 	}
