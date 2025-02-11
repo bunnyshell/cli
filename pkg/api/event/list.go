@@ -75,7 +75,7 @@ func applyOptions(request sdk.ApiEventListRequest, options *ListOptions) sdk.Api
 	}
 
 	if options.Status != "" {
-		request.Status(options.Status)
+		request = request.Status(options.Status)
 	}
 
 	return request
