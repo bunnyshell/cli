@@ -17,7 +17,7 @@ func init() {
 	downOptions := down.NewOptions(resourceLoader)
 
 	command := &cobra.Command{
-		Use: "down",
+		Use: "stop",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

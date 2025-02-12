@@ -23,7 +23,7 @@ func init() {
 	upOptions := upAction.NewOptions(resourceLoader)
 
 	command := &cobra.Command{
-		Use: "up",
+		Use: "start",
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 

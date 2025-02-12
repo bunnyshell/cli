@@ -2,10 +2,6 @@ package debug_component
 
 import (
 	"fmt"
-	"os"
-
-	"bunnyshell.com/cli/pkg/interactive"
-	"bunnyshell.com/dev/pkg/util"
 )
 
 func (d *DebugComponent) Up() error {
