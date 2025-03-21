@@ -20,6 +20,9 @@ type ListOptions struct {
 	Name            string
 	ClusterStatus   string
 	OperationStatus string
+
+	GitRepository string
+	GitBranch     string
 }
 
 func NewListOptions() *ListOptions {
@@ -32,6 +35,8 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.ClusterStatus, "clusterStatus", lo.ClusterStatus, "Filter by Cluster Status")
 	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
 	flags.StringVar(&lo.Name, "componentName", lo.OperationStatus, "Filter by Name")
+	flags.StringVar(&lo.GitRepository, "gitRepo", lo.GitRepository, "Filter by Git Repository")
+	flags.StringVar(&lo.GitBranch, "gitBranch", lo.GitBranch, "Filter by Git Branch")
 
 	lo.ListOptions.UpdateFlagSet(flags)
 }
@@ -87,6 +92,14 @@ func applyOptions(request sdk.ApiComponentListRequest, options *ListOptions) sdk
 
 	if options.Name != "" {
 		request = request.Name(options.Name)
+	}
+
+	if options.GitRepository != "" {
+		request = request.GitRepository(options.GitRepository)
+	}
+
+	if options.GitBranch != "" {
+		request = request.GitBranch(options.GitBranch)
 	}
 
 	return request

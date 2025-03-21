@@ -169,6 +169,7 @@ func getSource(validateSource ValidateSource, validateOptions template.ValidateO
 
 		if validateOptions.WithComponents {
 			source.SetValidateComponents(true)
+			source.SetValidateForOrganizationId(validateOptions.Organization)
 		}
 
 		action := sdk.ValidateSourceStringAsTemplateValidateActionSource(source)
