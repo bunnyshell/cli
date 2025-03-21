@@ -7,4 +7,6 @@
 # other
 .DS_Store
 .vscode
+/.idea
 __debug_bin
+/.dev

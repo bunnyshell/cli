@@ -21,6 +21,9 @@ type ListOptions struct {
 	ClusterStatus   string
 	OperationStatus string
 
+	ComponentGitRepository string
+	ComponentGitBranch     string
+
 	Search string
 
 	Labels map[string]string
@@ -38,6 +41,8 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.StringVar(&lo.OperationStatus, "operationStatus", lo.OperationStatus, "Filter by Operation Status")
 	flags.StringVar(&lo.KubernetesIntegration, "k8sCluster", lo.KubernetesIntegration, "Filter by K8SIntegrationID")
 	flags.StringVar(&lo.Search, "search", lo.Search, "Search by name")
+	flags.StringVar(&lo.ComponentGitRepository, "componentGitRepo", lo.ComponentGitRepository, "Filter by Component Git Repository")
+	flags.StringVar(&lo.ComponentGitBranch, "componentGitBranch", lo.ComponentGitBranch, "Filter by Component Git Branch")
 
 	flags.StringToStringVar(&lo.Labels, "label", lo.Labels, "Filter by label (key=value)")
 
@@ -99,6 +104,14 @@ func applyOptions(request sdk.ApiEnvironmentListRequest, options *ListOptions) s
 
 	if options.Type != "" {
 		request = request.Type_(options.Type)
+	}
+
+	if options.ComponentGitRepository != "" {
+		request = request.ComponentGitRepository(options.ComponentGitRepository)
+	}
+
+	if options.ComponentGitBranch != "" {
+		request = request.ComponentGitBranch(options.ComponentGitBranch)
 	}
 
 	if len(options.Labels) > 0 {
