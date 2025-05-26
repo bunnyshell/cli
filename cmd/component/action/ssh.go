@@ -26,6 +26,8 @@ type SSHOptions struct {
 
 	NoTTY    bool
 	NoBanner bool
+
+	OverrideClusterServer string
 }
 
 func (o *SSHOptions) UpdateFlagSet(flags *pflag.FlagSet) {
@@ -35,6 +37,8 @@ func (o *SSHOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 
 	flags.BoolVar(&o.NoTTY, "no-tty", o.NoTTY, "Do not allocate a TTY")
 	flags.BoolVar(&o.NoBanner, "no-banner", o.NoBanner, "Do not show environment banner before ssh")
+
+	flags.StringVar(&o.OverrideClusterServer, "override-kubeconfig-cluster-server", o.OverrideClusterServer, "Override kubeconfig cluster server with :port, host:port or scheme://host:port")
 }
 
 func (o *SSHOptions) MakeExecOptions(kubeConfig *environment.KubeConfigItem) *k8sExec.Options {
@@ -63,7 +67,8 @@ func init() {
 	settings := config.GetSettings()
 
 	sshOptions := SSHOptions{
-		Shell: "/bin/sh",
+		Shell:                 "/bin/sh",
+		OverrideClusterServer: "",
 	}
 
 	command := &cobra.Command{
@@ -78,7 +83,7 @@ func init() {
 				return err
 			}
 
-			kubeConfigOptions := environment.NewKubeConfigOptions(componentItem.GetEnvironment())
+			kubeConfigOptions := environment.NewKubeConfigOptions(componentItem.GetEnvironment(), sshOptions.OverrideClusterServer)
 			kubeConfig, err := environment.KubeConfig(kubeConfigOptions)
 			if err != nil {
 				return err

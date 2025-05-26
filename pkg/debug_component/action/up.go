@@ -13,11 +13,11 @@ type UpOptions struct {
 
 	Command []string
 
-    LimitCPU    string
-    LimitMemory string
+	LimitCPU    string
+	LimitMemory string
 
-    RequestCPU    string
-    RequestMemory string
+	RequestCPU    string
+	RequestMemory string
 
 	WaitTimeout int64
 }
@@ -28,6 +28,8 @@ type UpParameters struct {
 	ManualSelectSingleResource bool
 
 	ForceRecreateResource bool
+
+	OverrideClusterServer string
 
 	Options *UpOptions
 }
@@ -55,7 +57,7 @@ func NewUp(
 }
 
 func (up *Up) Run(parameters *UpParameters) error {
-	debugCmp, err := up.Action.GetDebugCmp(parameters.Resource)
+	debugCmp, err := up.Action.GetDebugCmp(parameters.Resource, parameters.OverrideClusterServer)
 	if err != nil {
 		return err
 	}
@@ -93,9 +95,9 @@ func (up *Up) run(
 		return err
 	}
 
-    if err := debugCmp.CanUp(parameters.ForceRecreateResource); err != nil {
-        return err
-    }
+	if err := debugCmp.CanUp(parameters.ForceRecreateResource); err != nil {
+		return err
+	}
 
 	up.debugCmp = debugCmp
 
@@ -113,7 +115,7 @@ func (up *Up) loadDebugCmpOptions(debugCmp *debug.DebugComponent, options *UpOpt
 		debugCmp.WithWaitTimeout(options.WaitTimeout)
 	}
 
-    up.setContainerResources(&debugCmp.ContainerConfig, options)
+	up.setContainerResources(&debugCmp.ContainerConfig, options)
 
 	if len(options.EnvironPairs) > 0 {
 		for _, pair := range options.EnvironPairs {
@@ -139,17 +141,17 @@ func (up *Up) setContainerResources(containerConfig *container.Config, options *
 		}
 	}
 
-    if options.LimitCPU != "" {
-        if err := containerConfig.Resources.SetLimitsCPU(options.LimitCPU); err != nil {
-            return err
-        }
-    }
+	if options.LimitCPU != "" {
+		if err := containerConfig.Resources.SetLimitsCPU(options.LimitCPU); err != nil {
+			return err
+		}
+	}
 
-    if options.LimitMemory != "" {
-        if err := containerConfig.Resources.SetLimitsMemory(options.LimitMemory); err != nil {
-            return err
-        }
-    }
+	if options.LimitMemory != "" {
+		if err := containerConfig.Resources.SetLimitsMemory(options.LimitMemory); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

@@ -9,6 +9,8 @@ type SSHOptions struct {
 
 	NoTTY    bool
 	NoBanner bool
+
+	OverrideClusterServer string
 }
 
 func (o *SSHOptions) UpdateFlagSet(flags *pflag.FlagSet) {

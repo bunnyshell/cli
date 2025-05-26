@@ -17,7 +17,8 @@ type Options struct {
 
 	resourceLoader *bridge.ResourceLoader
 
-	waitTimeout time.Duration
+	waitTimeout           time.Duration
+	overrideClusterServer string
 
 	resourcePath  string
 	containerName string
@@ -50,6 +51,8 @@ func NewOptions(
 		resourceLoader: resourceLoader,
 
 		waitTimeout: defaultWaitTimeout,
+
+		overrideClusterServer: "",
 
 		syncMode: TwoWayResolved,
 
@@ -160,6 +163,10 @@ func (up *Options) makeAbsolutePaths(parameters *action.UpParameters) error {
 }
 
 func (up *Options) fillFromFlags(parameters *action.UpParameters) {
+	if up.overrideClusterServer != "" {
+		parameters.OverrideClusterServer = up.overrideClusterServer
+	}
+
 	if up.localSyncPath != "" {
 		ensureProfileSyncPath(parameters).SetLocalPath(up.localSyncPath)
 	}

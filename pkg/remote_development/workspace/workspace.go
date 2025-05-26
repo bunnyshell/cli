@@ -48,14 +48,14 @@ func (workspace *Workspace) GetKubeConfigFile() (string, error) {
 	return workspace.kubeConfigFile, nil
 }
 
-func (workspace *Workspace) DownloadKubeConfig() (string, error) {
+func (workspace *Workspace) DownloadKubeConfig(overrideClusterServer string) (string, error) {
 	kubeConfigFile, err := workspace.GetKubeConfigFile()
 	if err != nil {
 		return "", err
 	}
 
 	kubeConfig, err := environment.KubeConfig(
-		environment.NewKubeConfigOptions(workspace.environment),
+		environment.NewKubeConfigOptions(workspace.environment, overrideClusterServer),
 	)
 	if err != nil {
 		return "", err

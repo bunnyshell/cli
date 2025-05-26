@@ -50,6 +50,10 @@ func init() {
 				proxyArgs = append(proxyArgs, "--no-tty")
 			}
 
+			if sshOptions.OverrideClusterServer != "" {
+				proxyArgs = append(proxyArgs, "--override-kubeconfig-cluster-server", sshOptions.OverrideClusterServer)
+			}
+
 			root := cmd.Root()
 			root.SetArgs(append(proxyArgs, args...))
 

@@ -23,8 +23,8 @@ func NewAction(
 	}
 }
 
-func (action *Action) GetRemoteDev(resource sdk.ComponentResourceItem) (*remote.RemoteDevelopment, error) {
-	kubeConfigFile, err := action.workspace.DownloadKubeConfig()
+func (action *Action) GetRemoteDev(resource sdk.ComponentResourceItem, overrideClusterServer string) (*remote.RemoteDevelopment, error) {
+	kubeConfigFile, err := action.workspace.DownloadKubeConfig(overrideClusterServer)
 	if err != nil {
 		return nil, err
 	}

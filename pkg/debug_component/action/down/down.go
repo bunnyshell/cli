@@ -1,8 +1,8 @@
 package down
 
 import (
-	"bunnyshell.com/cli/pkg/k8s/bridge"
 	"bunnyshell.com/cli/pkg/debug_component/action"
+	"bunnyshell.com/cli/pkg/k8s/bridge"
 )
 
 type Options struct {
@@ -11,6 +11,8 @@ type Options struct {
 	resourceLoader *bridge.ResourceLoader
 
 	resourcePath string
+
+	overrideClusterServer string
 }
 
 func NewOptions(
@@ -18,6 +20,8 @@ func NewOptions(
 ) *Options {
 	return &Options{
 		resourceLoader: resourceLoader,
+
+		overrideClusterServer: "",
 	}
 }
 
@@ -29,7 +33,8 @@ func (down *Options) ToParameters() (*action.DownParameters, error) {
 	}
 
 	parameters := &action.DownParameters{
-		Resource: *down.resourceLoader.GetResource(),
+		Resource:              *down.resourceLoader.GetResource(),
+		OverrideClusterServer: down.overrideClusterServer,
 	}
 
 	return parameters, nil
