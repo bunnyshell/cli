@@ -13,6 +13,8 @@ import (
 type Options struct {
 	ManualSelectSingleResource bool
 
+	ForceRecreateResource bool
+
 	manager *config.Manager
 
 	resourceLoader *bridge.ResourceLoader
@@ -79,6 +81,8 @@ func (up *Options) ToParameters() (*action.UpParameters, error) {
 		SyncMode: SyncModeToMutagenMode[up.syncMode],
 
 		ManualSelectSingleResource: up.ManualSelectSingleResource,
+
+		ForceRecreateResource: up.ForceRecreateResource,
 
 		PortMappings: up.portMappings,
 

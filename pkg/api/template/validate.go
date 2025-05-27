@@ -18,10 +18,13 @@ type ValidateOptions struct {
 	Organization string
 
 	WithComponents bool
+
+	AllowExtraFields bool
 }
 
 func (vo *ValidateOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	flags.BoolVar(&vo.WithComponents, "with-components", vo.WithComponents, "Validate components along with the template")
+	flags.BoolVar(&vo.AllowExtraFields, "allow-extra-fields", vo.AllowExtraFields, "Allow extra fields when validating components")
 }
 
 func NewValidateOptions() *ValidateOptions {
@@ -30,7 +33,8 @@ func NewValidateOptions() *ValidateOptions {
 
 		TemplateValidateAction: sdk.TemplateValidateAction{},
 
-		WithComponents: false,
+		WithComponents:   false,
+		AllowExtraFields: true,
 	}
 }
 

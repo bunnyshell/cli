@@ -1,7 +1,7 @@
-bunnyshell.com/dev v0.7.1 h1:mNLF0h2bbrTi9LNr2e2zFUC2fGg8TUh/9SM5rTXkzDI=
-bunnyshell.com/dev v0.7.1/go.mod h1:+Xk46UXX9AW0nHrFMdO/IwpUPfALrck1/qI+LIXsDmE=
-bunnyshell.com/sdk v0.20.1 h1:YxmYrW8UXGNNtLe+l6pXFKyndgwyEyQtdX0f5rHV1fE=
-bunnyshell.com/sdk v0.20.1/go.mod h1:RfgfUzZ4WHZGCkToUfu2/hoQS6XsQc8IdPTVAlpS138=
+bunnyshell.com/dev v0.7.2 h1:fa0ZvnIAXLVJINCJqo7uenjHmjPrlHmY18Zc8ypo/6E=
+bunnyshell.com/dev v0.7.2/go.mod h1:+Xk46UXX9AW0nHrFMdO/IwpUPfALrck1/qI+LIXsDmE=
+bunnyshell.com/sdk v0.20.3 h1:Kd2s/fhkMrn6Jqp9UmnXfNu12Oiwg+hgNSNBOIBYPH8=
+bunnyshell.com/sdk v0.20.3/go.mod h1:RfgfUzZ4WHZGCkToUfu2/hoQS6XsQc8IdPTVAlpS138=
 github.com/AlecAivazis/survey/v2 v2.3.7 h1:6I/u8FvytdGsgonrYsVn2t8t4QiRnh6QSTqkkhIiSjQ=
 github.com/AlecAivazis/survey/v2 v2.3.7/go.mod h1:xUTIdE4KCOIjsBAE1JYsUPoCqYdZ1reCfTwbto0Fduo=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25UVaW/CKtUDjefjrs0SPonmDGUVOYP0=

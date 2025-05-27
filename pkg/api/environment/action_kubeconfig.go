@@ -99,9 +99,10 @@ func KubeConfigRaw(options *common.ItemOptions) (*sdk.EnvironmentKubeConfigKubeC
 //
 // and an override string which can be one of:
 //
+//	"SCHEME://..."    → full replacement (any Scheme, host, port, path, etc.)
 //	":PORT"           → change only the port
 //	"HOST:PORT"       → change host and port
-//	"SCHEME://..."    → full replacement (any Scheme, host, port, path, etc.)
+//	"HOST"       	  → change only the host
 //
 // It returns the new URL string or an error.
 func overrideServer(base, override string) (string, error) {

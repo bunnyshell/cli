@@ -4,22 +4,19 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"syscall"
 
 	"bunnyshell.com/cli/pkg/environment"
 	"bunnyshell.com/cli/pkg/interactive"
 	"bunnyshell.com/cli/pkg/k8s"
-	"bunnyshell.com/cli/pkg/lib"
-	"bunnyshell.com/cli/pkg/util"
+	"bunnyshell.com/cli/pkg/port_forward/workspace"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/portforward"
 )
 
 const (
 	PortForwardDefaultInterface = "127.0.0.1"
-	KubeConfigFilename          = "kube-config-pfwd.yaml"
 )
 
 var (
@@ -35,10 +32,10 @@ type PortForwardManager struct {
 	environmentResource *environment.EnvironmentResource
 	pod                 *v1.Pod
 
-	environmentWorkspaceDir string
+	workspace *workspace.Workspace
 
-	kubernetesClient *k8s.KubernetesClient
-	kubeConfigPath   string
+	kubernetesClient      *k8s.KubernetesClient
+	overrideClusterServer string
 
 	portForwards   []*k8s.PortForward
 	portForwarders []*portforward.PortForwarder
@@ -46,7 +43,8 @@ type PortForwardManager struct {
 
 func NewPortForwardManager() *PortForwardManager {
 	portForwardManager := &PortForwardManager{
-		environmentResource: environment.NewEnvironmentResource(),
+		environmentResource:   environment.NewEnvironmentResource(),
+		overrideClusterServer: "",
 	}
 
 	return portForwardManager
@@ -58,14 +56,14 @@ func (m *PortForwardManager) WithEnvironmentResource(environmentResource *enviro
 	return m
 }
 
-func (m *PortForwardManager) WithEnvironmentWorkspaceDir(environmentWorkspaceDir string) *PortForwardManager {
-	m.environmentWorkspaceDir = environmentWorkspaceDir
+func (m *PortForwardManager) WithWorkspace() *PortForwardManager {
+	m.workspace = workspace.NewWorkspace(m.environmentResource.Environment.GetId())
 
 	return m
 }
 
-func (m *PortForwardManager) WithKubeConfigPath(kubeConfigPath string) *PortForwardManager {
-	m.kubeConfigPath = kubeConfigPath
+func (m *PortForwardManager) WithOverrideClusterServer(overrideClusterServer string) *PortForwardManager {
+	m.overrideClusterServer = overrideClusterServer
 
 	return m
 }
@@ -130,28 +128,6 @@ func (m *PortForwardManager) WithPortMappings(portMappings []string) *PortForwar
 	return m
 }
 
-func (m *PortForwardManager) ensureEnvironmentWorkspaceDir() error {
-	workspace, err := util.GetWorkspaceDir()
-	if err != nil {
-		return err
-	}
-
-	m.WithEnvironmentWorkspaceDir(filepath.Join(workspace, m.environmentResource.Environment.GetId()))
-
-	return os.MkdirAll(m.environmentWorkspaceDir, 0755)
-}
-
-func (m *PortForwardManager) ensureEnvironmentKubeConfig() error {
-	kubeConfigPath := filepath.Join(m.environmentWorkspaceDir, KubeConfigFilename)
-	if err := lib.DownloadEnvironmentKubeConfig(kubeConfigPath, m.environmentResource.Environment.GetId()); err != nil {
-		return err
-	}
-
-	m.WithKubeConfigPath(kubeConfigPath)
-
-	return nil
-}
-
 func (m *PortForwardManager) SelectPod() error {
 	componentResource := m.environmentResource.ComponentResource
 
@@ -191,15 +167,12 @@ func (m *PortForwardManager) SelectPod() error {
 }
 
 func (m *PortForwardManager) PrepareKubernetesClient() error {
-	if err := m.ensureEnvironmentWorkspaceDir(); err != nil {
+	kubeConfigFile, err := m.workspace.DownloadKubeConfig(m.overrideClusterServer)
+	if err != nil {
 		return err
 	}
 
-	if err := m.ensureEnvironmentKubeConfig(); err != nil {
-		return err
-	}
-
-	kubernetesClient, err := k8s.NewKubernetesClient(m.kubeConfigPath)
+	kubernetesClient, err := k8s.NewKubernetesClient(kubeConfigFile)
 	if err != nil {
 		return err
 	}

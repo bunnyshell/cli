@@ -29,6 +29,8 @@ type UpParameters struct {
 
 	PortMappings []string
 
+	ForceRecreateResource bool
+
 	OverrideClusterServer string
 
 	Options *UpOptions
@@ -127,7 +129,7 @@ func (up *Up) run(
 		return err
 	}
 
-	if err := remoteDev.CanUp(); err != nil {
+	if err := remoteDev.CanUp(parameters.ForceRecreateResource); err != nil {
 		return err
 	}
 
