@@ -19,16 +19,17 @@ func (up *Options) UpdateFlagSet(
 	_ = flags.MarkHidden("no-auto-select-one")
 
 	flags.BoolVar(
-        &up.ForceRecreateResource,
-        "force-recreate-resource",
-        up.ForceRecreateResource,
-        "Force recreate Pod even if another debug session is in progress. May break the debug down command",
-    )
+		&up.ForceRecreateResource,
+		"force-recreate-resource",
+		up.ForceRecreateResource,
+		"Force recreate Pod even if another debug session is in progress. May break the debug stop command",
+	)
 
 	flags.DurationVarP(&up.waitTimeout, "wait-timeout", "w", up.waitTimeout, "Time to wait for the pod to be ready")
+	flags.StringVar(&up.overrideClusterServer, "override-kubeconfig-cluster-server", up.overrideClusterServer, "Override kubeconfig cluster server with :port, host:port or scheme://host:port")
 
 	flags.StringVarP(&up.resourcePath, "resource", "s", up.resourcePath, "The cluster resource to use (namespace/kind/name format).")
-	flags.StringVar(&up.containerName, "container", up.containerName, "The container name to use for remote development")
+	flags.StringVar(&up.containerName, "container", up.containerName, "The container name to use for debug session")
 
 	up.addContainerConfigFlags(flags)
 }

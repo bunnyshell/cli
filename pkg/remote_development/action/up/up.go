@@ -13,11 +13,14 @@ import (
 type Options struct {
 	ManualSelectSingleResource bool
 
+	ForceRecreateResource bool
+
 	manager *config.Manager
 
 	resourceLoader *bridge.ResourceLoader
 
-	waitTimeout time.Duration
+	waitTimeout           time.Duration
+	overrideClusterServer string
 
 	resourcePath  string
 	containerName string
@@ -51,6 +54,8 @@ func NewOptions(
 
 		waitTimeout: defaultWaitTimeout,
 
+		overrideClusterServer: "",
+
 		syncMode: TwoWayResolved,
 
 		portMappings: []string{},
@@ -76,6 +81,8 @@ func (up *Options) ToParameters() (*action.UpParameters, error) {
 		SyncMode: SyncModeToMutagenMode[up.syncMode],
 
 		ManualSelectSingleResource: up.ManualSelectSingleResource,
+
+		ForceRecreateResource: up.ForceRecreateResource,
 
 		PortMappings: up.portMappings,
 
@@ -160,6 +167,10 @@ func (up *Options) makeAbsolutePaths(parameters *action.UpParameters) error {
 }
 
 func (up *Options) fillFromFlags(parameters *action.UpParameters) {
+	if up.overrideClusterServer != "" {
+		parameters.OverrideClusterServer = up.overrideClusterServer
+	}
+
 	if up.localSyncPath != "" {
 		ensureProfileSyncPath(parameters).SetLocalPath(up.localSyncPath)
 	}

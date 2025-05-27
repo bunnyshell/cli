@@ -18,8 +18,9 @@ func init() {
 	settings := config.GetSettings()
 
 	var (
-		resourcePath string
-		podName      string
+		resourcePath          string
+		podName               string
+		overrideClusterServer string
 	)
 
 	command := &cobra.Command{
@@ -54,6 +55,10 @@ func init() {
 
 			portForwardManager.WithPortMappings(portMappings)
 
+			if overrideClusterServer != "" {
+				portForwardManager.WithOverrideClusterServer(overrideClusterServer)
+			}
+
 			environmentResource, err := environment.NewFromWizard(&settings.Profile.Context, resourcePath)
 			if err != nil {
 				return err
@@ -61,6 +66,7 @@ func init() {
 
 			_ = portForwardManager.
 				WithEnvironmentResource(environmentResource).
+				WithWorkspace().
 				PrepareKubernetesClient()
 
 			if podName != "" {
@@ -88,6 +94,7 @@ func init() {
 
 	flags.StringVarP(&resourcePath, "resource", "s", "", "The cluster resource to use (namespace/kind/name format).")
 	flags.StringVar(&podName, "pod", "", "The resource pod to forward ports to.")
+	flags.StringVar(&overrideClusterServer, "override-kubeconfig-cluster-server", "", "Override kubeconfig cluster server with :port, host:port or scheme://host:port")
 
 	mainCmd.AddCommand(command)
 }

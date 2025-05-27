@@ -184,11 +184,11 @@ func tabulateBuildSettings(w *tabwriter.Writer, item *sdk.BuildSettingsItem) {
 }
 
 func tabulateEnvironmentCollection(w *tabwriter.Writer, data *sdk.PaginatedEnvironmentCollection) {
-	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ProjectID", "Name", "Namespace", "Type", "OperationStatus")
+	fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\t %v\t %v\n", "EnvironmentID", "ProjectID", "Name", "Namespace", "UrlHandle", "Type", "OperationStatus")
 
 	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
-			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetProject(), item.GetName(), item.GetNamespace(), item.GetType(), item.GetOperationStatus())
+			fmt.Fprintf(w, "%v\t %v\t %v\t %v\t %v\t %v\t %v\n", item.GetId(), item.GetProject(), item.GetName(), item.GetNamespace(), item.GetUrlHandle(), item.GetType(), item.GetOperationStatus())
 		}
 	}
 }
@@ -198,6 +198,7 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "ProjectID", item.GetProject())
 	fmt.Fprintf(w, "%v\t %v\n", "Name", item.GetName())
 	fmt.Fprintf(w, "%v\t %v\n", "Namespace", item.GetNamespace())
+	fmt.Fprintf(w, "%v\t %v\n", "UrlHandle", item.GetUrlHandle())
 	fmt.Fprintf(w, "%v\t %v\n", "Type", item.GetType())
 	fmt.Fprintf(w, "%v\t %v\n", "Components", item.GetTotalComponents())
 	fmt.Fprintf(w, "%v\t %v\n", "OperationStatus", item.GetOperationStatus())

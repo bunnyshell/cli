@@ -29,6 +29,10 @@ type UpParameters struct {
 
 	PortMappings []string
 
+	ForceRecreateResource bool
+
+	OverrideClusterServer string
+
 	Options *UpOptions
 }
 
@@ -80,7 +84,7 @@ func NewUp(
 }
 
 func (up *Up) Run(parameters *UpParameters) error {
-	remoteDev, err := up.Action.GetRemoteDev(parameters.Resource)
+	remoteDev, err := up.Action.GetRemoteDev(parameters.Resource, parameters.OverrideClusterServer)
 	if err != nil {
 		return err
 	}
@@ -125,9 +129,9 @@ func (up *Up) run(
 		return err
 	}
 
-    if err := remoteDev.CanUp(); err != nil {
-        return err
-    }
+	if err := remoteDev.CanUp(parameters.ForceRecreateResource); err != nil {
+		return err
+	}
 
 	if err := remoteDev.PrepareSSHTunnels(parameters.PortMappings); err != nil {
 		return err

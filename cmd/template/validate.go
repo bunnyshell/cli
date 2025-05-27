@@ -150,6 +150,10 @@ func getSource(validateSource ValidateSource, validateOptions template.ValidateO
 			source.SetValidateComponents(true)
 		}
 
+		if !validateOptions.AllowExtraFields {
+			source.SetValidateAllowExtraFields(false)
+		}
+
 		action := sdk.ValidateSourceGitAsTemplateValidateActionSource(source)
 
 		return &action, nil
@@ -170,6 +174,10 @@ func getSource(validateSource ValidateSource, validateOptions template.ValidateO
 		if validateOptions.WithComponents {
 			source.SetValidateComponents(true)
 			source.SetValidateForOrganizationId(validateOptions.Organization)
+		}
+
+		if !validateOptions.AllowExtraFields {
+			source.SetValidateAllowExtraFields(false)
 		}
 
 		action := sdk.ValidateSourceStringAsTemplateValidateActionSource(source)

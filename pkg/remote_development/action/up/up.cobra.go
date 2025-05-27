@@ -23,7 +23,15 @@ func (up *Options) UpdateFlagSet(
 
 	_ = flags.MarkHidden("no-auto-select-one")
 
+	flags.BoolVar(
+		&up.ForceRecreateResource,
+		"force-recreate-resource",
+		up.ForceRecreateResource,
+		"Force recreate Pod even if another remote-development session is in progress. May break the remote-development down command",
+	)
+
 	flags.DurationVarP(&up.waitTimeout, "wait-timeout", "w", up.waitTimeout, "Time to wait for the pod to be ready")
+	flags.StringVar(&up.overrideClusterServer, "override-kubeconfig-cluster-server", up.overrideClusterServer, "Override kubeconfig cluster server with :port, host:port or scheme://host:port")
 
 	flags.StringVarP(
 		&up.localSyncPath,

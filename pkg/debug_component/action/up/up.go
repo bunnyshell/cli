@@ -3,8 +3,8 @@ package up
 import (
 	"time"
 
-	"bunnyshell.com/cli/pkg/k8s/bridge"
 	"bunnyshell.com/cli/pkg/debug_component/action"
+	"bunnyshell.com/cli/pkg/k8s/bridge"
 )
 
 type Options struct {
@@ -14,7 +14,8 @@ type Options struct {
 
 	resourceLoader *bridge.ResourceLoader
 
-	waitTimeout time.Duration
+	waitTimeout           time.Duration
+	overrideClusterServer string
 
 	resourcePath  string
 	containerName string
@@ -37,6 +38,8 @@ func NewOptions(
 		resourceLoader: resourceLoader,
 
 		waitTimeout: defaultWaitTimeout,
+
+		overrideClusterServer: "",
 	}
 }
 
@@ -53,7 +56,8 @@ func (up *Options) ToParameters() (*action.UpParameters, error) {
 
 	parameters := &action.UpParameters{
 		ManualSelectSingleResource: up.ManualSelectSingleResource,
-		ForceRecreateResource: up.ForceRecreateResource,
+		ForceRecreateResource:      up.ForceRecreateResource,
+		OverrideClusterServer:      up.overrideClusterServer,
 
 		Options: &action.UpOptions{
 			WaitTimeout: int64(up.waitTimeout.Seconds()),

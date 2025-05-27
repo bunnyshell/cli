@@ -23,8 +23,8 @@ func NewAction(
 	}
 }
 
-func (action *Action) GetDebugCmp(resource sdk.ComponentResourceItem) (*debug.DebugComponent, error) {
-	kubeConfigFile, err := action.workspace.DownloadKubeConfig()
+func (action *Action) GetDebugCmp(resource sdk.ComponentResourceItem, overrideClusterServer string) (*debug.DebugComponent, error) {
+	kubeConfigFile, err := action.workspace.DownloadKubeConfig(overrideClusterServer)
 	if err != nil {
 		return nil, err
 	}

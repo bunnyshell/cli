@@ -6,6 +6,8 @@ import (
 
 type DownParameters struct {
 	Resource sdk.ComponentResourceItem
+
+	OverrideClusterServer string
 }
 
 type Down struct {
@@ -21,7 +23,7 @@ func NewDown(
 }
 
 func (down *Down) Run(parameters *DownParameters) error {
-	debugCmp, err := down.Action.GetDebugCmp(parameters.Resource)
+	debugCmp, err := down.Action.GetDebugCmp(parameters.Resource, parameters.OverrideClusterServer)
 	if err != nil {
 		return err
 	}
