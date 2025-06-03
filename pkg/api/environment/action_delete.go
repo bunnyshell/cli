@@ -1,6 +1,7 @@
 package environment
 
 import (
+	"github.com/spf13/pflag"
 	"net/http"
 
 	"bunnyshell.com/cli/pkg/api"
@@ -11,12 +12,21 @@ import (
 
 type DeleteOptions struct {
 	common.ActionOptions
+
+	QueueIfSomethingInProgress bool
 }
 
 func NewDeleteOptions(id string) *DeleteOptions {
 	return &DeleteOptions{
-		ActionOptions: *common.NewActionOptions(id),
+		ActionOptions:              *common.NewActionOptions(id),
+		QueueIfSomethingInProgress: false,
 	}
+}
+
+func (options *DeleteOptions) UpdateFlagSet(flags *pflag.FlagSet) {
+	options.ActionOptions.UpdateFlagSet(flags)
+
+	//flags.BoolVar(&options.QueueIfSomethingInProgress, "queue", options.QueueIfSomethingInProgress, "Queue the delete pipeline if another operation is in progress now")
 }
 
 func Delete(options *DeleteOptions) (*sdk.EventItem, error) {

@@ -11,28 +11,32 @@ import (
 )
 
 const (
-	IncludedDepdendenciesNone    string = "none"
-	IncludedDepdendenciesAll     string = "all"
-	IncludedDepdendenciesMissing string = "missing"
+	IncludedDependenciesNone    string = "none"
+	IncludedDependenciesAll     string = "all"
+	IncludedDependenciesMissing string = "missing"
 )
 
 type DeployOptions struct {
 	common.PartialActionOptions
 
-	IncludedDepdendencies string
+	IncludedDependencies string
+
+	QueueIfSomethingInProgress bool
 }
 
 func NewDeployOptions(id string) *DeployOptions {
 	return &DeployOptions{
-		PartialActionOptions:  *common.NewPartialActionOptions(id),
-		IncludedDepdendencies: IncludedDepdendenciesNone,
+		PartialActionOptions:       *common.NewPartialActionOptions(id),
+		IncludedDependencies:       IncludedDependenciesNone,
+		QueueIfSomethingInProgress: false,
 	}
 }
 
 func (options *DeployOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	options.PartialActionOptions.UpdateFlagSet(flags)
 
-	flags.StringVar(&options.IncludedDepdendencies, "included-dependencies", options.IncludedDepdendencies, "Include dependencies in the deployment (none, all, missing)")
+	flags.StringVar(&options.IncludedDependencies, "included-dependencies", options.IncludedDependencies, "Include dependencies in the deployment (none, all, missing)")
+	flags.BoolVar(&options.QueueIfSomethingInProgress, "queue", options.QueueIfSomethingInProgress, "Queue the deploy pipeline if another operation is in progress now")
 }
 
 func Deploy(options *DeployOptions) (*sdk.EventItem, error) {
@@ -54,9 +58,10 @@ func DeployRaw(options *DeployOptions) (*sdk.EventItem, *http.Response, error) {
 
 	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDeploy(ctx, options.ID).
 		EnvironmentPartialDeployAction(sdk.EnvironmentPartialDeployAction{
-			IsPartial:            &isPartialAction,
-			Components:           options.GetActionComponents(),
-			IncludedDependencies: &options.IncludedDepdendencies,
+			IsPartial:                  &isPartialAction,
+			Components:                 options.GetActionComponents(),
+			IncludedDependencies:       &options.IncludedDependencies,
+			QueueIfSomethingInProgress: &options.QueueIfSomethingInProgress,
 		})
 
 	return request.Execute()
