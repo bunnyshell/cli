@@ -8,7 +8,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 require (
 	bunnyshell.com/dev v0.7.2
-	bunnyshell.com/sdk v0.20.3
+	bunnyshell.com/sdk v0.20.4
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/avast/retry-go/v4 v4.6.0

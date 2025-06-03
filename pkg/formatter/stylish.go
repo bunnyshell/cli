@@ -228,11 +228,12 @@ func tabulateEnvironmentItem(w *tabwriter.Writer, item *sdk.EnvironmentItem) {
 		fmt.Fprintf(w, "%v\t %v\n", "Create Ephemeral On PR", item.GetHasEphemeralCreateOnPr())
 		fmt.Fprintf(w, "%v\t %v\n", "Destroy Ephemeral On PR Close", item.GetHasEphemeralDestroyOnPrClose())
 		fmt.Fprintf(w, "%v\t %v\n", "Auto Deploy Ephemeral", item.GetHasEphemeralAutoDeploy())
-		fmt.Fprintf(w, "%v\t %v\n", "Termination Protection", item.GetHasTerminationProtection())
-
 		if item.GetHasEphemeralBranchWhitelist() {
 			fmt.Fprintf(w, "%v\t %v\n", "Ephemeral Branch Whitelist", item.GetEphemeralBranchWhitelistRegex())
 		}
+
+		fmt.Fprintf(w, "%v\t %v\n", "Termination Protection", item.GetHasTerminationProtection())
+		fmt.Fprintf(w, "%v\t %v\n", "Auto Update", item.GetHasAutoUpdate())
 	}
 }
 
