@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	defaultSpinnerUpdate = 150 * time.Millisecond
+	defaultSpinnerUpdate = 2000 * time.Millisecond
 	defaultProgressSet   = 69 // ∙∙●
 )
 
