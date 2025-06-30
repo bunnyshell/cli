@@ -36,7 +36,7 @@ func init() {
 
 			printLogs := settings.IsStylish()
 
-			if err = processEventPipeline(cmd, event, "stop", printLogs); err != nil {
+			if err = processEventPipeline(cmd, event, "stop", printLogs, stopOptions.Interval); err != nil {
 				if printLogs {
 					cmd.Printf("\nEnvironment %s stopping failed\n", stopOptions.ID)
 				}

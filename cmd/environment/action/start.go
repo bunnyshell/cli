@@ -36,7 +36,7 @@ func init() {
 
 			printLogs := settings.IsStylish()
 
-			if err = processEventPipeline(cmd, event, "start", printLogs); err != nil {
+			if err = processEventPipeline(cmd, event, "start", printLogs, startOptions.Interval); err != nil {
 				if printLogs {
 					cmd.Printf("\nEnvironment %s starting failed\n", startOptions.ID)
 				}

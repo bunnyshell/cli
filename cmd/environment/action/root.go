@@ -3,6 +3,7 @@ package action
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/api/component/endpoint"
@@ -58,7 +59,7 @@ func HandleDeploy(cmd *cobra.Command, deployOptions *environment.DeployOptions, 
 		return lib.FormatCommandData(cmd, event)
 	}
 
-	if err = processEventPipeline(cmd, event, "deploy", printLogs); err != nil {
+	if err = processEventPipeline(cmd, event, "deploy", printLogs, deployOptions.Interval); err != nil {
 		if printLogs {
 			cmd.Printf("\nEnvironment %s deploying failed\n", deployOptions.ID)
 		}
@@ -120,8 +121,11 @@ func ensureKubernetesIntegration(deployOptions *environment.DeployOptions, kuber
 	return err
 }
 
-func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string, printLogs bool) error {
+func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action string, printLogs bool, interval time.Duration) error {
 	progressOptions := progress.NewOptions()
+	if interval != 0 {
+		progressOptions.Interval = interval
+	}
 
 	if printLogs {
 		cmd.Printf(
@@ -150,7 +154,7 @@ func processEventPipeline(cmd *cobra.Command, event *sdk.EventItem, action strin
 		}
 	}
 
-	if err = progress.Pipeline(pipeline.GetId(), nil); err != nil {
+	if err = progress.Pipeline(pipeline.GetId(), progressOptions); err != nil {
 		return err
 	}
 
