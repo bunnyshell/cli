@@ -94,10 +94,8 @@ Component Selection:
   --environment <env-id>   Stream logs from all components in environment
   --name <name>            Filter by component name (requires --environment, repeatable)
 
-If no component is specified, the component from your current context will be used.
-
-Examples:
-  # Stream logs from component in context with follow mode
+If no component is specified, the component from your current context will be used.`,
+		Example: `  # Stream logs from component in context with follow mode
   bns configure set-context --component comp-123
   bns logs --follow --tail 100
 
@@ -120,21 +118,7 @@ Examples:
   bns logs --component comp-123 --since 5m --timestamps
 
   # Previous container logs
-  bns logs --component comp-123 --previous
-
-Flags:
-  -f, --follow           Stream logs continuously
-      --tail <n>         Show last N lines
-      --since <duration> Logs newer than duration (e.g. 5s, 2m, 3h)
-      --since-time <ts>  Logs after timestamp (RFC3339)
-      --timestamps       Include timestamps
-      --previous         Show logs from previous terminated container
-      --prefix           Prefix lines with source (default: true)
-      --no-color         Disable color-coded prefixes
-  -c, --container        Container name (interactive if not specified)
-      --pod              Pod name (interactive if not specified)
-  -n, --namespace        Kubernetes namespace
-      --all-containers   Stream from all containers`,
+  bns logs --component comp-123 --previous`,
 
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
