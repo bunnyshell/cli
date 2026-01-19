@@ -68,8 +68,12 @@ arbitrary commands in a component's container.
 The component ID can be provided as the first positional argument, or it will use
 the component ID from your current context.
 
-Examples:
-  # Get an interactive shell (auto-enables --tty --stdin)
+The '--' separator is used to separate command flags from the command to execute.
+Everything after '--' is passed as the command to run in the container.
+
+If no command is specified, defaults to an interactive shell (/bin/sh) with
+--tty and --stdin automatically enabled.`,
+		Example: `  # Get an interactive shell (auto-enables --tty --stdin)
   bns exec comp-123
 
   # Run a single command (no TTY/stdin needed)
@@ -86,21 +90,7 @@ Examples:
   bns exec --tty --stdin
 
   # Specify namespace
-  bns exec comp-123 --tty --stdin -n default --pod my-pod -- sh
-
-Flags:
-      --tty          Allocate a pseudo-TTY (commonly used with --stdin for interactive sessions)
-      --stdin        Pass stdin to the container (commonly used with --tty for interactive sessions)
-  -c, --container    Container name (interactive selection if not specified)
-      --pod          Pod name (interactive selection if not specified)
-  -n, --namespace    Kubernetes namespace (auto-detected if not specified)
-      --cluster-server   Override kubeconfig cluster server
-
-The '--' separator is used to separate command flags from the command to execute.
-Everything after '--' is passed as the command to run in the container.
-
-If no command is specified, defaults to an interactive shell (/bin/sh) with
---tty and --stdin automatically enabled.`,
+  bns exec comp-123 --tty --stdin -n default --pod my-pod -- sh`,
 
 		Args:              cobra.ArbitraryArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
