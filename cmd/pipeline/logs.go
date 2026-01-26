@@ -1,13 +1,16 @@
 package pipeline
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
-	"bunnyshell.com/cli/pkg/api/environment"
 	"bunnyshell.com/cli/pkg/api/workflow_job"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/formatter/pipeline_logs"
+	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -134,24 +137,77 @@ func runLogs(options *LogsOptions) error {
 
 // getLatestWorkflowJobForEnvironment finds the latest workflow job for an environment
 func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Profile) (string, error) {
-	// Get environment to find its workflow
-	itemOptions := environment.NewItemOptions(environmentID)
-	itemOptions.Profile = &profile
+	ctx, cancel := lib.GetContextFromProfile(profile)
+	defer cancel()
 
-	env, err := environment.Get(itemOptions)
+	// Build API URL to get workflows for environment
+	scheme := profile.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
+	apiURL := fmt.Sprintf("%s/v1/workflows?environment=%s&page=1", baseURL, environmentID)
+
+	// Create HTTP request
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("environment not found: %w", err)
+		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// In production, you'd query the workflow API to get the latest job
-	// For now, returning a placeholder
-	// TODO: Implement proper workflow job lookup via SDK
-	if env.GetId() == "" {
-		return "", fmt.Errorf("environment has no workflow jobs")
+	req.Header.Set("X-Auth-Token", profile.Token)
+	req.Header.Set("Accept", "application/hal+json")
+
+	if config.GetSettings().Debug {
+		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
 	}
 
-	// Placeholder - in real implementation, fetch from workflow API
-	return "wj-placeholder", fmt.Errorf("workflow job lookup not fully implemented - use --job flag to specify job ID explicitly")
+	// Execute request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch workflows (HTTP %d)", resp.StatusCode)
+	}
+
+	// Parse response
+	var workflowsResp struct {
+		Embedded struct {
+			Items []struct {
+				ID   string   `json:"id"`
+				Jobs []string `json:"jobs"`
+			} `json:"item"`
+		} `json:"_embedded"`
+	}
+
+	if err := json.Unmarshal(body, &workflowsResp); err != nil {
+		return "", fmt.Errorf("failed to parse workflows response: %w", err)
+	}
+
+	// Get latest workflow (first in list, as they're ordered by date)
+	if len(workflowsResp.Embedded.Items) == 0 {
+		return "", fmt.Errorf("no workflows found for environment %s", environmentID)
+	}
+
+	latestWorkflow := workflowsResp.Embedded.Items[0]
+
+	// Get latest job from workflow (last job in array)
+	if len(latestWorkflow.Jobs) == 0 {
+		return "", fmt.Errorf("workflow %s has no jobs (backend may need deployment with getJobs() method)", latestWorkflow.ID)
+	}
+
+	latestJobID := latestWorkflow.Jobs[len(latestWorkflow.Jobs)-1]
+
+	return latestJobID, nil
 }
 
 // fetchLogs fetches all pages of logs

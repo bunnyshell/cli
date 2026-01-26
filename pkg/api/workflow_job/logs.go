@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/lib"
@@ -66,8 +67,12 @@ func GetLogs(options *LogsOptions) (*WorkflowJobLogs, error) {
 	}
 
 	// Add authorization header
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", options.Profile.Token))
+	req.Header.Set("X-Auth-Token", options.Profile.Token)
 	req.Header.Set("Accept", "application/json")
+
+	if config.GetSettings().Debug {
+		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
+	}
 
 	// Execute request
 	client := &http.Client{}
@@ -99,8 +104,12 @@ func GetLogs(options *LogsOptions) (*WorkflowJobLogs, error) {
 
 // buildAPIURL constructs the full API URL with query parameters
 func buildAPIURL(profile config.Profile, jobID string, offset, limit int) string {
-	baseURL := fmt.Sprintf("%s://%s", profile.Scheme, profile.Host)
-	path := fmt.Sprintf("/api/v1/workflow-jobs/%s/logs", jobID)
+	scheme := profile.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
+	path := fmt.Sprintf("/v1/workflow_jobs/%s/logs", jobID)
 
 	// Build query parameters
 	params := url.Values{}
