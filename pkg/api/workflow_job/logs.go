@@ -22,17 +22,16 @@ type WorkflowJobLogs struct {
 
 // LogStep represents a single step in the workflow
 type LogStep struct {
-	Name       string       `json:"name"`
-	Status     string       `json:"status"`
-	StartedAt  string       `json:"startedAt"`
-	FinishedAt string       `json:"finishedAt"`
-	Logs       []LogMessage `json:"logs"`
+	Name      string       `json:"name"`
+	Status    string       `json:"status"`
+	ExitCode  int          `json:"exitCode"`
+	StartedAt string       `json:"startedAt"`
+	Logs      []LogMessage `json:"logs"`
 }
 
 // LogMessage represents a single log message
 type LogMessage struct {
 	Timestamp string `json:"timestamp"`
-	Level     string `json:"level"`
 	Message   string `json:"message"`
 }
 
@@ -68,7 +67,7 @@ func GetLogs(options *LogsOptions) (*WorkflowJobLogs, error) {
 
 	// Add authorization header
 	req.Header.Set("X-Auth-Token", options.Profile.Token)
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/hal+json")
 
 	if config.GetSettings().Debug {
 		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
@@ -207,7 +206,6 @@ func mergeSteps(existing, new []LogStep) []LogStep {
 		if lastExisting.Name == firstNew.Name {
 			// Merge logs
 			lastExisting.Logs = append(lastExisting.Logs, firstNew.Logs...)
-			lastExisting.FinishedAt = firstNew.FinishedAt
 
 			// Append remaining new steps
 			return append(existing, new[1:]...)

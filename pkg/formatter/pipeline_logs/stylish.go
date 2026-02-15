@@ -59,12 +59,6 @@ func (f *StylishFormatter) printStep(w io.Writer, step *workflow_job.LogStep) {
 		fmt.Fprintln(w, stepHeader)
 	}
 
-	// Duration if available
-	if step.StartedAt != "" && step.FinishedAt != "" {
-		duration := f.calculateDuration(step.StartedAt, step.FinishedAt)
-		fmt.Fprintf(w, "%s\n", color.New(color.Faint).Sprintf("(completed in %s)", duration))
-	}
-
 	fmt.Fprintf(w, "%s\n\n", color.New(color.Faint).Sprint(separator))
 
 	// Print logs
@@ -81,19 +75,7 @@ func (f *StylishFormatter) printLogMessage(w io.Writer, log *workflow_job.LogMes
 	timestamp := f.formatTimestamp(log.Timestamp)
 	timestampStr := color.New(color.Faint).Sprintf("  %s", timestamp)
 
-	// Colorize based on level
-	message := log.Message
-	switch log.Level {
-	case "error":
-		message = color.RedString("✘ %s", message)
-	case "warn":
-		message = color.YellowString("⚠ %s", message)
-	case "debug":
-		message = color.New(color.Faint).Sprint(message)
-	default:
-		// info or other - no special formatting
-		message = fmt.Sprintf("  %s", message)
-	}
+	message := fmt.Sprintf("  %s", log.Message)
 
 	fmt.Fprintf(w, "%s  %s\n", timestampStr, message)
 }
@@ -157,25 +139,4 @@ func (f *StylishFormatter) formatTimestamp(timestamp string) string {
 	}
 
 	return t.Format("15:04:05")
-}
-
-// calculateDuration calculates duration between two timestamps
-func (f *StylishFormatter) calculateDuration(start, end string) string {
-	startTime, err1 := time.Parse(time.RFC3339, start)
-	endTime, err2 := time.Parse(time.RFC3339, end)
-
-	if err1 != nil || err2 != nil {
-		return "unknown"
-	}
-
-	duration := endTime.Sub(startTime)
-
-	// Format duration nicely
-	if duration.Seconds() < 60 {
-		return fmt.Sprintf("%.0fs", duration.Seconds())
-	} else if duration.Minutes() < 60 {
-		return fmt.Sprintf("%.1fm", duration.Minutes())
-	} else {
-		return fmt.Sprintf("%.1fh", duration.Hours())
-	}
 }
