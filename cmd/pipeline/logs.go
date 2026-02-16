@@ -179,12 +179,11 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 		return "", fmt.Errorf("failed to fetch workflows (HTTP %d)", resp.StatusCode)
 	}
 
-	// Parse response
+	// Parse collection response (jobs not included in collection, only in item view)
 	var workflowsResp struct {
 		Embedded struct {
 			Items []struct {
-				ID   string   `json:"id"`
-				Jobs []string `json:"jobs"`
+				ID string `json:"id"`
 			} `json:"item"`
 		} `json:"_embedded"`
 	}
@@ -193,21 +192,55 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 		return "", fmt.Errorf("failed to parse workflows response: %w", err)
 	}
 
-	// Get latest workflow (first in list, as they're ordered by date)
 	if len(workflowsResp.Embedded.Items) == 0 {
 		return "", fmt.Errorf("no workflows found for environment %s", environmentID)
 	}
 
-	latestWorkflow := workflowsResp.Embedded.Items[0]
+	// Fetch individual workflow to get its jobs
+	workflowID := workflowsResp.Embedded.Items[0].ID
+	workflowURL := fmt.Sprintf("%s/v1/workflows/%s", baseURL, workflowID)
 
-	// Get latest job from workflow (last job in array)
-	if len(latestWorkflow.Jobs) == 0 {
-		return "", fmt.Errorf("workflow %s has no jobs (backend may need deployment with getJobs() method)", latestWorkflow.ID)
+	wReq, err := http.NewRequestWithContext(ctx, http.MethodGet, workflowURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create workflow request: %w", err)
+	}
+	wReq.Header.Set("X-Auth-Token", profile.Token)
+	wReq.Header.Set("Accept", "application/hal+json")
+
+	if config.GetSettings().Debug {
+		fmt.Fprintf(os.Stderr, "GET %s\n", workflowURL)
 	}
 
-	latestJobID := latestWorkflow.Jobs[len(latestWorkflow.Jobs)-1]
+	wResp, err := client.Do(wReq)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch workflow: %w", err)
+	}
+	defer wResp.Body.Close()
 
-	return latestJobID, nil
+	wBody, err := io.ReadAll(wResp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read workflow response: %w", err)
+	}
+
+	if wResp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch workflow %s (HTTP %d)", workflowID, wResp.StatusCode)
+	}
+
+	var workflowResp struct {
+		ID   string   `json:"id"`
+		Jobs []string `json:"jobs"`
+	}
+
+	if err := json.Unmarshal(wBody, &workflowResp); err != nil {
+		return "", fmt.Errorf("failed to parse workflow response: %w", err)
+	}
+
+	if len(workflowResp.Jobs) == 0 {
+		return "", fmt.Errorf("workflow %s has no jobs", workflowID)
+	}
+
+	// Return last job (most recent)
+	return workflowResp.Jobs[len(workflowResp.Jobs)-1], nil
 }
 
 // fetchLogs fetches all pages of logs
