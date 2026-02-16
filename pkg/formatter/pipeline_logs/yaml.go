@@ -15,8 +15,8 @@ func NewYAMLFormatter() *YAMLFormatter {
 	return &YAMLFormatter{}
 }
 
-// Format outputs logs in YAML format
-func (f *YAMLFormatter) Format(logs *workflow_job.WorkflowJobLogs, w io.Writer) error {
+// Format outputs pipeline logs in YAML format
+func (f *YAMLFormatter) Format(logs *workflow_job.PipelineLogs, w io.Writer) error {
 	encoder := yaml.NewEncoder(w)
 	encoder.SetIndent(2)
 	defer encoder.Close()

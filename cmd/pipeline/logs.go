@@ -25,12 +25,21 @@ func init() {
 		Short: "View pipeline logs for an environment",
 		Long: `View and stream logs from pipeline executions (build jobs, deployment steps).
 
-This command fetches logs from workflow jobs and displays them in a structured format.
+This command fetches logs from all workflow jobs and displays them in a structured format.
 Use --follow to stream logs in real-time for active pipelines.
 
 Examples:
-  # View latest pipeline logs
+  # View latest pipeline logs (all jobs)
   bns pipeline logs my-env
+
+  # View only failed jobs
+  bns pipeline logs my-env --failed
+
+  # View a specific workflow (use 'bns pipeline list' to find IDs)
+  bns pipeline logs my-env --workflow WORKFLOW_ID
+
+  # View a specific job within a workflow
+  bns pipeline logs my-env --job JOB_ID
 
   # Follow active pipeline logs
   bns pipeline logs my-env --follow
@@ -52,7 +61,8 @@ Examples:
 				options.EnvironmentID = ctx.Environment
 			}
 
-			if options.EnvironmentID == "" {
+			// Environment ID not required when --job is specified directly
+			if options.EnvironmentID == "" && options.JobID == "" {
 				return fmt.Errorf("environment required: provide ID/name or set context with 'bns configure set-context --environment ID'")
 			}
 
@@ -66,9 +76,11 @@ Examples:
 
 	// Add flags
 	command.Flags().BoolVarP(&options.Follow, "follow", "f", false, "Follow log output (stream in real-time)")
+	command.Flags().BoolVar(&options.Failed, "failed", false, "Show only failed jobs")
 	command.Flags().IntVar(&options.Tail, "tail", 0, "Show last N lines")
 	command.Flags().StringVar(&options.Step, "step", "", "Filter logs by step name")
-	command.Flags().StringVar(&options.JobID, "job", "", "Specific workflow job ID (defaults to latest)")
+	command.Flags().StringVar(&options.JobID, "job", "", "Specific workflow job ID (shows only that job)")
+	command.Flags().StringVar(&options.WorkflowID, "workflow", "", "Specific workflow ID (use 'bns pipeline list' to find IDs)")
 	command.Flags().StringVarP(&options.OutputFormat, "output", "o", "stylish", "Output format: stylish, json, yaml, raw")
 
 	// Add global options
@@ -79,8 +91,10 @@ Examples:
 
 type LogsOptions struct {
 	EnvironmentID string
+	WorkflowID    string
 	JobID         string
 	Follow        bool
+	Failed        bool
 	Tail          int
 	Step          string
 	OutputFormat  string
@@ -94,53 +108,147 @@ func NewLogsOptions() *LogsOptions {
 	}
 }
 
+type workflowInfo struct {
+	WorkflowID string
+	JobIDs     []string
+}
+
 func runLogs(options *LogsOptions) error {
 	options.Profile = config.GetSettings().Profile
 
-	// If no explicit job ID, find the latest workflow job for the environment
-	if options.JobID == "" {
-		jobID, err := getLatestWorkflowJobForEnvironment(options.EnvironmentID, options.Profile)
-		if err != nil {
-			return fmt.Errorf("failed to find workflow job: %w", err)
-		}
-		options.JobID = jobID
+	// If a specific job ID is given, fetch only that job's logs (legacy single-job mode)
+	if options.JobID != "" {
+		return runSingleJobLogs(options)
 	}
 
-	// Fetch logs
-	var logs *workflow_job.WorkflowJobLogs
-	var err error
-
-	if options.Follow {
-		// Follow mode: stream logs with polling
-		logs, err = followLogs(options)
-	} else {
-		// One-shot: fetch all logs
-		logs, err = fetchLogs(options)
-	}
-
+	// Resolve which workflow to use
+	wfInfo, err := resolveWorkflow(options)
 	if err != nil {
 		return err
 	}
 
-	// Apply filters
+	// Fetch job metadata for all jobs in the workflow
+	spinner := util.MakeSpinner(" Fetching pipeline info...")
+	spinner.Start()
+
+	var jobs []workflow_job.JobInfo
+	for _, jobID := range wfInfo.JobIDs {
+		info, err := workflow_job.GetJobInfo(options.Profile, jobID)
+		if err != nil {
+			spinner.Stop()
+			return fmt.Errorf("failed to get info for job %s: %w", jobID, err)
+		}
+		jobs = append(jobs, *info)
+	}
+	spinner.Stop()
+
+	// Filter by --failed
+	if options.Failed {
+		var filtered []workflow_job.JobInfo
+		for _, job := range jobs {
+			if job.Status == "failed" {
+				filtered = append(filtered, job)
+			}
+		}
+		if len(filtered) == 0 {
+			fmt.Fprintln(os.Stderr, "No failed jobs in this workflow.")
+			fmt.Fprintf(os.Stderr, "Jobs: ")
+			for i, job := range jobs {
+				if i > 0 {
+					fmt.Fprintf(os.Stderr, ", ")
+				}
+				fmt.Fprintf(os.Stderr, "%s [%s]", job.Name, job.Status)
+			}
+			fmt.Fprintln(os.Stderr)
+			return nil
+		}
+		jobs = filtered
+	}
+
+	// Fetch logs for each job
+	spinner = util.MakeSpinner(fmt.Sprintf(" Fetching logs for %d job(s)...", len(jobs)))
+	spinner.Start()
+
+	pipelineLogs := &workflow_job.PipelineLogs{
+		WorkflowID: wfInfo.WorkflowID,
+	}
+
+	for _, job := range jobs {
+		logs, err := fetchJobLogs(options, job.ID)
+		if err != nil {
+			spinner.Stop()
+			return fmt.Errorf("failed to fetch logs for job %s (%s): %w", job.ID, job.Name, err)
+		}
+		logs.JobName = job.Name
+
+		// Apply step filter per job
+		if options.Step != "" {
+			logs = filterByStep(logs, options.Step)
+		}
+
+		pipelineLogs.Jobs = append(pipelineLogs.Jobs, *logs)
+	}
+
+	spinner.Stop()
+
+	// Apply tail across all jobs
+	if options.Tail > 0 {
+		pipelineLogs = tailPipelineLogs(pipelineLogs, options.Tail)
+	}
+
+	return outputPipelineLogs(pipelineLogs, options.OutputFormat)
+}
+
+// runSingleJobLogs handles the --job flag (single job mode)
+func runSingleJobLogs(options *LogsOptions) error {
+	// Get job info for the name
+	info, err := workflow_job.GetJobInfo(options.Profile, options.JobID)
+	if err != nil {
+		// Non-fatal: we can still show logs without the name
+		info = &workflow_job.JobInfo{ID: options.JobID, Name: options.JobID}
+	}
+
+	logs, err := fetchJobLogs(options, options.JobID)
+	if err != nil {
+		return err
+	}
+	logs.JobName = info.Name
+
 	if options.Step != "" {
 		logs = filterByStep(logs, options.Step)
 	}
 
-	if options.Tail > 0 {
-		logs = tailLogs(logs, options.Tail)
+	pipelineLogs := &workflow_job.PipelineLogs{
+		Jobs: []workflow_job.WorkflowJobLogs{*logs},
 	}
 
-	// Format and output
-	return outputLogs(logs, options.OutputFormat)
+	if options.Tail > 0 {
+		pipelineLogs = tailPipelineLogs(pipelineLogs, options.Tail)
+	}
+
+	return outputPipelineLogs(pipelineLogs, options.OutputFormat)
 }
 
-// getLatestWorkflowJobForEnvironment finds the latest workflow job for an environment
-func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Profile) (string, error) {
+// resolveWorkflow determines which workflow to use and returns all its job IDs
+func resolveWorkflow(options *LogsOptions) (*workflowInfo, error) {
+	if options.WorkflowID != "" {
+		// Use explicitly provided workflow ID
+		jobIDs, err := getWorkflowJobs(options.WorkflowID, options.Profile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get jobs for workflow %s: %w", options.WorkflowID, err)
+		}
+		return &workflowInfo{WorkflowID: options.WorkflowID, JobIDs: jobIDs}, nil
+	}
+
+	// Auto-detect: find latest workflow for environment
+	return getLatestWorkflowForEnvironment(options.EnvironmentID, options.Profile)
+}
+
+// getLatestWorkflowForEnvironment finds the latest workflow and returns all its job IDs
+func getLatestWorkflowForEnvironment(environmentID string, profile config.Profile) (*workflowInfo, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	// Build API URL to get workflows for environment
 	scheme := profile.Scheme
 	if scheme == "" {
 		scheme = "https"
@@ -148,10 +256,9 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
 	apiURL := fmt.Sprintf("%s/v1/workflows?environment=%s&page=1", baseURL, environmentID)
 
-	// Create HTTP request
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("X-Auth-Token", profile.Token)
@@ -161,22 +268,20 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
 	}
 
-	// Execute request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Read response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response: %w", err)
+		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch workflows (HTTP %d)", resp.StatusCode)
+		return nil, fmt.Errorf("failed to fetch workflows (HTTP %d)", resp.StatusCode)
 	}
 
 	// Parse collection response (jobs not included in collection, only in item view)
@@ -189,41 +294,59 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 	}
 
 	if err := json.Unmarshal(body, &workflowsResp); err != nil {
-		return "", fmt.Errorf("failed to parse workflows response: %w", err)
+		return nil, fmt.Errorf("failed to parse workflows response: %w", err)
 	}
 
 	if len(workflowsResp.Embedded.Items) == 0 {
-		return "", fmt.Errorf("no workflows found for environment %s", environmentID)
+		return nil, fmt.Errorf("no workflows found for environment %s", environmentID)
 	}
 
-	// Fetch individual workflow to get its jobs
 	workflowID := workflowsResp.Embedded.Items[0].ID
+	jobIDs, err := getWorkflowJobs(workflowID, profile)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflowInfo{WorkflowID: workflowID, JobIDs: jobIDs}, nil
+}
+
+// getWorkflowJobs fetches a workflow by ID and returns its job IDs
+func getWorkflowJobs(workflowID string, profile config.Profile) ([]string, error) {
+	ctx, cancel := lib.GetContextFromProfile(profile)
+	defer cancel()
+
+	scheme := profile.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
 	workflowURL := fmt.Sprintf("%s/v1/workflows/%s", baseURL, workflowID)
 
-	wReq, err := http.NewRequestWithContext(ctx, http.MethodGet, workflowURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, workflowURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create workflow request: %w", err)
+		return nil, fmt.Errorf("failed to create workflow request: %w", err)
 	}
-	wReq.Header.Set("X-Auth-Token", profile.Token)
-	wReq.Header.Set("Accept", "application/hal+json")
+	req.Header.Set("X-Auth-Token", profile.Token)
+	req.Header.Set("Accept", "application/hal+json")
 
 	if config.GetSettings().Debug {
 		fmt.Fprintf(os.Stderr, "GET %s\n", workflowURL)
 	}
 
-	wResp, err := client.Do(wReq)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch workflow: %w", err)
+		return nil, fmt.Errorf("failed to fetch workflow: %w", err)
 	}
-	defer wResp.Body.Close()
+	defer resp.Body.Close()
 
-	wBody, err := io.ReadAll(wResp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read workflow response: %w", err)
+		return nil, fmt.Errorf("failed to read workflow response: %w", err)
 	}
 
-	if wResp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch workflow %s (HTTP %d)", workflowID, wResp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch workflow %s (HTTP %d)", workflowID, resp.StatusCode)
 	}
 
 	var workflowResp struct {
@@ -231,50 +354,36 @@ func getLatestWorkflowJobForEnvironment(environmentID string, profile config.Pro
 		Jobs []string `json:"jobs"`
 	}
 
-	if err := json.Unmarshal(wBody, &workflowResp); err != nil {
-		return "", fmt.Errorf("failed to parse workflow response: %w", err)
+	if err := json.Unmarshal(body, &workflowResp); err != nil {
+		return nil, fmt.Errorf("failed to parse workflow response: %w", err)
 	}
 
 	if len(workflowResp.Jobs) == 0 {
-		return "", fmt.Errorf("workflow %s has no jobs", workflowID)
+		return nil, fmt.Errorf("workflow %s has no jobs", workflowID)
 	}
 
-	// Return last job (most recent)
-	return workflowResp.Jobs[len(workflowResp.Jobs)-1], nil
+	return workflowResp.Jobs, nil
 }
 
-// fetchLogs fetches all pages of logs
-func fetchLogs(options *LogsOptions) (*workflow_job.WorkflowJobLogs, error) {
-	spinner := util.MakeSpinner(" Fetching pipeline logs...")
-	spinner.Start()
-	defer spinner.Stop()
+// fetchJobLogs fetches all pages of logs for a single job
+func fetchJobLogs(options *LogsOptions, jobID string) (*workflow_job.WorkflowJobLogs, error) {
+	if options.Follow {
+		fmt.Fprintln(os.Stderr, "Warning: Follow mode not yet fully implemented, showing current logs...")
+	}
 
-	logs, err := workflow_job.FetchAllPages(&workflow_job.LogsOptions{
+	return workflow_job.FetchAllPages(&workflow_job.LogsOptions{
 		Profile: options.Profile,
-		JobID:   options.JobID,
+		JobID:   jobID,
 		Offset:  0,
 		Limit:   1000,
 	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return logs, nil
-}
-
-// followLogs streams logs with polling
-func followLogs(options *LogsOptions) (*workflow_job.WorkflowJobLogs, error) {
-	// TODO: Implement follow mode with polling
-	// For now, just fetch once
-	fmt.Fprintln(os.Stderr, "⚠ Follow mode not yet fully implemented, showing current logs...")
-	return fetchLogs(options)
 }
 
 // filterByStep filters logs to only show specific step
 func filterByStep(logs *workflow_job.WorkflowJobLogs, stepName string) *workflow_job.WorkflowJobLogs {
 	filtered := &workflow_job.WorkflowJobLogs{
 		WorkflowJobID: logs.WorkflowJobID,
+		JobName:       logs.JobName,
 		Status:        logs.Status,
 		Steps:         []workflow_job.LogStep{},
 		Pagination:    logs.Pagination,
@@ -283,66 +392,67 @@ func filterByStep(logs *workflow_job.WorkflowJobLogs, stepName string) *workflow
 	for _, step := range logs.Steps {
 		if step.Name == stepName {
 			filtered.Steps = append(filtered.Steps, step)
-			return filtered
 		}
-	}
-
-	// Step not found
-	fmt.Fprintf(os.Stderr, "⚠ Step '%s' not found. Available steps:\n", stepName)
-	for _, step := range logs.Steps {
-		fmt.Fprintf(os.Stderr, "  - %s\n", step.Name)
 	}
 
 	return filtered
 }
 
-// tailLogs limits output to last N lines
-func tailLogs(logs *workflow_job.WorkflowJobLogs, n int) *workflow_job.WorkflowJobLogs {
-	// Count total logs
+// tailPipelineLogs limits output to last N lines across all jobs
+func tailPipelineLogs(pl *workflow_job.PipelineLogs, n int) *workflow_job.PipelineLogs {
+	// Count total logs across all jobs
 	totalLogs := 0
-	for _, step := range logs.Steps {
-		totalLogs += len(step.Logs)
+	for _, job := range pl.Jobs {
+		for _, step := range job.Steps {
+			totalLogs += len(step.Logs)
+		}
 	}
 
 	if totalLogs <= n {
-		return logs // No need to tail
+		return pl
 	}
 
-	// Calculate how many to skip
 	toSkip := totalLogs - n
 
-	tailed := &workflow_job.WorkflowJobLogs{
-		WorkflowJobID: logs.WorkflowJobID,
-		Status:        logs.Status,
-		Steps:         []workflow_job.LogStep{},
-		Pagination:    logs.Pagination,
+	result := &workflow_job.PipelineLogs{
+		WorkflowID: pl.WorkflowID,
 	}
 
 	skipped := 0
-	for _, step := range logs.Steps {
-		if skipped+len(step.Logs) <= toSkip {
-			// Skip entire step
+	for _, job := range pl.Jobs {
+		newJob := workflow_job.WorkflowJobLogs{
+			WorkflowJobID: job.WorkflowJobID,
+			JobName:       job.JobName,
+			Status:        job.Status,
+			Pagination:    job.Pagination,
+		}
+
+		for _, step := range job.Steps {
+			if skipped+len(step.Logs) <= toSkip {
+				skipped += len(step.Logs)
+				continue
+			}
+
+			newStep := step
+			startIdx := toSkip - skipped
+			if startIdx < 0 {
+				startIdx = 0
+			}
+			newStep.Logs = step.Logs[startIdx:]
+			newJob.Steps = append(newJob.Steps, newStep)
 			skipped += len(step.Logs)
-			continue
 		}
 
-		// Partial step
-		newStep := step
-		startIdx := toSkip - skipped
-		if startIdx < 0 {
-			startIdx = 0
+		if len(newJob.Steps) > 0 {
+			result.Jobs = append(result.Jobs, newJob)
 		}
-		newStep.Logs = step.Logs[startIdx:]
-		tailed.Steps = append(tailed.Steps, newStep)
-
-		skipped += len(step.Logs)
 	}
 
-	return tailed
+	return result
 }
 
-// outputLogs formats and outputs logs based on format
-func outputLogs(logs *workflow_job.WorkflowJobLogs, format string) error {
+// outputPipelineLogs formats and outputs pipeline logs
+func outputPipelineLogs(logs *workflow_job.PipelineLogs, format string) error {
 	switch format {
 	case "stylish":
 		return pipeline_logs.NewStylishFormatter().Format(logs, os.Stdout)

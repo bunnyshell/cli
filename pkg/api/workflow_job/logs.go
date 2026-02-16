@@ -12,9 +12,24 @@ import (
 	"bunnyshell.com/cli/pkg/lib"
 )
 
+// PipelineLogs wraps logs from all jobs in a workflow
+type PipelineLogs struct {
+	WorkflowID string            `json:"workflowId"`
+	Jobs       []WorkflowJobLogs `json:"jobs"`
+}
+
+// JobInfo contains metadata about a workflow job
+type JobInfo struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
+}
+
 // WorkflowJobLogs represents the structure of workflow job logs API response
 type WorkflowJobLogs struct {
 	WorkflowJobID string     `json:"workflowJobId"`
+	JobName       string     `json:"jobName,omitempty"`
 	Status        string     `json:"status"`
 	Steps         []LogStep  `json:"steps"`
 	Pagination    Pagination `json:"pagination"`
@@ -194,6 +209,53 @@ func FetchAllPages(options *LogsOptions) (*WorkflowJobLogs, error) {
 	}
 
 	return allLogs, nil
+}
+
+// GetJobInfo fetches metadata (name, type, status) for a workflow job
+func GetJobInfo(profile config.Profile, jobID string) (*JobInfo, error) {
+	ctx, cancel := lib.GetContextFromProfile(profile)
+	defer cancel()
+
+	scheme := profile.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	apiURL := fmt.Sprintf("%s://%s/v1/workflow_jobs/%s", scheme, profile.Host, jobID)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("X-Auth-Token", profile.Token)
+	req.Header.Set("Accept", "application/hal+json")
+
+	if config.GetSettings().Debug {
+		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch job info: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read job info response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseHTTPError(resp.StatusCode, body)
+	}
+
+	var info JobInfo
+	if err := json.Unmarshal(body, &info); err != nil {
+		return nil, fmt.Errorf("failed to parse job info: %w", err)
+	}
+
+	return &info, nil
 }
 
 // mergeSteps merges log steps, combining logs from the same step

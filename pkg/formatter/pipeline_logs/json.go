@@ -15,8 +15,8 @@ func NewJSONFormatter() *JSONFormatter {
 	return &JSONFormatter{}
 }
 
-// Format outputs logs in JSON format
-func (f *JSONFormatter) Format(logs *workflow_job.WorkflowJobLogs, w io.Writer) error {
+// Format outputs pipeline logs in JSON format
+func (f *JSONFormatter) Format(logs *workflow_job.PipelineLogs, w io.Writer) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(logs)

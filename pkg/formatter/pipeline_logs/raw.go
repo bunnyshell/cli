@@ -15,11 +15,13 @@ func NewRawFormatter() *RawFormatter {
 	return &RawFormatter{}
 }
 
-// Format outputs logs in raw format (just messages, no formatting)
-func (f *RawFormatter) Format(logs *workflow_job.WorkflowJobLogs, w io.Writer) error {
-	for _, step := range logs.Steps {
-		for _, log := range step.Logs {
-			fmt.Fprintln(w, log.Message)
+// Format outputs pipeline logs in raw format (just messages, no formatting)
+func (f *RawFormatter) Format(logs *workflow_job.PipelineLogs, w io.Writer) error {
+	for _, job := range logs.Jobs {
+		for _, step := range job.Steps {
+			for _, log := range step.Logs {
+				fmt.Fprintln(w, log.Message)
+			}
 		}
 	}
 
