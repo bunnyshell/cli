@@ -1,17 +1,15 @@
 package pipeline
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
+	"bunnyshell.com/cli/pkg/api/workflow"
 	"bunnyshell.com/cli/pkg/api/workflow_job"
 	"bunnyshell.com/cli/pkg/config"
 	"bunnyshell.com/cli/pkg/formatter/pipeline_logs"
-	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/cli/pkg/util"
+	"bunnyshell.com/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -19,51 +17,51 @@ func init() {
 	options := NewLogsOptions()
 
 	command := &cobra.Command{
-		Use:     "logs [ENVIRONMENT_ID]",
+		Use:     "logs",
 		Aliases: []string{"log"},
 
 		Short: "View pipeline logs for an environment",
 		Long: `View and stream logs from pipeline executions (build jobs, deployment steps).
 
-This command fetches logs from all workflow jobs and displays them in a structured format.
+This command fetches logs from all jobs and displays them in a structured format.
 Use --follow to stream logs in real-time for active pipelines.
 
 Examples:
   # View latest pipeline logs (all jobs)
-  bns pipeline logs my-env
+  bns pipeline logs --environment ENV_ID
 
   # View only failed jobs
-  bns pipeline logs my-env --failed
+  bns pipeline logs --environment ENV_ID --failed
 
-  # View a specific workflow (use 'bns pipeline list' to find IDs)
-  bns pipeline logs my-env --workflow WORKFLOW_ID
+  # View a specific pipeline (use 'bns pipeline list' to find IDs)
+  bns pipeline logs --id PIPELINE_ID
 
-  # View a specific job within a workflow
-  bns pipeline logs my-env --job JOB_ID
+  # View a specific job within a pipeline
+  bns pipeline logs --job JOB_ID
 
   # Follow active pipeline logs
-  bns pipeline logs my-env --follow
+  bns pipeline logs --environment ENV_ID --follow
 
   # View only specific step
-  bns pipeline logs my-env --step build
+  bns pipeline logs --environment ENV_ID --step build
 
   # Show last 50 lines
-  bns pipeline logs my-env --tail 50
+  bns pipeline logs --environment ENV_ID --tail 50
 
   # JSON output for parsing
-  bns pipeline logs my-env --output json`,
+  bns pipeline logs --environment ENV_ID --output json`,
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			// Get environment ID from args or context
-			if len(args) > 0 {
-				options.EnvironmentID = args[0]
-			} else if ctx := config.GetSettings().Profile.Context; ctx.Environment != "" {
-				options.EnvironmentID = ctx.Environment
+			// Fall back to context if --environment not provided
+			if options.EnvironmentID == "" {
+				if ctx := config.GetSettings().Profile.Context; ctx.Environment != "" {
+					options.EnvironmentID = ctx.Environment
+				}
 			}
 
-			// Environment ID not required when --job is specified directly
-			if options.EnvironmentID == "" && options.JobID == "" {
-				return fmt.Errorf("environment required: provide ID/name or set context with 'bns configure set-context --environment ID'")
+			// Environment ID not required when --job or --id is specified directly
+			if options.EnvironmentID == "" && options.JobID == "" && options.WorkflowID == "" {
+				return fmt.Errorf("environment required: provide --environment or set context with 'bns configure set-context --environment ID'")
 			}
 
 			return nil
@@ -75,12 +73,13 @@ Examples:
 	}
 
 	// Add flags
+	command.Flags().StringVar(&options.EnvironmentID, "environment", "", "Environment ID")
 	command.Flags().BoolVarP(&options.Follow, "follow", "f", false, "Follow log output (stream in real-time)")
 	command.Flags().BoolVar(&options.Failed, "failed", false, "Show only failed jobs")
 	command.Flags().IntVar(&options.Tail, "tail", 0, "Show last N lines")
 	command.Flags().StringVar(&options.Step, "step", "", "Filter logs by step name")
-	command.Flags().StringVar(&options.JobID, "job", "", "Specific workflow job ID (shows only that job)")
-	command.Flags().StringVar(&options.WorkflowID, "workflow", "", "Specific workflow ID (use 'bns pipeline list' to find IDs)")
+	command.Flags().StringVar(&options.JobID, "job", "", "Specific job ID (shows only that job)")
+	command.Flags().StringVar(&options.WorkflowID, "id", "", "Pipeline ID (use 'bns pipeline list' to find IDs)")
 	command.Flags().StringVarP(&options.OutputFormat, "output", "o", "stylish", "Output format: stylish, json, yaml, raw")
 
 	// Add global options
@@ -131,33 +130,33 @@ func runLogs(options *LogsOptions) error {
 	spinner := util.MakeSpinner(" Fetching pipeline info...")
 	spinner.Start()
 
-	var jobs []workflow_job.JobInfo
+	var jobs []*sdk.WorkflowJobItem
 	for _, jobID := range wfInfo.JobIDs {
 		info, err := workflow_job.GetJobInfo(options.Profile, jobID)
 		if err != nil {
 			spinner.Stop()
 			return fmt.Errorf("failed to get info for job %s: %w", jobID, err)
 		}
-		jobs = append(jobs, *info)
+		jobs = append(jobs, info)
 	}
 	spinner.Stop()
 
 	// Filter by --failed
 	if options.Failed {
-		var filtered []workflow_job.JobInfo
+		var filtered []*sdk.WorkflowJobItem
 		for _, job := range jobs {
-			if job.Status == "failed" {
+			if job.GetStatus() == "failed" {
 				filtered = append(filtered, job)
 			}
 		}
 		if len(filtered) == 0 {
-			fmt.Fprintln(os.Stderr, "No failed jobs in this workflow.")
+			fmt.Fprintln(os.Stderr, "No failed jobs in this pipeline.")
 			fmt.Fprintf(os.Stderr, "Jobs: ")
 			for i, job := range jobs {
 				if i > 0 {
 					fmt.Fprintf(os.Stderr, ", ")
 				}
-				fmt.Fprintf(os.Stderr, "%s [%s]", job.Name, job.Status)
+				fmt.Fprintf(os.Stderr, "%s [%s]", job.GetName(), job.GetStatus())
 			}
 			fmt.Fprintln(os.Stderr)
 			return nil
@@ -174,12 +173,12 @@ func runLogs(options *LogsOptions) error {
 	}
 
 	for _, job := range jobs {
-		logs, err := fetchJobLogs(options, job.ID)
+		logs, err := fetchJobLogs(options, job.GetId())
 		if err != nil {
 			spinner.Stop()
-			return fmt.Errorf("failed to fetch logs for job %s (%s): %w", job.ID, job.Name, err)
+			return fmt.Errorf("failed to fetch logs for job %s (%s): %w", job.GetId(), job.GetName(), err)
 		}
-		logs.JobName = job.Name
+		logs.JobName = job.GetName()
 
 		// Apply step filter per job
 		if options.Step != "" {
@@ -203,16 +202,16 @@ func runLogs(options *LogsOptions) error {
 func runSingleJobLogs(options *LogsOptions) error {
 	// Get job info for the name
 	info, err := workflow_job.GetJobInfo(options.Profile, options.JobID)
-	if err != nil {
-		// Non-fatal: we can still show logs without the name
-		info = &workflow_job.JobInfo{ID: options.JobID, Name: options.JobID}
+	jobName := options.JobID
+	if err == nil {
+		jobName = info.GetName()
 	}
 
 	logs, err := fetchJobLogs(options, options.JobID)
 	if err != nil {
 		return err
 	}
-	logs.JobName = info.Name
+	logs.JobName = jobName
 
 	if options.Step != "" {
 		logs = filterByStep(logs, options.Step)
@@ -235,7 +234,7 @@ func resolveWorkflow(options *LogsOptions) (*workflowInfo, error) {
 		// Use explicitly provided workflow ID
 		jobIDs, err := getWorkflowJobs(options.WorkflowID, options.Profile)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get jobs for workflow %s: %w", options.WorkflowID, err)
+			return nil, fmt.Errorf("failed to get jobs for pipeline %s: %w", options.WorkflowID, err)
 		}
 		return &workflowInfo{WorkflowID: options.WorkflowID, JobIDs: jobIDs}, nil
 	}
@@ -246,62 +245,19 @@ func resolveWorkflow(options *LogsOptions) (*workflowInfo, error) {
 
 // getLatestWorkflowForEnvironment finds the latest workflow and returns all its job IDs
 func getLatestWorkflowForEnvironment(environmentID string, profile config.Profile) (*workflowInfo, error) {
-	ctx, cancel := lib.GetContextFromProfile(profile)
-	defer cancel()
-
-	scheme := profile.Scheme
-	if scheme == "" {
-		scheme = "https"
-	}
-	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
-	apiURL := fmt.Sprintf("%s/v1/workflows?environment=%s&page=1", baseURL, environmentID)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
+	collection, err := workflow.List(&workflow.ListOptions{
+		Environment: environmentID,
+		Profile:     profile,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to fetch pipelines: %w", err)
 	}
 
-	req.Header.Set("X-Auth-Token", profile.Token)
-	req.Header.Set("Accept", "application/hal+json")
-
-	if config.GetSettings().Debug {
-		fmt.Fprintf(os.Stderr, "GET %s\n", apiURL)
+	if collection.Embedded == nil || len(collection.Embedded.Item) == 0 {
+		return nil, fmt.Errorf("no pipelines found for environment %s", environmentID)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch workflows (HTTP %d)", resp.StatusCode)
-	}
-
-	// Parse collection response (jobs not included in collection, only in item view)
-	var workflowsResp struct {
-		Embedded struct {
-			Items []struct {
-				ID string `json:"id"`
-			} `json:"item"`
-		} `json:"_embedded"`
-	}
-
-	if err := json.Unmarshal(body, &workflowsResp); err != nil {
-		return nil, fmt.Errorf("failed to parse workflows response: %w", err)
-	}
-
-	if len(workflowsResp.Embedded.Items) == 0 {
-		return nil, fmt.Errorf("no workflows found for environment %s", environmentID)
-	}
-
-	workflowID := workflowsResp.Embedded.Items[0].ID
+	workflowID := collection.Embedded.Item[0].GetId()
 	jobIDs, err := getWorkflowJobs(workflowID, profile)
 	if err != nil {
 		return nil, err
@@ -312,57 +268,17 @@ func getLatestWorkflowForEnvironment(environmentID string, profile config.Profil
 
 // getWorkflowJobs fetches a workflow by ID and returns its job IDs
 func getWorkflowJobs(workflowID string, profile config.Profile) ([]string, error) {
-	ctx, cancel := lib.GetContextFromProfile(profile)
-	defer cancel()
-
-	scheme := profile.Scheme
-	if scheme == "" {
-		scheme = "https"
-	}
-	baseURL := fmt.Sprintf("%s://%s", scheme, profile.Host)
-	workflowURL := fmt.Sprintf("%s/v1/workflows/%s", baseURL, workflowID)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, workflowURL, nil)
+	wf, err := workflow.Get(profile, workflowID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create workflow request: %w", err)
-	}
-	req.Header.Set("X-Auth-Token", profile.Token)
-	req.Header.Set("Accept", "application/hal+json")
-
-	if config.GetSettings().Debug {
-		fmt.Fprintf(os.Stderr, "GET %s\n", workflowURL)
+		return nil, fmt.Errorf("failed to fetch pipeline: %w", err)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch workflow: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read workflow response: %w", err)
+	jobs := wf.GetJobs()
+	if len(jobs) == 0 {
+		return nil, fmt.Errorf("pipeline %s has no jobs", workflowID)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch workflow %s (HTTP %d)", workflowID, resp.StatusCode)
-	}
-
-	var workflowResp struct {
-		ID   string   `json:"id"`
-		Jobs []string `json:"jobs"`
-	}
-
-	if err := json.Unmarshal(body, &workflowResp); err != nil {
-		return nil, fmt.Errorf("failed to parse workflow response: %w", err)
-	}
-
-	if len(workflowResp.Jobs) == 0 {
-		return nil, fmt.Errorf("workflow %s has no jobs", workflowID)
-	}
-
-	return workflowResp.Jobs, nil
+	return jobs, nil
 }
 
 // fetchJobLogs fetches all pages of logs for a single job

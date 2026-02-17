@@ -9,18 +9,24 @@ import (
 )
 
 func tabulatePipelineCollection(writer *tabwriter.Writer, data *sdk.PaginatedPipelineCollection) {
-	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\n", "PipelineID", "EnvironmentID", "OrganizationID", "Description", "Status")
+	fmt.Fprintf(writer, "%v\t %v\t %v\t %v\t %v\t %v\n", "PipelineID", "EnvironmentID", "OrganizationID", "Description", "Status", "CreatedAt")
 
 	if data.Embedded != nil {
 		for _, item := range data.Embedded.Item {
+			createdAt := ""
+			if item.HasCreatedAt() {
+				createdAt = item.GetCreatedAt().Local().Format("2006-01-02 15:04:05")
+			}
+
 			fmt.Fprintf(
 				writer,
-				"%v\t %v\t %v\t %v\t %v\n",
+				"%v\t %v\t %v\t %v\t %v\t %v\n",
 				item.GetId(),
 				item.GetEnvironment(),
 				item.GetOrganization(),
 				item.GetDescription(),
 				item.GetStatus(),
+				createdAt,
 			)
 		}
 	}

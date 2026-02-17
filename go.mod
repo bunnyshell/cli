@@ -6,6 +6,8 @@ toolchain go1.23.2
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
+replace bunnyshell.com/sdk => ../neo-sdk-generator/go/sdk-local
+
 require (
 	bunnyshell.com/dev v0.7.2
 	bunnyshell.com/sdk v0.20.4
