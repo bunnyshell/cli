@@ -38,6 +38,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateKubernetesCollection(writer, dataType)
 	case *sdk.PaginatedPipelineCollection:
 		tabulatePipelineCollection(writer, dataType)
+	case *sdk.PaginatedWorkflowJobCollection:
+		tabulateWorkflowJobCollection(writer, dataType)
 	case *sdk.PaginatedComponentGitCollection:
 		tabulateComponentGitCollection(writer, dataType)
 	case []sdk.ComponentGitCollection:
