@@ -135,39 +135,25 @@ func (gs *GenesisSourceOptions) getGenesis() (*sdk.FromGit, *sdk.FromGitSpec, *s
 }
 
 func (gs *GenesisSourceOptions) getFromGit() *sdk.FromGit {
-	fromGit := sdk.NewFromGit()
-	fromGit.Url = &gs.GitRepo
-	fromGit.Branch = &gs.GitBranch
-	fromGit.YamlPath = &gs.GitPath
-
-	return fromGit
-
+	return sdk.NewFromGit(gs.GitRepo, gs.GitBranch, gs.GitPath)
 }
 
 func (gs *GenesisSourceOptions) getFromGitSpec() *sdk.FromGitSpec {
-	fromGitSpec := sdk.NewFromGitSpec()
-	fromGitSpec.Spec = &gs.Git
-
-	return fromGitSpec
+	return sdk.NewFromGitSpec(gs.Git)
 }
 
 func (gs *GenesisSourceOptions) getFromString() (*sdk.FromString, error) {
-	fromString := sdk.NewFromString()
-
 	bytes, err := readFile(gs.YamlPath)
 	if err != nil {
 		return nil, err
 	}
 
 	content := string(bytes)
-	fromString.Yaml = &content
-
-	return fromString, nil
+	return sdk.NewFromString(content), nil
 }
 
 func (gs *GenesisSourceOptions) getFromTemplate() (*sdk.FromTemplate, error) {
-	fromTemplate := sdk.NewFromTemplate()
-	fromTemplate.Template = &gs.TemplateID
+	fromTemplate := sdk.NewFromTemplate(gs.TemplateID)
 
 	if len(gs.TemplateVariablePairs) > 0 {
 		templateVariablesSchema, schemaError := getTemplateVariableSchema(gs.TemplateID)

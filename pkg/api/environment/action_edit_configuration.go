@@ -27,7 +27,7 @@ type EditConfigurationData struct {
 }
 
 func NewEditConfigurationOptions(environment string) *EditConfigurationOptions {
-	environmentEditConfiguration := sdk.NewEnvironmentEditConfiguration()
+	environmentEditConfiguration := sdk.NewEnvironmentEditConfigurationWithDefaults()
 
 	return &EditConfigurationOptions{
 		DeployOptions: *NewDeployOptions(environment),
@@ -62,7 +62,7 @@ func (eco *EditConfigurationOptions) AttachGenesis() error {
 		return err
 	}
 
-	eco.Configuration = &sdk.EnvironmentEditConfigurationConfiguration{
+	eco.Configuration = sdk.EnvironmentEditConfigurationConfiguration{
 		FromGit:      fromGit,
 		FromGitSpec:  fromGitSpec,
 		FromTemplate: fromTemplate,
