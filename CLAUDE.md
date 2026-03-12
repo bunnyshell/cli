@@ -9,12 +9,70 @@ This document provides a comprehensive overview of the Bunnyshell CLI codebase t
 **Lines of Code:** ~17,000 (13,940 in `pkg/` + 3,093 in `cmd/`)
 **Purpose:** Command-line tool for managing Bunnyshell environments, components, and remote development workflows.
 
+## Development Environment
+
+### Docker-based Development (Recommended)
+
+The project uses a Docker-based development environment for consistent builds and testing.
+
+**Container Setup:**
+- Location: `.dev/` directory
+- Container name: `bunnyshell-cli`
+- Base image: `golang:1.23` with goreleaser pre-installed
+- Working directory: `/usr/src/app` (mounted from project root)
+
+**Starting the container:**
+```bash
+cd .dev
+docker-compose up -d
+```
+
+**Accessing the container:**
+```bash
+docker exec -it bunnyshell-cli /bin/bash
+```
+
+**Building inside the container:**
+```bash
+# Inside the container
+make build-local
+
+# Successful build produces:
+# - dist/bns_linux_amd64_v1/bns (Linux binary)
+# - dist/bns_darwin_arm64/bns (macOS ARM binary)
+# - dist/bns_darwin_amd64_v1/bns (macOS Intel binary)
+```
+
+**Testing the build:**
+- From container: `./dist/bns_linux_amd64_v1/bns --help`
+- From host (macOS): `./dist/bns_darwin_arm64/bns --help` or `./dist/bns_darwin_amd64_v1/bns --help`
+
+**Notes:**
+- Docker image building will fail in the dev container (no Docker-in-Docker) - this is expected and OK for development
+- The build is considered successful if Linux and/or Darwin binaries are produced
+- Host machine Go installation is NOT recommended - use the container for all Go commands
+
+### Local Development with SDK Changes
+
+If you need to test changes to the Bunnyshell SDK (`bunnyshell.com/dev`):
+
+1. Add to `go.mod`:
+   ```go
+   replace bunnyshell.com/dev v0.7.0 => ../bunnyshellosi-dev/
+   ```
+2. Ensure the path works both in container and on host for IDE support
+3. The path is already mounted in docker-compose.yaml
+
 ## Repository Structure
 
 ```
 /cli
 ├── main.go                    # Entry point with panic recovery
 ├── go.mod / go.sum           # Go module dependencies
+├── .dev/                      # Docker development environment
+│   ├── docker-compose.yaml   # Container orchestration
+│   ├── Dockerfile.dev        # Development container image
+│   └── Readme.md             # Development quick start
 ├── cmd/                       # Command implementations (~3,093 LOC)
 │   ├── root.go               # Root command setup with Cobra
 │   ├── environment/          # Environment management commands
@@ -595,6 +653,40 @@ See `cmd/component/action/exec.go` and `cmd/component/action/ssh.go` for referen
 
 ## Notes for AI Assistants
 
+### Development Workflow for AI Assistants
+
+**IMPORTANT: Always use the Docker container for Go commands**
+
+When you need to run Go commands (build, test, mod tidy, etc.):
+
+1. **Check if the container is running:**
+   ```bash
+   docker ps --filter "name=bunnyshell-cli"
+   ```
+
+2. **Start container if not running:**
+   ```bash
+   cd .dev && docker-compose up -d
+   ```
+
+3. **Execute Go commands inside the container:**
+   ```bash
+   docker exec -it bunnyshell-cli <command>
+   # Example: docker exec -it bunnyshell-cli make build-local
+   ```
+
+4. **Build success criteria:**
+   - Build is considered successful if Linux and/or Darwin binaries are produced
+   - Docker image building will fail (no Docker-in-Docker) - this is EXPECTED and OK
+   - Look for: `dist/bns_linux_amd64_v1/bns` and/or `dist/bns_darwin_arm64/bns`
+
+5. **DO NOT rely on host machine Go:**
+   - Host may not have Go installed
+   - Host Go version may differ
+   - Container provides consistent environment
+
+### General Development Patterns
+
 - The codebase follows clear separation of concerns: CLI commands, business logic, and utilities
 - Commands are structured hierarchically using Cobra
 - API layer wraps SDK calls with domain-specific logic
@@ -606,3 +698,11 @@ See `cmd/component/action/exec.go` and `cmd/component/action/ssh.go` for referen
 - When adding new component actions, follow the pattern in `cmd/component/action/ssh.go`
 - Always check for flag conflicts with global flags before adding shorthand flags
 - Positional arguments are preferred for primary identifiers (e.g., `bns exec <component-id>` instead of `--id` flag)
+
+### AI-Agnostic Documentation
+
+This project maintains AI-agnostic documentation for use across different AI assistants:
+- **AGENTS.md** - General instructions for all AI agents (to be created/maintained)
+- **CLAUDE.md** - This file (Claude-specific but should contain general knowledge)
+
+When updating documentation, consider whether the knowledge should be in AI-agnostic format in AGENTS.md.

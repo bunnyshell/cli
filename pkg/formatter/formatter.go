@@ -20,6 +20,8 @@ func Formatter(data interface{}, format string) ([]byte, error) {
 		return JSONFormatter(data)
 	case "yaml", "yml":
 		return YAMLFormatter(data)
+	case "raw":
+		return raw(data)
 	}
 
 	return nil, fmt.Errorf("%w: %s", errUnknownFormat, format)

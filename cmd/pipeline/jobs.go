@@ -1,7 +1,11 @@
 package pipeline
 
 import (
+	"fmt"
+	"strings"
+
 	"bunnyshell.com/cli/pkg/api/workflow_job"
+	wfstatus "bunnyshell.com/cli/pkg/api/workflow_job/status"
 	"bunnyshell.com/cli/pkg/lib"
 	"github.com/spf13/cobra"
 )
@@ -31,8 +35,14 @@ func init() {
 
 	flags := command.Flags()
 
+	jobStatusValues := strings.Join([]string{
+		wfstatus.JobPending, wfstatus.JobQueued, wfstatus.JobInProgress,
+		wfstatus.JobFailed, wfstatus.JobAbortFailed, wfstatus.JobSuccess,
+		wfstatus.JobSkipped, wfstatus.JobAborting, wfstatus.JobAborted,
+	}, ", ")
+
 	flags.AddFlag(getIDOption(&pipelineID).GetRequiredFlag("id"))
-	flags.StringArrayVar(&jobStatuses, "jobStatus", jobStatuses, "Filter by Job Status (repeatable)")
+	flags.StringArrayVar(&jobStatuses, "jobStatus", jobStatuses, fmt.Sprintf("Filter by job status (repeatable); possible values: %s", jobStatusValues))
 
 	listOptions.UpdateFlagSet(flags)
 

@@ -36,6 +36,27 @@ func List(options *ListOptions) (*sdk.PaginatedWorkflowJobCollection, error) {
 	return model, nil
 }
 
+func AllJobs(options *ListOptions) ([]sdk.WorkflowJobCollection, error) {
+	var result []sdk.WorkflowJobCollection
+
+	for {
+		model, err := List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		if model.Embedded != nil {
+			result = append(result, model.Embedded.Item...)
+		}
+
+		if !model.HasLinks() || !model.Links.HasNext() {
+			return result, nil
+		}
+
+		options.Page++
+	}
+}
+
 func ListRaw(options *ListOptions) (*sdk.PaginatedWorkflowJobCollection, *http.Response, error) {
 	profile := options.GetProfile()
 
