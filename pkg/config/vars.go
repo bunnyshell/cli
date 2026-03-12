@@ -20,11 +20,13 @@ var (
 		"stylish",
 		"json",
 		"yaml",
+		"raw",
 	}
 	FormatDescriptions = []string{
 		"stylish\tOutput format for human consumption",
 		"json\tOutput in JSON",
 		"yaml\tOutput in YAML",
+		"raw\tPlain text output without colors or formatting",
 	}
 
 	ErrConfigExists     = errors.New("configFile already exists")
