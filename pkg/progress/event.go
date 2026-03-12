@@ -8,7 +8,7 @@ import (
 	"bunnyshell.com/sdk"
 )
 
-func EventToPipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem, error) {
+func EventToPipeline(event *sdk.EventItem, options *Options) (*sdk.WorkflowItem, error) {
 	resume := net.PauseSpinner()
 	defer resume()
 
@@ -25,7 +25,7 @@ func EventToPipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem,
 	return handlePipeline(event, options)
 }
 
-func handlePipeline(event *sdk.EventItem, options *Options) (*sdk.PipelineItem, error) {
+func handlePipeline(event *sdk.EventItem, options *Options) (*sdk.WorkflowItem, error) {
 	listOptions := pipeline.NewListOptions()
 	listOptions.Event = event.GetId()
 

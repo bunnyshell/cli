@@ -29,7 +29,7 @@ func progress(options Options, generate PipelineSyncer) error {
 func generatorFromID(id string) PipelineSyncer {
 	itemOptions := pipeline.NewItemOptions(id)
 
-	return func() (*sdk.PipelineItem, error) {
+	return func() (*sdk.WorkflowItem, error) {
 		return pipeline.Get(itemOptions)
 	}
 }

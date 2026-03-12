@@ -36,8 +36,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateProjectVariableCollection(writer, dataType)
 	case *sdk.PaginatedKubernetesIntegrationCollection:
 		tabulateKubernetesCollection(writer, dataType)
-	case *sdk.PaginatedPipelineCollection:
-		tabulatePipelineCollection(writer, dataType)
+	case *sdk.PaginatedWorkflowCollection:
+		tabulateWorkflowCollection(writer, dataType)
 	case *sdk.PaginatedWorkflowJobCollection:
 		tabulateWorkflowJobCollection(writer, dataType)
 	case []WorkflowJobLogsResult:
@@ -78,8 +78,8 @@ func stylish(data interface{}) ([]byte, error) {
 		tabulateKubernetesItem(writer, dataType)
 	case *sdk.RegistryIntegrationItem:
 		tabulateRegistryIntegrationItem(writer, dataType)
-	case *sdk.PipelineItem:
-		tabulatePipelineItem(writer, dataType)
+	case *sdk.WorkflowItem:
+		tabulateWorkflowItem(writer, dataType)
 	case *sdk.ComponentGitItem:
 		tabulateComponentGitItem(writer, dataType)
 	case *sdk.SecretDecryptedItem:

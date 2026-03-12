@@ -13,7 +13,7 @@ func NewItemOptions(id string) *common.ItemOptions {
 	return common.NewItemOptions(id)
 }
 
-func Get(options *common.ItemOptions) (*sdk.PipelineItem, error) {
+func Get(options *common.ItemOptions) (*sdk.WorkflowItem, error) {
 	model, resp, err := GetRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -22,13 +22,13 @@ func Get(options *common.ItemOptions) (*sdk.PipelineItem, error) {
 	return model, nil
 }
 
-func GetRaw(options *common.ItemOptions) (*sdk.PipelineItem, *http.Response, error) {
+func GetRaw(options *common.ItemOptions) (*sdk.WorkflowItem, *http.Response, error) {
 	profile := options.GetProfile()
 
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).PipelineAPI.PipelineView(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).WorkflowAPI.WorkflowView(ctx, options.ID)
 
 	return request.Execute()
 }

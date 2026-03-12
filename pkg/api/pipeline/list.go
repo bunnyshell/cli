@@ -33,7 +33,7 @@ func (lo *ListOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	lo.ListOptions.UpdateFlagSet(flags)
 }
 
-func List(options *ListOptions) (*sdk.PaginatedPipelineCollection, error) {
+func List(options *ListOptions) (*sdk.PaginatedWorkflowCollection, error) {
 	model, resp, err := ListRaw(options)
 	if err != nil {
 		return nil, api.ParseError(resp, err)
@@ -42,18 +42,18 @@ func List(options *ListOptions) (*sdk.PaginatedPipelineCollection, error) {
 	return model, nil
 }
 
-func ListRaw(options *ListOptions) (*sdk.PaginatedPipelineCollection, *http.Response, error) {
+func ListRaw(options *ListOptions) (*sdk.PaginatedWorkflowCollection, *http.Response, error) {
 	profile := options.GetProfile()
 
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).PipelineAPI.PipelineList(ctx)
+	request := lib.GetAPIFromProfile(profile).WorkflowAPI.WorkflowList(ctx)
 
 	return applyOptions(request, options).Execute()
 }
 
-func applyOptions(request sdk.ApiPipelineListRequest, options *ListOptions) sdk.ApiPipelineListRequest {
+func applyOptions(request sdk.ApiWorkflowListRequest, options *ListOptions) sdk.ApiWorkflowListRequest {
 	if options == nil {
 		return request
 	}
