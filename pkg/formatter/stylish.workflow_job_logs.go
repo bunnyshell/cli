@@ -26,7 +26,7 @@ func statusIcon(status string) string {
 	case wfstatus.JobFailed, wfstatus.JobAbortFailed: // JobFailed same value as StepFailed
 		return color.New(color.FgRed).Sprint("✘")
 	case wfstatus.JobAborting, wfstatus.JobAborted:
-		return color.New(color.FgRed).Sprint("⊘")
+		return color.New(color.FgRed, color.Bold).Sprint("⊘")
 	case wfstatus.JobInProgress:
 		return color.New(color.FgCyan).Sprint("▶︎")
 	case wfstatus.JobPending, wfstatus.JobQueued:

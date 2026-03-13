@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	pstatus "bunnyshell.com/cli/pkg/api/pipeline/status"
 	"bunnyshell.com/sdk"
 	"github.com/briandowns/spinner"
 )
@@ -73,12 +74,14 @@ func (p *Progress) UpdatePipeline(workflow *sdk.WorkflowItem) (bool, error) {
 	)
 
 	switch workflow.GetStatus() {
-	case StatusInProgress, StatusPending:
+	case pstatus.WorkflowInProgress, pstatus.WorkflowAborting, pstatus.WorkflowFailing, pstatus.WorkflowThrottled, pstatus.WorkflowQueued:
 		return true, nil
-	case StatusSuccess:
+	case pstatus.WorkflowSuccess:
 		return false, nil
-	case StatusFailed:
+	case pstatus.WorkflowFailed:
 		return false, ErrPipeline
+	case pstatus.WorkflowAborted:
+		return false, ErrPipelineAborted
 	default:
 		return false, fmt.Errorf("%w: unknown status %s", ErrPipeline, workflow.GetStatus())
 	}
@@ -94,12 +97,14 @@ func (p *Progress) Stop() {
 
 func (p *Progress) getState(status string) PipelineStatus {
 	switch status {
-	case StatusSuccess:
+	case pstatus.WorkflowSuccess:
 		return PipelineFinished
-	case StatusInProgress, StatusPending:
+	case pstatus.WorkflowInProgress, pstatus.WorkflowAborting, pstatus.WorkflowFailing, pstatus.WorkflowThrottled, pstatus.WorkflowQueued:
 		return PipelineWorking
-	case StatusFailed:
+	case pstatus.WorkflowFailed:
 		return PipelineFailed
+	case pstatus.WorkflowAborted:
+		return PipelineAborted
 	}
 
 	return PipelineUnknownState
