@@ -7,7 +7,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "container-registries",
-	Aliases: []string{"creg"},
+	Aliases: []string{"container-registry", "creg", "cregs"},
 
 	Short: "Container Registry Integrations",
 	Long:  "Bunnyshell Container Registry Integrations",

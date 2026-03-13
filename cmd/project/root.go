@@ -9,7 +9,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "projects",
-	Aliases: []string{"proj"},
+	Aliases: []string{"project", "proj", "projs"},
 
 	Short: "Projects",
 	Long:  "Bunnyshell Projects",

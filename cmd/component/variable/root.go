@@ -9,7 +9,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "variables",
-	Aliases: []string{"vars"},
+	Aliases: []string{"variable", "var", "vars"},
 
 	Short: "Component Variables",
 }

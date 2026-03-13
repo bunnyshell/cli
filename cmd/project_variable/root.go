@@ -9,7 +9,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "project-variables",
-	Aliases: []string{"pvar"},
+	Aliases: []string{"project-variable", "pvar", "pvars"},
 
 	Short: "Project Variables",
 	Long:  "Bunnyshell Project Variables",

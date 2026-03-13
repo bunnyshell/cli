@@ -10,8 +10,8 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use:     "pipeline",
-	Aliases: []string{"pipe"},
+	Use:     "pipelines",
+	Aliases: []string{"pipeline", "pipe", "pipes"},
 
 	Short: "Pipeline",
 	Long:  "Bunnyshell Pipeline",

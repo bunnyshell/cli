@@ -9,7 +9,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "variables",
-	Aliases: []string{"var"},
+	Aliases: []string{"variable", "var", "vars"},
 
 	Short: "Environment Variables",
 	Long:  "Bunnyshell Environment Variables",

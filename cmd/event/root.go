@@ -6,7 +6,8 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use: "events",
+	Use:     "events",
+	Aliases: []string{"event"},
 
 	Short: "Events",
 	Long:  "Bunnyshell Events",
