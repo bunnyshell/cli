@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"text/tabwriter"
+	"time"
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/sdk"
@@ -323,8 +324,8 @@ func tabulateEventItem(w *tabwriter.Writer, item *sdk.EventItem) {
 	fmt.Fprintf(w, "%v\t %v\n", "OrganizationID", item.GetOrganization())
 	fmt.Fprintf(w, "%v\t %v\n", "Status", item.GetStatus())
 	fmt.Fprintf(w, "%v\t %v\n", "Type", item.GetType())
-	fmt.Fprintf(w, "%v\t %v\n", "CreatedAt", item.GetCreatedAt())
-	fmt.Fprintf(w, "%v\t %v\n", "UpdatedAt", item.GetUpdatedAt())
+	fmt.Fprintf(w, "%v\t %v\n", "CreatedAt", formatStylishTimestamp(item.GetCreatedAt()))
+	fmt.Fprintf(w, "%v\t %v\n", "UpdatedAt", formatStylishTimestamp(item.GetUpdatedAt()))
 }
 
 func tabulateEnvironmentVariableItem(w *tabwriter.Writer, item *sdk.EnvironmentVariableItem) {
@@ -379,4 +380,12 @@ func writeJSON(writer *tabwriter.Writer, data any) error {
 	_, _ = writer.Write(jsonBytes)
 
 	return err
+}
+
+func formatStylishTimestamp(value time.Time) string {
+	if value.IsZero() {
+		return ""
+	}
+
+	return value.Format(time.RFC3339)
 }
