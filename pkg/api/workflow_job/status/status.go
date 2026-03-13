@@ -1,24 +1,10 @@
 package status
 
-// Workflow status values.
-const (
-	WorkflowQueued     = "queued"
-	WorkflowThrottled  = "throttled"
-	WorkflowInProgress = "in_progress"
-	WorkflowSuccess    = "success"
-
-	WorkflowFailing = "failing"
-	WorkflowFailed  = "failed"
-
-	WorkflowAborting = "aborting"
-	WorkflowAborted  = "aborted"
-)
-
 // Job status values.
 const (
-	JobPending     = "pending"
-	JobQueued      = "queued"
-	JobInProgress  = "in_progress"
+	JobPending    = "pending"
+	JobQueued     = "queued"
+	JobInProgress = "in_progress"
 
 	JobFailed      = "failed"
 	JobAbortFailed = "abort_failed"

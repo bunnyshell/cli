@@ -24,14 +24,8 @@ const (
 	PipelineWorking PipelineStatus = iota
 	PipelineFinished
 	PipelineFailed
+	PipelineAborted
 	PipelineUnknownState
-)
-
-const (
-	StatusSuccess    = "success"
-	StatusFailed     = "failed"
-	StatusInProgress = "in_progress"
-	StatusPending    = "pending"
 )
 
 const (
@@ -43,7 +37,9 @@ var statusMap = map[PipelineStatus]string{
 	PipelineWorking:      color.New(color.FgCyan).Sprintf("»"),
 	PipelineFinished:     color.New(color.FgGreen).Sprintf("✔"),
 	PipelineFailed:       color.New(color.FgRed).Sprintf("✘"),
+	PipelineAborted:      color.New(color.FgRed, color.Bold).Sprintf("⊘"),
 	PipelineUnknownState: color.New(color.FgYellow).Sprintf("?"),
 }
 
 var ErrPipeline = errors.New("pipeline has encountered an error")
+var ErrPipelineAborted = errors.New("pipeline was aborted")
