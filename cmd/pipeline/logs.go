@@ -22,6 +22,15 @@ func init() {
 
 		Short: "View logs from pipeline jobs",
 		Long:  "View logs from pipeline jobs and job steps with optional filtering by job and step status",
+		Example: `  # Logs by explicit pipeline ID
+  bns pipeline logs --id <PIPELINE_ID>
+
+  # Logs for the latest pipeline in an environment
+  bns pipeline logs --id "$(bns pipeline list --environment <ENV_ID> --sort=createdAt:desc -o json | jq -r '._embedded.item[0].id')"
+
+  # Logs for the failed jobs and steps in a pipeline
+  bns pipeline logs --id <PIPELINE_ID> --job-status failed --step-status failed
+`,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 
@@ -80,7 +89,7 @@ func init() {
 	flags := command.Flags()
 
 	flags.AddFlag(getIDOption(&pipelineID).GetRequiredFlag("id"))
-	
+
 	jobStatusValues := strings.Join([]string{
 		wfstatus.JobPending, wfstatus.JobQueued, wfstatus.JobInProgress,
 		wfstatus.JobFailed, wfstatus.JobAbortFailed, wfstatus.JobSuccess,
