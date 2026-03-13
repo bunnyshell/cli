@@ -14,7 +14,7 @@ var mainGroup = &cobra.Group{
 
 var mainCmd = &cobra.Command{
 	Use:     "environments",
-	Aliases: []string{"env"},
+	Aliases: []string{"environment", "env", "envs"},
 
 	Short: "Environments",
 	Long:  "Bunnyshell Environments",

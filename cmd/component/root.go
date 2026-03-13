@@ -10,7 +10,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "components",
-	Aliases: []string{"comp"},
+	Aliases: []string{"component", "comp", "comps"},
 
 	Short: "Components",
 	Long:  "Bunnyshell Components",

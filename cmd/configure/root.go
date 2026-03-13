@@ -6,7 +6,8 @@ import (
 )
 
 var mainCmd = &cobra.Command{
-	Use: "configure",
+	Use:     "configure",
+	Aliases: []string{"config"},
 
 	Short: "Configure CLI settings",
 }

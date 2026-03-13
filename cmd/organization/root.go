@@ -7,7 +7,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "organizations",
-	Aliases: []string{"org"},
+	Aliases: []string{"organization", "org", "orgs"},
 
 	Short: "Organizations",
 	Long:  "Bunnyshell Organizations",

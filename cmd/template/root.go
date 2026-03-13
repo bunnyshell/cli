@@ -13,7 +13,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "templates",
-	Aliases: []string{"tpl"},
+	Aliases: []string{"template", "tpl", "tpls"},
 
 	Short: "Template",
 	Long:  "Bunnyshell Template",

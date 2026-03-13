@@ -7,7 +7,7 @@ import (
 
 var mainCmd = &cobra.Command{
 	Use:     "secrets",
-	Aliases: []string{"sec"},
+	Aliases: []string{"secret", "sec"},
 
 	Short: "Secrets",
 	Long:  "Bunnyshell Secrets",
