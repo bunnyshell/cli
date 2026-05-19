@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	tokenFormat = regexp.MustCompile(`^\d+:[0-9a-zA-z]{32}$`)
+	legacyTokenFormat = regexp.MustCompile(`^\d+:[0-9a-zA-Z]{32}$`)
+	patTokenFormat    = regexp.MustCompile(`^bns_pat_[A-Za-z0-9]{32,}$`)
 
 	ErrInvalidToken = errors.New("invalid token")
 )
@@ -257,7 +258,7 @@ func validateToken(input interface{}) error {
 		return interactive.ErrInvalidValue
 	}
 
-	if !tokenFormat.Match([]byte(value)) {
+	if !legacyTokenFormat.MatchString(value) && !patTokenFormat.MatchString(value) {
 		return fmt.Errorf("%w: token is invalid", interactive.ErrInvalidValue)
 	}
 
