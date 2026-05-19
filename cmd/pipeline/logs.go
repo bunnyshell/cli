@@ -101,8 +101,16 @@ func init() {
 	}, ", ")
 
 	flags.StringArrayVar(&jobs, "job", jobs, "Filter to specific job ID(s) (repeatable)")
-	flags.StringArrayVar(&jobStatuses, "jobStatus", jobStatuses, fmt.Sprintf("Filter by job status (repeatable); possible values: %s", jobStatusValues))
-	flags.StringArrayVar(&stepStatuses, "stepStatus", stepStatuses, fmt.Sprintf("Filter by step status (repeatable); possible values: %s", stepStatusValues))
+	flags.StringArrayVar(&jobStatuses, "job-status", jobStatuses, fmt.Sprintf("Filter by job status (repeatable); possible values: %s", jobStatusValues))
+	flags.StringArrayVar(&stepStatuses, "step-status", stepStatuses, fmt.Sprintf("Filter by step status (repeatable); possible values: %s", stepStatusValues))
+
+	// Backward-compatible aliases for existing automation scripts.
+	flags.StringArrayVar(&jobStatuses, "jobStatus", jobStatuses, "")
+	flags.StringArrayVar(&stepStatuses, "stepStatus", stepStatuses, "")
+	_ = flags.MarkHidden("jobStatus")
+	_ = flags.MarkHidden("stepStatus")
+	_ = flags.MarkDeprecated("jobStatus", "use --job-status")
+	_ = flags.MarkDeprecated("stepStatus", "use --step-status")
 
 	mainCmd.AddCommand(command)
 }
