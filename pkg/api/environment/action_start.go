@@ -3,22 +3,25 @@ package environment
 import (
 	"net/http"
 
+	"github.com/spf13/pflag"
+
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
 	"bunnyshell.com/cli/pkg/lib"
 	"bunnyshell.com/sdk"
-	"github.com/spf13/pflag"
 )
 
 type StartOptions struct {
 	common.PartialActionOptions
 
-	WithDependencies bool
+	WithDependencies           bool
+	QueueIfSomethingInProgress bool
 }
 
 func NewStartOptions(id string) *StartOptions {
 	return &StartOptions{
-		PartialActionOptions: *common.NewPartialActionOptions(id),
+		PartialActionOptions:       *common.NewPartialActionOptions(id),
+		QueueIfSomethingInProgress: false,
 	}
 }
 
@@ -26,6 +29,7 @@ func (options *StartOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	options.PartialActionOptions.UpdateFlagSet(flags)
 
 	flags.BoolVar(&options.WithDependencies, "with-dependencies", options.WithDependencies, "Start the component dependencies too.")
+	flags.BoolVar(&options.QueueIfSomethingInProgress, "queue", options.QueueIfSomethingInProgress, "Queue the start pipeline if another operation is in progress now")
 }
 
 func Start(options *StartOptions) (*sdk.EventItem, error) {
@@ -47,9 +51,10 @@ func StartRaw(options *StartOptions) (*sdk.EventItem, *http.Response, error) {
 
 	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentStart(ctx, options.ID).
 		EnvironmentPartialStartAction(sdk.EnvironmentPartialStartAction{
-			IsPartial:        &isPartialAction,
-			Components:       options.GetActionComponents(),
-			WithDependencies: &options.WithDependencies,
+			IsPartial:                  &isPartialAction,
+			Components:                 options.GetActionComponents(),
+			WithDependencies:           &options.WithDependencies,
+			QueueIfSomethingInProgress: &options.QueueIfSomethingInProgress,
 		})
 
 	return request.Execute()

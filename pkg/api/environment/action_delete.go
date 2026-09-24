@@ -1,8 +1,9 @@
 package environment
 
 import (
-	"github.com/spf13/pflag"
 	"net/http"
+
+	"github.com/spf13/pflag"
 
 	"bunnyshell.com/cli/pkg/api"
 	"bunnyshell.com/cli/pkg/api/common"
@@ -26,7 +27,7 @@ func NewDeleteOptions(id string) *DeleteOptions {
 func (options *DeleteOptions) UpdateFlagSet(flags *pflag.FlagSet) {
 	options.ActionOptions.UpdateFlagSet(flags)
 
-	//flags.BoolVar(&options.QueueIfSomethingInProgress, "queue", options.QueueIfSomethingInProgress, "Queue the delete pipeline if another operation is in progress now")
+	flags.BoolVar(&options.QueueIfSomethingInProgress, "queue", options.QueueIfSomethingInProgress, "Queue the delete pipeline if another operation is in progress now")
 }
 
 func Delete(options *DeleteOptions) (*sdk.EventItem, error) {
@@ -44,7 +45,8 @@ func DeleteRaw(options *DeleteOptions) (*sdk.EventItem, *http.Response, error) {
 	ctx, cancel := lib.GetContextFromProfile(profile)
 	defer cancel()
 
-	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDelete(ctx, options.ID)
+	request := lib.GetAPIFromProfile(profile).EnvironmentAPI.EnvironmentDelete(ctx, options.ID).
+		QueueIfSomethingInProgress(options.QueueIfSomethingInProgress)
 
 	return request.Execute()
 }
